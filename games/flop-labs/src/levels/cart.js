@@ -27,7 +27,7 @@ export const CART = [
   {
     name: 'Big Air',
     theme: 'sunset',
-    stars: [700, 1250, 1800],
+    stars: [600, 1100, 1600],
     hint: 'Tap BAIL just as you leave the kicker for extra air time',
     path: { start: [-4.5, 5], points: [[0, 5], [14, 0, 'ease'], [18, 0], [22, 1.2, 'kick']], end: 'kicker' },
     build(w, L) {
@@ -38,26 +38,26 @@ export const CART = [
   {
     name: 'Mind the Gap',
     theme: 'dusk',
-    stars: [800, 1400, 2000],
+    stars: [500, 1000, 1500],
     hint: 'Clear the gap and stick the landing on the far deck',
     cam: [-8.5, 3.6, -2],
     path: { start: [-4.5, 6], points: [[0, 6], [13, 1.5, 'ease'], [17, 1.5], [20, 2.3, 'kick']], end: 'kicker' },
     build(w, L) {
       w.block({ pos: [0, 0.2, 24], size: [5.2, 0.4, 7.6], mat: 'foam', tile: 1 });
       w.block({ pos: [0, 0.75, 35], size: [8, 1.5, 14], mat: 'concreteDark', tile: 1.5 });
-      L.landing({ pos: [0, 1.5, 34], radius: 4 });
+      L.landing({ pos: [0, 1.5, 32.5], radius: 4 });
       for (let i = 0; i < 6; i++) w.crate({ pos: [-1.2 + (i % 3) * 0.82, 1.91 + Math.floor(i / 3) * 0.8, 40.5] });
     },
   },
   {
     name: 'Bumpy Ride',
     theme: 'noon',
-    stars: [900, 1500, 2200],
+    stars: [500, 1000, 1500],
     hint: 'Speed bumps ahead. Crates around the target pay out too.',
     path: { start: [-4.5, 5], points: [[0, 5], [12, 0, 'ease'], [14.2, 0], ...bumps(14.2, 3, 4), [25.65, 0]], end: 'bumper' },
     build(w, L) {
-      L.landing({ pos: [0, 0, 34], radius: 4.5 });
-      for (const [x, z] of [[-3, 31], [3, 31], [-3, 37], [3, 37]]) {
+      L.landing({ pos: [0, 0, 31], radius: 4.5 });
+      for (const [x, z] of [[-3.5, 28], [3.5, 28], [-3.5, 34], [3.5, 34]]) {
         for (let i = 0; i < 3; i++) w.crate({ pos: [x, 0.41 + i * 0.8, z], size: 0.8 });
       }
       for (let i = 0; i < 4; i++) w.cone({ pos: [(i % 2 ? 1 : -1) * 2.6, 0.27, 15 + i * 3] });
@@ -66,16 +66,16 @@ export const CART = [
   {
     name: 'Mega Ramp',
     theme: 'morning',
-    stars: [1000, 1700, 2500],
+    stars: [800, 1400, 2000],
     hint: 'The big one. Commit to the push and fly.',
     cam: [-10, 4.2, -3],
     maxTime: 20,
     extent: 60,
     path: { start: [-4.5, 10], points: [[0, 10], [22, 0, 'ease'], [25, 0], [30, 1.6, 'kick']], end: 'kicker' },
     build(w, L) {
-      L.landing({ pos: [0, 0, 49], radius: 6, points: [300, 700, 1500] });
-      for (let i = 0; i < 12; i++) w.crate({ pos: [-2 + (i % 4) * 0.82 + 0.41, 0.41 + Math.floor(i / 4) * 0.8, 58] });
-      for (let i = 0; i < 6; i++) w.barrel({ pos: [5 + (i % 2) * 0.66, 0.45, 44 + Math.floor(i / 2) * 0.7] });
+      L.landing({ pos: [0, 0, 44], radius: 6, points: [300, 700, 1500] });
+      for (let i = 0; i < 12; i++) w.crate({ pos: [-2 + (i % 4) * 0.82 + 0.41, 0.41 + Math.floor(i / 4) * 0.8, 52] });
+      for (let i = 0; i < 6; i++) w.barrel({ pos: [5 + (i % 2) * 0.66, 0.45, 40 + Math.floor(i / 2) * 0.7] });
     },
   },
 ];

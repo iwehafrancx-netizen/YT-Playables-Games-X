@@ -69,9 +69,10 @@ export class CartHillLevel extends AttemptLevel {
   }
 
   cameraFor(p, snap = false) {
-    const off = new THREE.Vector3(...(this.def.cam ?? [-7.5, 3.2, -2.5]));
-    if (this.stage.width < this.stage.height) off.multiplyScalar(1.35);
-    const look = new THREE.Vector3(p.x, p.y + 0.6, p.z + 3);
+    const portrait = this.stage.width < this.stage.height;
+    // Landscape watches from the side; portrait chases from behind so the track ahead stays in frame.
+    const off = portrait ? new THREE.Vector3(-2.2, 4.6, -7.5) : new THREE.Vector3(...(this.def.cam ?? [-7.5, 3.2, -2.5]));
+    const look = new THREE.Vector3(p.x, p.y + 0.6, p.z + (portrait ? 6 : 3));
     const pos = new THREE.Vector3(p.x, p.y, p.z).add(off);
     if (snap) this.rig.set(pos, look);
     else this.rig.aim(pos, look, 3.5, 6);
@@ -184,7 +185,7 @@ export class CartHillLevel extends AttemptLevel {
     if (other.kind === 'cart') return;
     if (!this.bailed) {
       // Strapped in and something solid hit him: the belt gives way.
-      if (strength > 0.45) this.eject(this.onTrack ? this.trackVelocity(new THREE.Vector3()) : this.dummy.velocity(new THREE.Vector3()), 1.5, 'CRASH!', false);
+      if (strength > 0.7) this.eject(this.onTrack ? this.trackVelocity(new THREE.Vector3()) : this.dummy.velocity(new THREE.Vector3()), 1.5, 'CRASH!', false);
       return;
     }
     if (strength > 0.3 && this.dummy.knockout <= 0) this.dummy.knockOut(3, 2);
