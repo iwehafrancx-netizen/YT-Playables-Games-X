@@ -40,11 +40,12 @@ export class CartHillLevel extends AttemptLevel {
     const seat = this.cart.seat();
     this.dummy = this.spawnDummy({ position: [seat.x, seat.y, seat.z], pose: 'cart', muscle: 0.45 });
     this.cart.buckle(this.dummy.ragdoll);
+    // Cart and passenger never collide: they overlap at launch, and pushing
+    // apart two interpenetrating bodies is what made the landings shake.
     this.cart.setGhost(true);
-    this.solidAt = -1;
 
     this.hud = this.game.ui.hud({
-      title: def.name,
+      title: this.hudTitle(),
       stats: [
         { id: 'try', icon: 'dummy', value: `${this.attempt}/${this.attempts}` },
         { id: 'run', icon: 'bolt', value: 0 },
@@ -159,7 +160,6 @@ export class CartHillLevel extends AttemptLevel {
   eject(v, kick, label, lift) {
     this.bailed = true;
     this.cart.unbuckle();
-    this.solidAt = this.time + 0.6;
     this.hud.clearButtons();
     for (const name in this.dummy.parts) {
       const b = this.dummy.parts[name].body;
@@ -214,10 +214,6 @@ export class CartHillLevel extends AttemptLevel {
 
   tick(dt) {
     this.cart.update(dt);
-    if (this.solidAt > 0 && this.time >= this.solidAt && this.cart.free) {
-      this.solidAt = -1;
-      this.cart.setGhost(false);
-    }
     if (this.time % 0.2 < dt) this.checkProps();
 
     if (this.phase === 'ready') {
