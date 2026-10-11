@@ -88,16 +88,27 @@ export class Level {
     if (body && other.kind === 'cart' && strength < 0.6) return;
     let mat = other.material ?? 'concrete';
     if (body && (mat === 'concrete' || other.kind === 'dummy')) mat = 'body';
-    this.audio.impact(strength, mat);
 
-    if (body) {
-      const part = body.ragdoll.parts[body.part];
-      if (part && strength > 0.25) {
-        const t = part.body.translation();
-        _a.set(t.x, t.y, t.z);
-        this.fx.puff(_a, { count: 2 + Math.round(strength * 5), size: 0.35 + strength * 0.6, color: 0xd8d2c4 });
-        if (strength > 0.55) this.rig.shake(strength * 0.25);
+    const part = body && body.ragdoll.parts[body.part];
+    if (part) {
+      // Dust, noise and shake belong to real hits. A dummy being pushed along
+      // by something (a moving target, a sweeper) produces a steady stream of
+      // contact forces at low speed; rate-limit it per dummy and require speed.
+      const v = part.body.linvel();
+      const speed = Math.hypot(v.x, v.y, v.z);
+      const fxReady = this.time - (body.ragdoll.lastFx ?? -1) > 0.15;
+      if (speed > 1.5 && fxReady) {
+        body.ragdoll.lastFx = this.time;
+        this.audio.impact(strength, mat);
+        if (strength > 0.25) {
+          const t = part.body.translation();
+          _a.set(t.x, t.y, t.z);
+          this.fx.puff(_a, { count: 2 + Math.round(strength * 5), size: 0.35 + strength * 0.6, color: 0xd8d2c4 });
+          if (strength > 0.55 && speed > 4) this.rig.shake(strength * 0.25);
+        }
       }
+    } else {
+      this.audio.impact(strength, mat);
     }
     this.onImpact?.(a, b, force, strength);
   }

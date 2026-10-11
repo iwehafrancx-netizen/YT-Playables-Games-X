@@ -302,7 +302,9 @@ export class World {
       .setCollisionGroups(groups(Group.WORLD))
       .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
     target.collider = this.physics.createCollider(cd, body, { kind: 'target', target, material: 'wood' });
-    if (post) {
+    // Moving targets get no solid post: a kinematic pole sweeping the floor
+    // would bulldoze every dummy lying there.
+    if (post && !move) {
       const ph = pos[1] - radius * 0.2;
       this.physics.createCollider(
         RAPIER.ColliderDesc.cylinder(ph / 2, 0.06).setTranslation(0, -ph / 2 - radius * 0.2, -0.08).setCollisionGroups(groups(Group.WORLD)),
