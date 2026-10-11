@@ -1,0 +1,21 @@
+{
+  "name": "flop-labs",
+  "version": "1.0.0",
+  "description": "Flop Labs — a physics ragdoll game for YouTube Playables",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs --dev",
+    "preview": "node build.mjs --preview",
+    "zip": "node build.mjs && cd dist && zip -qr ../flop-labs.zip ."
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.19.3",
+    "@fontsource/lilita-one": "^5.3.0",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  },
+  "type": "module",
+  "private": true
+}
