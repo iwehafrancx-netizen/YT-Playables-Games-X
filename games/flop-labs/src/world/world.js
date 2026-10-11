@@ -57,9 +57,9 @@ export class World {
     this.physics.preStep.push((dt) => this.stepMovers(dt));
   }
 
-  add(obj) {
-    this.group.add(obj);
-    return obj;
+  add(...objs) {
+    this.group.add(...objs);
+    return objs[0];
   }
 
   mesh(geometry, mat, { cast = true, receive = true } = {}) {
