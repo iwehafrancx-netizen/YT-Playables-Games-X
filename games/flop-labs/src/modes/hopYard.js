@@ -454,8 +454,10 @@ export class HopYardLevel extends Level {
 
   cameraFor(c, snap = false) {
     const portrait = this.stage.width < this.stage.height;
-    const pos = new THREE.Vector3(c.x + (portrait ? 1.2 : 2.4), Math.max(c.y, 2) + (portrait ? 2.2 : 1.5), portrait ? 11.5 : 8.8);
-    const look = new THREE.Vector3(c.x + (portrait ? 1.2 : 2.6), Math.max(c.y, 2) + 0.2, 0);
+    // Tall screens see less course ahead, so pull back and look further forward.
+    const ahead = portrait ? 2.8 : 2.4;
+    const pos = new THREE.Vector3(c.x + ahead, Math.max(c.y, 2) + (portrait ? 3.2 : 1.5), portrait ? 16 : 8.8);
+    const look = new THREE.Vector3(c.x + ahead, Math.max(c.y, 2) + (portrait ? -0.2 : 0.2), 0);
     if (snap) this.rig.set(pos, look);
     else this.rig.aim(pos, look, 4, 5);
     this.stage.focusShadows(look, 16);

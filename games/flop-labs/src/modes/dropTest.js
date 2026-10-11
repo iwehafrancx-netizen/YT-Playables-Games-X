@@ -64,9 +64,15 @@ export class DropTestLevel extends AttemptLevel {
   aimCamera(snap = false) {
     const def = this.def;
     const chest = this.dummy.partPosition('chest');
+    const portrait = this.stage.width < this.stage.height;
     const off = new THREE.Vector3(...(def.camAim ?? [5, 2.5, -5]));
-    if (this.stage.width < this.stage.height) off.multiplyScalar(1.3);
-    const look = chest.clone().add(new THREE.Vector3(...(def.lookAim ?? [0, -0.8, 2])));
+    const lookOff = new THREE.Vector3(...(def.lookAim ?? [0, -0.8, 2]));
+    // Narrow screens: back off further and keep the dummy nearer the middle of the frame.
+    if (portrait) {
+      off.multiplyScalar(1.7);
+      lookOff.multiplyScalar(0.45);
+    }
+    const look = chest.clone().add(lookOff);
     const pos = chest.clone().add(off);
     if (snap) this.rig.set(pos, look);
     else this.rig.aim(pos, look, 3, 3);
@@ -188,7 +194,7 @@ export class DropTestLevel extends AttemptLevel {
 
     if (this.phase === 'aim') {
       const chest = this.dummy.partPosition('chest');
-      const show = this.dragging && this.power > 0.02;
+      const show = Boolean(this.dragging) && this.power > 0.02;
       this.arrow.visible = show;
       if (show) {
         const len = 0.6 + this.power * 1.8;
