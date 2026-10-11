@@ -48,7 +48,7 @@ export class HopYardLevel extends Level {
     this.spawn();
 
     this.hud = this.game.ui.hud({
-      title: def.name,
+      title: this.hudTitle(),
       stats: [
         { id: 'gears', icon: 'gearItem', value: `0/${this.gears.length}` },
         { id: 'time', icon: 'clock', value: '0.0' },

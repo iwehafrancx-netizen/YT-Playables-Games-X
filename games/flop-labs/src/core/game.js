@@ -1,10 +1,10 @@
 import { STEP } from '../physics/physics.js';
 import { yt } from '../platform/yt.js';
-import { DEPARTMENTS, findLevel } from '../levels/index.js';
+import { DEPARTMENTS, levelAt } from '../levels/index.js';
 import { Showcase } from '../modes/showcase.js';
 import { SUIT_UNLOCKS } from '../ui/ui.js';
 
-/** Top-level flow: title → departments → levels → results, plus the frame loop. */
+/** Top-level flow: title → an endless run of levels → results, plus the frame loop. */
 export class Game {
   constructor({ stage, ui, audio, save, input, fx, rig }) {
     this.stage = stage;
@@ -20,6 +20,7 @@ export class Game {
     this.last = performance.now();
     this.baseFov = stage.camera.fov;
     this.timeScale = 1;
+    this.fails = {};
 
     ui.onPause = () => this.pause();
     ui.onSettingsChanged = () => this.applySettings();
@@ -69,7 +70,8 @@ export class Game {
     if (!(this.scene instanceof Showcase)) this.setScene(new Showcase(this, { theme: 'morning' }, { theme: 'morning' }));
     this.input.handler = null;
     this.ui.title({
-      onPlay: () => this.showDepartments(),
+      level: this.save.data.level,
+      onPlay: () => this.startLevel(this.save.data.level),
       onSettings: () => this.ui.settings({ save: this.save, onClose: () => this.ui.closeModal() }),
       onWardrobe: () => this.openWardrobe(),
     });
@@ -86,68 +88,53 @@ export class Game {
     });
   }
 
-  showDepartments() {
-    this.ui.closeModal();
-    this.ui.clearHud();
-    if (!(this.scene instanceof Showcase)) this.setScene(new Showcase(this, { theme: 'morning' }, { theme: 'morning' }));
-    this.input.handler = null;
-    this.ui.departments({
-      depts: DEPARTMENTS,
-      save: this.save,
-      onPick: (id) => this.showLevels(DEPARTMENTS.find((d) => d.id === id)),
-      onBack: () => this.showTitle(),
-    });
-  }
-
-  showLevels(dept) {
-    this.ui.closeModal();
-    this.ui.clearHud();
-    if (!(this.scene instanceof Showcase)) this.setScene(new Showcase(this, { theme: 'morning' }, { theme: 'morning' }));
-    this.input.handler = null;
-    this.ui.levels({
-      dept,
-      save: this.save,
-      onPick: (id) => this.startLevel(id),
-      onBack: () => this.showDepartments(),
-    });
-  }
-
-  startLevel(id) {
-    const found = findLevel(id);
-    if (!found) return;
+  /** Level numbers just keep counting; the course behind each one comes from the endless sequence. */
+  startLevel(n) {
+    const { dept, level } = levelAt(n);
     this.ui.clearScreens();
     this.ui.closeModal();
     this.ui.clearHud();
     this.paused = false;
-    this.current = found;
-    const { dept, level } = found;
+    this.current = { n, dept, level };
     this.setScene(new dept.Mode(this, level, dept));
-    this.ui.banner(level.name, `${dept.name} · Test ${level.index + 1}`);
+    this.ui.banner(`Level ${n}`, level.name);
   }
 
   levelFinished(level, result) {
-    const { dept, level: def, next } = this.current;
+    const { n, level: def } = this.current;
     const prev = this.save.level(def.id);
-    const isBest = result.passed && result.score > prev.best && prev.best > 0;
     this.save.record(def.id, { stars: result.stars, score: result.passed ? result.score : 0, done: result.passed });
-    yt.sendScore(this.save.totalScore());
-    if (result.passed) this.audio.win();
-    else this.audio.lose();
-    if (result.passed) this.fx.confetti(this.rig.look.clone(), 120);
+    if (result.passed) {
+      this.save.data.level = Math.max(this.save.data.level, n + 1);
+      this.save.data.score += Math.round(result.score);
+      this.save.flush();
+      yt.sendScore(this.save.data.score);
+      this.audio.win();
+      this.fx.confetti(this.rig.look.clone(), 120);
+    } else {
+      this.audio.lose();
+    }
     setTimeout(() => {
       if (this.scene !== level) return;
       this.ui.clearHud();
       this.ui.results({
         ...result,
-        title: def.name,
-        best: Math.max(prev.best, result.passed ? result.score : 0),
-        isBest,
-        hasNext: Boolean(next),
-        onRetry: () => this.startLevel(def.id),
-        onNext: () => (next ? this.startLevel(next.id) : this.showLevels(dept)),
-        onLevels: () => this.showLevels(dept),
+        title: `Level ${n}`,
+        subtitle: def.name,
+        total: this.save.data.score,
+        isBest: result.passed && prev.best > 0 && result.score > prev.best,
+        // A stubborn level can be skipped after a couple of tries so the run keeps moving.
+        canSkip: !result.passed && (this.fails[n] = (this.fails[n] ?? 0) + 1) >= 2,
+        onRetry: () => this.startLevel(n),
+        onNext: () => this.startLevel(n + 1),
+        onSkip: () => {
+          this.save.data.level = Math.max(this.save.data.level, n + 1);
+          this.save.flush();
+          this.startLevel(n + 1);
+        },
+        onHome: () => this.showTitle(),
       });
-    }, result.passed ? 1300 : 900);
+    }, result.passed ? 1100 : 900);
   }
 
   pause(fromSystem = false) {
@@ -158,12 +145,11 @@ export class Game {
     if (this.paused) return;
     this.paused = true;
     if (fromSystem) this.audio.suspend();
-    const { dept, level } = this.current;
     this.ui.pause({
       save: this.save,
       onResume: () => this.resume(),
-      onRestart: () => this.startLevel(level.id),
-      onLevels: () => this.showLevels(dept),
+      onRestart: () => this.startLevel(this.current.n),
+      onHome: () => this.showTitle(),
     });
   }
 

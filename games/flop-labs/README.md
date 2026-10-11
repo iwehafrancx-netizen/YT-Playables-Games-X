@@ -12,7 +12,12 @@ lab is a different kind of game, all built on the same jointed, wobbly dummy:
 | **Cart Hill** | Ride a shopping cart down a ramp and bail at the right moment to land on the target. | Hold to wind up · release to push · tap to bail |
 | **Hop Yard** | Hop a self-balancing dummy across moving, tilting and crumbling platforms. | Tap to hop · hold for a big jump · tap again in mid-air |
 
-20 levels (5 per department), 1–3 stars each, unlockable dummy suits.
+Play drops you straight into an endless run: level 1, level 2, level 3…
+The 20 hand-built courses (5 per department) are dealt out in a mixed order —
+the first lap rotates through the departments from easiest to hardest, and
+every lap after that reshuffles them — so there's always a next level and no
+visible end. Progress and total score are saved; each level earns 1–3 stars,
+and stars unlock new dummy suits.
 
 Keyboard: <kbd>Space</kbd> / <kbd>Enter</kbd> works wherever a tap does.
 
@@ -40,7 +45,7 @@ src/
   render/            renderer, materials, textures, effects, camera
   world/             level building blocks (props, cannon, cart, track)
   modes/             one class per department
-  levels/            level data for each department
+  levels/            level data for each department, plus the endless sequence
   ui/                menus, HUD and modals
 ```
 

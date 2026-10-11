@@ -96,7 +96,7 @@ export const HOP = [
     theme: 'sunset',
     par: 45,
     spawn: [0, 4],
-    hint: 'The final exam: everything at once',
+    hint: 'Watch the swinging spike ball and time your hops',
     pieces: [
       { t: 'static', x: 1, y: 4, w: 5 },
       { t: 'bob', x: 5.6, y: 4.2, w: 2.4, amp: 0.8, sp: 1.5 },

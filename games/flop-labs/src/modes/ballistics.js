@@ -30,7 +30,7 @@ export class BallisticsLevel extends Level {
     this.makeTrajectory();
     this.aimCamera(true);
     this.hud = this.game.ui.hud({
-      title: def.name,
+      title: this.hudTitle(),
       stats: [
         { id: 'targets', icon: 'target', value: `0/${this.totalTargets}` },
         { id: 'shots', icon: 'dummy', value: this.shotsLeft },

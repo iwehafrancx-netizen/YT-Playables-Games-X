@@ -35,7 +35,7 @@ export class DropTestLevel extends AttemptLevel {
     this.aimCamera(true);
 
     this.hud = this.game.ui.hud({
-      title: def.name,
+      title: this.hudTitle(),
       stats: [
         { id: 'try', icon: 'dummy', value: `${this.attempt}/${this.attempts}` },
         { id: 'run', icon: 'bolt', value: 0 },

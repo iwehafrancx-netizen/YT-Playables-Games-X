@@ -4,7 +4,7 @@ const LOCAL_KEY = 'flop-labs-save';
 const VERSION = 1;
 
 function blank() {
-  return { v: VERSION, levels: {}, suit: 'classic', sfx: true, music: true, seenIntro: false };
+  return { v: VERSION, levels: {}, level: 1, score: 0, suit: 'classic', sfx: true, music: true };
 }
 
 /**
@@ -55,10 +55,6 @@ export class Save {
 
   totalStars(ids) {
     return ids.reduce((n, id) => n + this.level(id).stars, 0);
-  }
-
-  totalScore() {
-    return Object.values(this.data.levels).reduce((n, l) => n + (l.best || 0), 0);
   }
 
   set(key, value) {

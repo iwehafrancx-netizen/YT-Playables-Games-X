@@ -11,40 +11,28 @@ export const DEPARTMENTS = [
   {
     id: 'bay',
     name: 'Ballistics Bay',
-    blurb: 'Fire the dummy. Flatten the targets.',
     theme: 'morning',
-    color: '#e2463a',
-    icon: 'cannon',
     Mode: BallisticsLevel,
     levels: BAY,
   },
   {
     id: 'drop',
     name: 'Drop Test',
-    blurb: 'Shove the dummy. Score every bump, bonk and crunch.',
     theme: 'overcast',
-    color: '#3c86e8',
-    icon: 'stairs',
     Mode: DropTestLevel,
     levels: DROP,
   },
   {
     id: 'cart',
     name: 'Cart Hill',
-    blurb: 'Ride the trolley downhill. Bail at the perfect moment.',
     theme: 'sunset',
-    color: '#3fc79a',
-    icon: 'cart',
     Mode: CartHillLevel,
     levels: CART,
   },
   {
     id: 'hop',
     name: 'Hop Yard',
-    blurb: 'Hop a wobbly dummy across a moving obstacle course.',
     theme: 'noon',
-    color: '#f0782a',
-    icon: 'hop',
     Mode: HopYardLevel,
     levels: HOP,
   },
@@ -57,10 +45,44 @@ for (const dept of DEPARTMENTS) {
   });
 }
 
-export function findLevel(id) {
-  for (const dept of DEPARTMENTS) {
-    const i = dept.levels.findIndex((l) => l.id === id);
-    if (i >= 0) return { dept, level: dept.levels[i], next: dept.levels[i + 1] ?? null };
+const ALL = DEPARTMENTS.flatMap((dept) => dept.levels.map((level) => ({ dept, level })));
+
+// First lap: departments take turns and each gets harder as the lap goes on.
+const FIRST_LAP = [];
+for (let i = 0; i < 5; i++) {
+  for (const id of ['bay', 'hop', 'drop', 'cart']) FIRST_LAP.push(ALL.find((e) => e.dept.id === id && e.level.index === i));
+}
+
+function rng(seed) {
+  let s = (seed * 2654435761) >>> 0 || 1;
+  return () => {
+    s ^= s << 13;
+    s ^= s >>> 17;
+    s ^= s << 5;
+    return (s >>> 0) / 4294967296;
+  };
+}
+
+/** Later laps reshuffle the whole set, never putting one department twice in a row. */
+function lap(n) {
+  if (n === 0) return FIRST_LAP;
+  const rand = rng(n + 7);
+  for (;;) {
+    const order = ALL.slice();
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    if (order.every((e, i) => i === 0 || e.dept !== order[i - 1].dept)) return order;
   }
-  return null;
+}
+
+const lapCache = new Map();
+
+/** The endless run: level `n` (1-based) maps onto the course list, lap after lap. */
+export function levelAt(n) {
+  const i = Math.max(0, n - 1);
+  const k = Math.floor(i / ALL.length);
+  if (!lapCache.has(k)) lapCache.set(k, lap(k));
+  return lapCache.get(k)[i % ALL.length];
 }

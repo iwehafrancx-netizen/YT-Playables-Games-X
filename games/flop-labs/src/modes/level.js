@@ -56,6 +56,11 @@ export class Level {
     w.container({ pos: [e - 7, 0, -e + 5], yaw: 90, color: 'steelOrange', collide: false });
   }
 
+  /** HUD heading: the running level number, never the course name or how many are left. */
+  hudTitle() {
+    return this.game.current ? `Level ${this.game.current.n}` : this.def.name;
+  }
+
   spawnDummy(opts = {}) {
     const d = new Dummy(this.ctx, { suit: this.game.save.data.suit, ...opts });
     this.dummies.push(d);

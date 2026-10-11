@@ -29,7 +29,7 @@ export class UI {
     // Taps on UI must never reach the game canvas underneath.
     for (const el of [this.screens, this.hudEl, this.modalEl]) {
       el.addEventListener('pointerdown', (e) => {
-        if (e.target.closest('button, .card, .tile, .panel')) e.stopPropagation();
+        if (e.target.closest('button, .panel')) e.stopPropagation();
       });
     }
   }
@@ -66,7 +66,7 @@ export class UI {
     return el;
   }
 
-  title({ onPlay, onSettings, onWardrobe }) {
+  title({ level = 1, onPlay, onSettings, onWardrobe }) {
     this.clearScreens();
     const el = h(`
       <div class="screen title-screen">
@@ -77,6 +77,7 @@ export class UI {
         </div>
         <div class="title-actions">
           <button class="btn primary big" data-act="play">${icon('play')}<span>Play</span></button>
+          ${level > 1 ? `<span class="resume-note">Continue from level ${level}</span>` : ''}
           <div class="row">
             <button class="btn ghost" data-act="wardrobe">${icon('shirt')}<span>Wardrobe</span></button>
             <button class="btn ghost" data-act="settings">${icon('gear')}<span>Settings</span></button>
@@ -84,77 +85,6 @@ export class UI {
         </div>
       </div>`);
     this.screens.appendChild(this.bind(el, { play: onPlay, settings: onSettings, wardrobe: onWardrobe }));
-  }
-
-  departments({ depts, save, onPick, onBack }) {
-    this.clearScreens();
-    const total = depts.reduce((n, d) => n + d.levels.length * 3, 0);
-    const got = depts.reduce((n, d) => n + save.totalStars(d.levels.map((l) => l.id)), 0);
-    const cards = depts
-      .map((d) => {
-        const ids = d.levels.map((l) => l.id);
-        const s = save.totalStars(ids);
-        const done = ids.filter((id) => save.level(id).done).length;
-        return `
-        <button class="card dept" data-act="pick" data-arg="${d.id}" style="--accent:${d.color}">
-          <div class="dept-icon">${icon(d.icon)}</div>
-          <div class="dept-body">
-            <h3>${esc(d.name)}</h3>
-            <p>${esc(d.blurb)}</p>
-            <div class="dept-meta"><span class="pill-mini">${icon('star')} ${s}/${ids.length * 3}</span><span class="progress"><i style="width:${(done / ids.length) * 100}%"></i></span></div>
-          </div>
-        </button>`;
-      })
-      .join('');
-    const el = h(`
-      <div class="screen menu-screen">
-        <header class="menu-head">
-          <button class="icon-btn" data-act="back" aria-label="Back">${icon('back')}</button>
-          <h2>Departments</h2>
-          <span class="pill-mini big">${icon('star')} ${got}/${total}</span>
-        </header>
-        <div class="dept-grid">${cards}</div>
-      </div>`);
-    this.screens.appendChild(this.bind(el, { pick: onPick, back: onBack }));
-  }
-
-  levels({ dept, save, onPick, onBack }) {
-    this.clearScreens();
-    const tiles = dept.levels
-      .map((l, i) => {
-        const rec = save.level(l.id);
-        const unlocked = i === 0 || save.level(dept.levels[i - 1].id).done;
-        return `
-        <button class="tile ${unlocked ? '' : 'locked'} ${rec.done ? 'done' : ''}" data-act="${unlocked ? 'pick' : 'locked'}" data-arg="${l.id}" style="--accent:${dept.color}">
-          <span class="tile-num">${unlocked ? i + 1 : icon('lock')}</span>
-          <span class="tile-name">${esc(l.name)}</span>
-          <span class="tile-stars">${stars(rec.stars)}</span>
-          ${rec.best ? `<span class="tile-best">Best ${rec.best.toLocaleString()}</span>` : ''}
-        </button>`;
-      })
-      .join('');
-    const el = h(`
-      <div class="screen menu-screen" style="--accent:${dept.color}">
-        <header class="menu-head">
-          <button class="icon-btn" data-act="back" aria-label="Back">${icon('back')}</button>
-          <h2>${esc(dept.name)}</h2>
-          <span class="pill-mini big">${icon('star')} ${save.totalStars(dept.levels.map((l) => l.id))}/${dept.levels.length * 3}</span>
-        </header>
-        <p class="dept-blurb">${esc(dept.blurb)}</p>
-        <div class="tile-grid">${tiles}</div>
-      </div>`);
-    this.screens.appendChild(
-      this.bind(el, {
-        pick: onPick,
-        back: onBack,
-        locked: (_, b) => {
-          b.classList.remove('shake');
-          void b.offsetWidth;
-          b.classList.add('shake');
-          this.toast('Finish the previous test first');
-        },
-      }),
-    );
   }
 
   /** In-level heads-up display. Returns a small API the level drives. */
@@ -241,16 +171,16 @@ export class UI {
     return this.modalEl.children.length > 0;
   }
 
-  pause({ save, onResume, onRestart, onLevels }) {
+  pause({ save, onResume, onRestart, onHome }) {
     const el = this.modal(
       `<h2>Paused</h2>
       <div class="col">
         <button class="btn primary" data-act="resume">${icon('play')}<span>Resume</span></button>
         <button class="btn" data-act="restart">${icon('retry')}<span>Restart</span></button>
-        <button class="btn" data-act="levels">${icon('menu')}<span>Level select</span></button>
+        <button class="btn" data-act="home">${icon('home')}<span>Main menu</span></button>
       </div>
       ${this.toggles(save)}`,
-      { resume: onResume, restart: onRestart, levels: onLevels, toggle: (k, b) => this.flip(save, k, b) },
+      { resume: onResume, restart: onRestart, home: onHome, toggle: (k, b) => this.flip(save, k, b) },
     );
     return el;
   }
@@ -307,21 +237,26 @@ export class UI {
     );
   }
 
-  results({ passed, stars: n, score, best, isBest, title, reason, stats = [], hasNext, onRetry, onNext, onLevels }) {
+  results({ passed, stars: n, score, total, isBest, title, subtitle, reason, stats = [], canSkip, onRetry, onNext, onSkip, onHome }) {
     const el = this.modal(
       `<div class="result ${passed ? 'pass' : 'fail'}">
         <div class="stamp">${passed ? 'Test passed' : 'Test failed'}</div>
         <h2>${esc(title)}</h2>
+        <p class="result-sub">${esc(subtitle)}</p>
         ${passed ? `<div class="big-stars">${stars(0, 3, 'pop')}</div>` : `<p class="reason">${esc(reason ?? 'Try again!')}</p>`}
-        <div class="score-line"><span class="score-val" data-score="${Math.round(score)}">0</span>${isBest ? '<span class="new-best">New best!</span>' : best ? `<span class="best">Best ${best.toLocaleString()}</span>` : ''}</div>
-        <ul class="stats">${stats.map(([k, v]) => `<li><span>${esc(k)}</span><b>${esc(v)}</b></li>`).join('')}</ul>
-        <div class="row">
-          <button class="btn" data-act="levels">${icon('menu')}</button>
-          <button class="btn ${passed && hasNext ? '' : 'primary'}" data-act="retry">${icon('retry')}<span>Retry</span></button>
-          ${passed && hasNext ? `<button class="btn primary" data-act="next"><span>Next</span>${icon('next')}</button>` : ''}
+        <div class="score-line ${!passed && !score ? 'hidden' : ''}"><span class="score-val" data-score="${Math.round(score)}">0</span>${isBest ? '<span class="new-best">New best!</span>' : ''}</div>
+        ${passed ? `<p class="total">Total score <b>${Math.round(total).toLocaleString()}</b></p>` : ''}
+        ${stats.length ? `<ul class="stats">${stats.map(([k, v]) => `<li><span>${esc(k)}</span><b>${esc(v)}</b></li>`).join('')}</ul>` : ''}
+        <div class="col">
+          ${passed ? `<button class="btn primary big next-btn" data-act="next"><span>Next level</span>${icon('next')}</button>` : `<button class="btn primary big" data-act="retry">${icon('retry')}<span>Try again</span></button>`}
+          <div class="row">
+            <button class="btn small" data-act="home" aria-label="Main menu">${icon('home')}</button>
+            ${passed ? `<button class="btn small" data-act="retry">${icon('retry')}<span>Replay</span></button>` : ''}
+            ${canSkip ? `<button class="btn small" data-act="skip"><span>Skip</span>${icon('next')}</button>` : ''}
+          </div>
         </div>
       </div>`,
-      { retry: onRetry, next: onNext, levels: onLevels },
+      { retry: onRetry, next: onNext, skip: onSkip, home: onHome },
     );
     // Count the score up, then drop the stars in one by one.
     const val = el.querySelector('.score-val');
