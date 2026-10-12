@@ -134,6 +134,17 @@ const _mv1 = new Vector3();
 const _mv2 = new Vector3();
 const _mv3 = new Vector3();
 const _imp = new Vector3();
+const _a1 = new Vector3();
+const _a2 = new Vector3();
+const _err = new Vector3();
+const _pv = new Vector3();
+const _cv = new Vector3();
+
+// A limb spinning faster than this is never what the player meant to see,
+// and it's what lets a hard hit pull the joints apart.
+const MAX_SPIN = 30;
+// Joint gap (m) beyond which the child is pulled straight back onto its socket.
+const MAX_GAP = 0.02;
 
 function mulSdp(m, v, out) {
   const e = m.elements;
@@ -242,12 +253,51 @@ export class Ragdoll {
       joint.setContactsEnabled(false);
       if (j.type === 'hinge') joint.setLimits(j.min, j.max);
       for (let axis = 3; axis <= 5; axis++) joint.rawSet.jointConfigureMotorModel(joint.handle, axis, RAPIER.MotorModel.ForceBased);
-      this.joints.push({ ...j, joint, parentPart: this.parts[j.parent], childPart: this.parts[j.child] });
+      this.joints.push({ ...j, joint, parentPart: this.parts[j.parent], childPart: this.parts[j.child], local1: new Vector3(a1.x, a1.y, a1.z), local2: new Vector3(a2.x, a2.y, a2.z) });
     }
 
     this.updateMotors();
     this._pre = () => this.applyMuscles();
+    this._post = () => this.holdTogether();
     physics.preStep.push(this._pre);
+    physics.postStep.push(this._post);
+  }
+
+  /**
+   * After each step: cap runaway spin and project any stretched joint back
+   * together, parent first, so a big impact can't visibly tear him apart.
+   */
+  holdTogether() {
+    for (const name of ORDER) {
+      const b = this.parts[name].body;
+      const w = b.angvel();
+      const spin = Math.hypot(w.x, w.y, w.z);
+      if (spin > MAX_SPIN) {
+        const k = MAX_SPIN / spin;
+        b.setAngvel({ x: w.x * k, y: w.y * k, z: w.z * k }, true);
+      }
+    }
+    for (const j of this.joints) {
+      const pb = j.parentPart.body;
+      const cb = j.childPart.body;
+      const pt = pb.translation();
+      const ct = cb.translation();
+      rot(pb, _mq1);
+      rot(cb, _mq2);
+      _a1.copy(j.local1).applyQuaternion(_mq1);
+      _a2.copy(j.local2).applyQuaternion(_mq2);
+      _err.set(pt.x + _a1.x - ct.x - _a2.x, pt.y + _a1.y - ct.y - _a2.y, pt.z + _a1.z - ct.z - _a2.z);
+      const gap = _err.length();
+      if (gap < MAX_GAP) continue;
+      cb.setTranslation({ x: ct.x + _err.x, y: ct.y + _err.y, z: ct.z + _err.z }, true);
+      // Match the socket's velocity along the gap so it doesn't open again next step.
+      vec(pb.linvel(), _pv).add(_v.crossVectors(vec(pb.angvel(), _v2), _a1));
+      vec(cb.linvel(), _cv).add(_v.crossVectors(vec(cb.angvel(), _v2), _a2));
+      _err.divideScalar(gap);
+      const sep = _pv.sub(_cv).dot(_err);
+      const lv = cb.linvel();
+      cb.setLinvel({ x: lv.x + _err.x * sep, y: lv.y + _err.y * sep, z: lv.z + _err.z * sep }, true);
+    }
   }
 
   setupCollider(desc, mass) {
@@ -478,12 +528,15 @@ export class Ragdoll {
       b.setRotation({ x: q.x, y: q.y, z: q.z, w: q.w }, true);
       b.setLinvel({ x: 0, y: 0, z: 0 }, true);
       b.setAngvel({ x: 0, y: 0, z: 0 }, true);
+      this.physics.snapBody(b);
     }
   }
 
   dispose() {
     const i = this.physics.preStep.indexOf(this._pre);
     if (i >= 0) this.physics.preStep.splice(i, 1);
+    const k = this.physics.postStep.indexOf(this._post);
+    if (k >= 0) this.physics.postStep.splice(k, 1);
     for (const name of ORDER) this.physics.removeBody(this.parts[name].body);
     this.parts = {};
     this.joints = [];

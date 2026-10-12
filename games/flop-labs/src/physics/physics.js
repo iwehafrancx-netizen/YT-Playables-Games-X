@@ -31,11 +31,13 @@ export class Physics {
   constructor(gravity = -11) {
     this.world = new RAPIER.World({ x: 0, y: gravity, z: 0 });
     this.world.timestep = STEP;
-    this.world.numSolverIterations = 6;
+    this.world.numSolverIterations = 8;
+    this.world.numInternalPgsIterations = 2;
     this.events = new RAPIER.EventQueue(true);
     this.tags = new Map();
     this.links = [];
     this.preStep = [];
+    this.postStep = [];
     this.onImpact = null;
     this.onContact = null;
     this.time = 0;
@@ -85,6 +87,11 @@ export class Physics {
     l.object.quaternion.copy(l.q1);
   }
 
+  /** Skips interpolation for a body that was just moved, so it doesn't streak there. */
+  snapBody(body) {
+    for (const l of this.links) if (l.body === body) this.snap(l);
+  }
+
   snapAll() {
     for (const l of this.links) this.snap(l);
   }
@@ -96,6 +103,7 @@ export class Physics {
     }
     for (const fn of this.preStep) fn(STEP);
     this.world.step(this.events);
+    for (const fn of this.postStep) fn(STEP);
     this.time += STEP;
 
     for (const l of this.links) {
