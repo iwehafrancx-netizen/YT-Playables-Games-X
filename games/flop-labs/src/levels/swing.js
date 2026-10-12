@@ -1,0 +1,98 @@
+// Swing Shift. Side-on courses along +X; the start platform's top is at
+// (0, start). Hooks are [x, y] points; platform `y` values are top surfaces.
+
+export const SWING = [
+  {
+    name: 'First Swing',
+    theme: 'morning',
+    par: 8,
+    hint: 'Hold to jump and grab the glowing hook · let go to fling forward',
+    hooks: [
+      { x: 4, y: 8 },
+      { x: 10, y: 8.5 },
+      { x: 16, y: 8.5 },
+      { x: 22, y: 8 },
+    ],
+    finish: { x: 30, y: 3, w: 6 },
+  },
+  {
+    name: 'Bounce House',
+    theme: 'morning',
+    par: 9,
+    hint: 'Trampolines on the mat are safe. Bounce back up!',
+    hooks: [
+      { x: 4, y: 8 },
+      { x: 10, y: 8.5 },
+      { x: 25, y: 9 },
+      { x: 31, y: 9 },
+    ],
+    springs: [{ x: 17.5, y: 0.6, w: 3.2, power: 14 }],
+    finish: { x: 38, y: 3.5, w: 6 },
+  },
+  {
+    name: 'Moving Parts',
+    theme: 'noon',
+    par: 10,
+    hooks: [
+      { x: 4, y: 8 },
+      { x: 10.5, y: 8.5, move: { dy: 1.6, speed: 1.6 } },
+      { x: 17, y: 8.5, move: { dx: 2, speed: 1.2 } },
+      { x: 23.5, y: 9, move: { dy: 1.6, speed: 1.6, phase: 2 } },
+      { x: 30, y: 8.5 },
+    ],
+    finish: { x: 37, y: 3, w: 5 },
+  },
+  {
+    name: 'Over the Wall',
+    theme: 'noon',
+    par: 12,
+    hint: 'Build up a big swing and let go high to clear the wall',
+    hooks: [
+      { x: 4, y: 8 },
+      { x: 10, y: 9 },
+      { x: 23, y: 10 },
+      { x: 29, y: 9 },
+    ],
+    blocks: [{ x: 16.5, y: 8, w: 1.2 }],
+    checks: [{ x: 21, y: 3, w: 2.5 }],
+    finish: { x: 36, y: 3, w: 5 },
+  },
+  {
+    name: 'Rotor Alley',
+    theme: 'sunset',
+    par: 11,
+    hint: 'Time your swings past the rotors',
+    hooks: [
+      { x: 4, y: 8.5 },
+      { x: 10, y: 9.5 },
+      { x: 17, y: 9.5 },
+      { x: 24, y: 9.5 },
+      { x: 31, y: 9 },
+    ],
+    rotors: [
+      { x: 13.5, y: 5.2, length: 5, speed: 1.4 },
+      { x: 27.5, y: 5.2, length: 5, speed: -1.6, phase: 0.8 },
+    ],
+    finish: { x: 38, y: 3, w: 5 },
+  },
+  {
+    name: 'The Long Haul',
+    theme: 'dusk',
+    par: 18,
+    lives: 4,
+    hooks: [
+      { x: 4, y: 8 },
+      { x: 10.5, y: 9, move: { dy: 1.4, speed: 1.5 } },
+      { x: 17, y: 9.5 },
+      { x: 29, y: 9.5 },
+      { x: 35.5, y: 9, move: { dx: 2, speed: 1.3 } },
+      { x: 42, y: 9.5 },
+      { x: 48.5, y: 10 },
+    ],
+    springs: [{ x: 23, y: 0.6, w: 3.2, power: 14 }],
+    blocks: [{ x: 45.5, y: 4.5, w: 1 }],
+    rotors: [{ x: 39, y: 5, length: 4.6, speed: 1.5 }],
+    checks: [{ x: 31, y: 3.5, w: 2.5 }],
+    finish: { x: 55, y: 3, w: 5 },
+  },
+];

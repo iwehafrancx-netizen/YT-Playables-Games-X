@@ -329,12 +329,12 @@ export function grass(seed = 41) {
   return toTexture(c);
 }
 
-export function foam(seed = 51) {
+export function foam(seed = 51, base = 0x3d8be0, fleck = '#1d4f8a') {
   const S = 128;
   const c = makeCanvas(S);
   const ctx = c.getContext('2d');
-  paintNoise(ctx, S, 0x3d8be0, 16, seed, 0.25, 3);
-  speckle(ctx, S, 600, seed + 1, '#1d4f8a', 1.2);
+  paintNoise(ctx, S, base, 16, seed, 0.25, 3);
+  speckle(ctx, S, 600, seed + 1, fleck, 1.2);
   return toTexture(c);
 }
 

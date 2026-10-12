@@ -67,6 +67,10 @@ export const POSES = {
     shoulderL: [-55, 0, 18], shoulderR: [-55, 0, -18], elbowL: [-55, 0, 0], elbowR: [-55, 0, 0],
     waist: [8, 0, 0],
   },
+  hang: {
+    shoulderL: [-165, 0, 12], shoulderR: [-165, 0, -12], elbowL: [-12, 0, 0], elbowR: [-12, 0, 0],
+    hipL: [-25, 0, 6], hipR: [-10, 0, -6], kneeL: [45, 0, 0], kneeR: [20, 0, 0],
+  },
   cheer: {
     shoulderL: [0, 0, 150], shoulderR: [0, 0, -150], elbowL: [-20, 0, 0], elbowR: [-20, 0, 0],
   },

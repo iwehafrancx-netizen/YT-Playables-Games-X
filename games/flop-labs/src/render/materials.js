@@ -31,6 +31,7 @@ export const Mat = {
   water: () => once('water', () => std({ map: tex.water(), color: 0x9fd0e0, roughness: 0.12, metalness: 0.1, transparent: true, opacity: 0.92 })),
   grass: () => once('grass', () => std({ map: tex.grass(), roughness: 1 })),
   foam: () => once('foam', () => std({ map: tex.foam(), roughness: 0.95 })),
+  crashMat: () => once('crashMat', () => std({ map: tex.foam(52, 0xc4483a, '#7a2219'), roughness: 1 })),
   trampoline: () => once('trampoline', () => std({ color: 0x1e2a44, roughness: 0.7 })),
   white: () => once('white', () => std({ color: 0xf2f2ee, roughness: 0.6 })),
   glowGreen: () => once('glowGreen', () => std({ color: 0x3ad16b, emissive: 0x1d9e48, emissiveIntensity: 0.8, roughness: 0.4 })),

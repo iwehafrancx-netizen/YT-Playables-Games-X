@@ -35,7 +35,7 @@ const SOUND_FOR = {
   concrete: 'concrete', concreteDark: 'concrete', asphalt: 'concrete', wall: 'concrete', grass: 'concrete',
   crate: 'wood', cardboard: 'cardboard', hazard: 'metal', steel: 'metal', darkSteel: 'metal',
   steelBlue: 'metal', steelRed: 'metal', steelGreen: 'metal', steelOrange: 'metal', steelGrey: 'metal',
-  rubber: 'rubber', foam: 'rubber', fairway: 'concrete', green: 'concrete', soil: 'concrete', sand: 'cardboard', trampoline: 'rubber', glass: 'glass', white: 'wood', bullseye: 'wood',
+  rubber: 'rubber', foam: 'rubber', crashMat: 'rubber', fairway: 'concrete', green: 'concrete', soil: 'concrete', sand: 'cardboard', trampoline: 'rubber', glass: 'glass', white: 'wood', bullseye: 'wood',
 };
 
 /**
@@ -488,6 +488,37 @@ export class World {
       fn: (t) => {
         const q = new THREE.Quaternion().setFromAxisAngle(axis, phase + t * speed);
         return { pos: [x, hubY, front], rot: { x: q.x, y: q.y, z: q.z, w: q.w } };
+      },
+    });
+  }
+
+  /** Hazard-striped cross turning in the XY plane about its centre. */
+  rotor({ pos, length = 5, thick = 0.35, speed = 1.2, phase = 0, arms = 2 }) {
+    const g = new THREE.Group();
+    const body = this.physics.createBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(...pos));
+    for (let i = 0; i < arms; i++) {
+      const a = (i / arms) * Math.PI;
+      const bar = this.mesh(new THREE.BoxGeometry(length, thick, thick), 'hazard');
+      bar.rotation.z = a;
+      g.add(bar);
+      const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), a);
+      this.physics.createCollider(
+        RAPIER.ColliderDesc.cuboid(length / 2, thick / 2, thick / 2).setRotation({ x: q.x, y: q.y, z: q.z, w: q.w }).setFriction(0.4).setCollisionGroups(groups(Group.WORLD)),
+        body,
+        { kind: 'static', material: 'metal' },
+      );
+    }
+    const hub = this.mesh(new THREE.CylinderGeometry(0.3, 0.3, thick + 0.2, 16), 'darkSteel');
+    hub.rotation.x = Math.PI / 2;
+    g.add(hub);
+    this.add(g);
+    const axis = new THREE.Vector3(0, 0, 1);
+    return this.mover({
+      body,
+      object: g,
+      fn: (t) => {
+        const q = new THREE.Quaternion().setFromAxisAngle(axis, phase + t * speed);
+        return { pos, rot: { x: q.x, y: q.y, z: q.z, w: q.w } };
       },
     });
   }

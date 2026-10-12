@@ -12,6 +12,8 @@ import { CrashCourseLevel } from '../modes/crashCourse.js';
 import { CRASH } from './crash.js';
 import { FlopGolfLevel } from '../modes/flopGolf.js';
 import { GOLF } from './golf.js';
+import { SwingShiftLevel } from '../modes/swingShift.js';
+import { SWING } from './swing.js';
 
 export const DEPARTMENTS = [
   {
@@ -63,6 +65,13 @@ export const DEPARTMENTS = [
     Mode: FlopGolfLevel,
     levels: GOLF,
   },
+  {
+    id: 'swing',
+    name: 'Swing Shift',
+    theme: 'noon',
+    Mode: SwingShiftLevel,
+    levels: SWING,
+  },
 ];
 
 for (const dept of DEPARTMENTS) {
@@ -76,7 +85,7 @@ const ALL = DEPARTMENTS.flatMap((dept) => dept.levels.map((level) => ({ dept, le
 
 // Departments take turns in this order; each pass through them deals the
 // next-hardest course from each, so difficulty climbs steadily.
-const ROTATION = ['bay', 'hop', 'alley', 'drop', 'crash', 'cart', 'golf', 'crane', 'pins'];
+const ROTATION = ['bay', 'hop', 'alley', 'drop', 'crash', 'cart', 'golf', 'swing', 'pins'];
 const FIRST_LAP = [];
 const deepest = Math.max(...DEPARTMENTS.map((d) => d.levels.length));
 for (let i = 0; i < deepest; i++) {
