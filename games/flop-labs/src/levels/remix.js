@@ -19,6 +19,7 @@ const HARDER = {
   golf: (l, k) => ({ arc: (l.arc ?? 1) * (k > 1 ? 0.4 : 0.6) }),
   swing: (l, k) => ({ par: Math.round(l.par * (k > 1 ? 0.75 : 0.85)), lives: Math.max(2, (l.lives ?? 3) - 1) }),
   pins: () => ({}),
+  dunk: (l, k) => ({ arc: (l.arc ?? 0.6) * (k > 1 ? 0.4 : 0.6) }),
 };
 
 const flipX = (p) => (p ? [-p[0], ...p.slice(1)] : p);
@@ -53,6 +54,12 @@ const flipBuild = (build) => build && ((w, L) => build(mirrored(w), L && mirrore
 const MIRROR = {
   bay: (l) => ({ yaw: -(l.yaw ?? 0), cannon: flipX(l.cannon), build: flipBuild(l.build) }),
   alley: (l) => ({ pins: l.pins.map(flipX), build: flipBuild(l.build) }),
+  dunk: (l) => ({
+    spot: flipX(l.spot),
+    spots: l.spots?.map(flipX),
+    hoops: l.hoops.map((h) => ({ ...h, x: -h.x, move: h.move && { ...h.move, dx: -(h.move.dx ?? 0) } })),
+    build: flipBuild(l.build),
+  }),
   golf: (l) => ({
     cup: flipX(l.cup),
     tee: flipX(l.tee),

@@ -16,6 +16,8 @@ import { SwingShiftLevel } from '../modes/swingShift.js';
 import { SWING } from './swing.js';
 import { PullRigLevel } from '../modes/pullRig.js';
 import { RIG } from './rig.js';
+import { DummyDunkLevel } from '../modes/dummyDunk.js';
+import { DUNK } from './dunk.js';
 import { remixes } from './remix.js';
 
 export const DEPARTMENTS = [
@@ -53,6 +55,13 @@ export const DEPARTMENTS = [
     theme: 'dusk',
     Mode: PinAlleyLevel,
     levels: ALLEY,
+  },
+  {
+    id: 'dunk',
+    name: 'Dummy Dunk',
+    theme: 'noon',
+    Mode: DummyDunkLevel,
+    levels: DUNK,
   },
   {
     id: 'crash',
@@ -94,18 +103,6 @@ for (const dept of DEPARTMENTS) {
 
 const ALL = DEPARTMENTS.flatMap((dept) => dept.levels.map((level) => ({ dept, level })));
 
-// Departments take turns in this order; each pass through them deals the
-// next-hardest course from each, so difficulty climbs steadily.
-const ROTATION = ['bay', 'hop', 'alley', 'drop', 'crash', 'cart', 'golf', 'swing', 'pins'];
-const FIRST_LAP = [];
-const deepest = Math.max(...DEPARTMENTS.map((d) => d.levels.length));
-for (let i = 0; i < deepest; i++) {
-  for (const id of ROTATION) {
-    const entry = ALL.find((e) => e.dept.id === id && e.level.index === i);
-    if (entry) FIRST_LAP.push(entry);
-  }
-}
-
 function rng(seed) {
   let s = (seed * 2654435761) >>> 0 || 1;
   return () => {
@@ -116,16 +113,37 @@ function rng(seed) {
   };
 }
 
+function shuffle(list, rand) {
+  for (let i = list.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+  return list;
+}
+
+// The run always opens with the cart, then the cannon. After that each pass
+// deals the next-hardest course from every department in a shuffled order,
+// so the mix keeps changing while the difficulty still climbs.
+const OPENERS = ['cart', 'bay'];
+const FIRST_LAP = [];
+const deepest = Math.max(...DEPARTMENTS.map((d) => d.levels.length));
+const dealRand = rng(3);
+for (let i = 0; i < deepest; i++) {
+  const tier = shuffle(ALL.filter((e) => e.level.index === i), dealRand);
+  if (i === 0) {
+    const rank = (e) => (OPENERS.includes(e.dept.id) ? OPENERS.indexOf(e.dept.id) : OPENERS.length);
+    tier.sort((a, b) => rank(a) - rank(b));
+  }
+  if (tier.length > 1 && tier[0].dept === FIRST_LAP.at(-1)?.dept) [tier[0], tier[1]] = [tier[1], tier[0]];
+  FIRST_LAP.push(...tier);
+}
+
 /** Later laps reshuffle the whole set, never putting one department twice in a row. */
 function lap(n) {
   if (n === 0) return FIRST_LAP;
   const rand = rng(n + 7);
   for (;;) {
-    const order = ALL.slice();
-    for (let i = order.length - 1; i > 0; i--) {
-      const j = Math.floor(rand() * (i + 1));
-      [order[i], order[j]] = [order[j], order[i]];
-    }
+    const order = shuffle(ALL.slice(), rand);
     if (order.every((e, i) => i === 0 || e.dept !== order[i - 1].dept)) return order;
   }
 }

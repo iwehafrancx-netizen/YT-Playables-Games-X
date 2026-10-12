@@ -11,19 +11,20 @@ lab is a different kind of game, all built on the same jointed, wobbly dummy:
 | **Drop Test** | Shove a standing dummy down stairs, scaffolds and pegboards; every bump, bonk and crunch scores. | Drag to aim the shove · release to push |
 | **Cart Hill** | Ride a shopping cart down a ramp and bail at the right moment to land on the target. | Hold to wind up · release to push · tap to bail |
 | **Hop Yard** | Hop a self-balancing dummy across moving, tilting and crumbling platforms. | Tap to hop · hold for a big jump · tap again in mid-air |
-| **Pin Alley** | The dummy is the bowling ball. Knock down giant pins past pillars, sweepers and ramps. | Swipe up to bowl · swipe at an angle to steer |
+| **Pin Alley** | The dummy is the bowling ball. Two lanes of giant pins. | Swipe up to bowl · swipe at an angle to steer |
+| **Dummy Dunk** | The dummy is the basketball. Swish, bank shots, a defender, moving and sky-high hoops. | Flick up to shoot · flick at an angle to steer |
 | **Crash Course** | Floor a crash-test car down the runway; the barrier stops the car, not the passenger. Judge the speed to land him on target. | Hold for gas · let go to coast |
 | **Flop Golf** | The dummy is the golf ball. Island holes on a lake, with sand, a windmill and crosswinds. | Pull back to aim and set power · let go to swing |
 | **Swing Shift** | Rope-swing along hooks over a crash mat, past rotors, saws and walls. | Hold to grab the nearest hook · let go to fling |
 | **Pull Rig** | Pull-the-pin puzzles: get him down to the green zone without being sawn, spiked or flattened. | Tap a pin to pull it |
 
 Play drops you straight into an endless run: level 1, level 2, level 3…
-The 72 hand-built courses (8 per department) each come in two remixes as
-well — "After Hours" (new sky, tighter limits) and "Flipside" (mirrored) or
-"Overtime" (tighter still) — for 216 levels. They're dealt out in a mixed
-order: the first lap rotates through the departments, one notch harder each
-time round, and every lap after that reshuffles them, so there's always a
-next level and no visible end. Progress and total score are saved; each level earns 1–3 stars,
+The hand-built courses each come in two remixes as well — "After Hours" (new sky, tighter limits) and "Flipside" (mirrored) or
+"Overtime" (tighter still) — for 216 levels. The run opens with the cart, then the cannon; after that
+each pass deals the next-hardest course from every department in a shuffled
+order, and every lap after the first reshuffles everything, so there's always
+a next level and no visible end. Passed levels can be played again from the
+Replay page. Progress and total score are saved; each level earns 1–3 stars,
 and stars unlock new dummy suits.
 
 Keyboard: <kbd>Space</kbd> / <kbd>Enter</kbd> works wherever a tap does.

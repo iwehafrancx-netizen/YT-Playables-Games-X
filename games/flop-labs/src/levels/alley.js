@@ -21,41 +21,6 @@ export const ALLEY = [
     target: 6,
   },
   {
-    name: 'Pillar Talk',
-    theme: 'dusk',
-    hint: 'A pillar guards the head pin. Go around it!',
-    pins: tri(4, 0, 18.6),
-    target: 6,
-    build(w) {
-      w.block({ pos: [0, 0.9, 10], size: [0.7, 1.3, 0.7], mat: 'hazard', tile: 1 });
-    },
-  },
-  {
-    name: 'Sweeper Lane',
-    theme: 'morning',
-    hint: 'Time your throw past the sweeper arm',
-    pins: tri(4, 0, 18.6),
-    target: 7,
-    build(w) {
-      // Hub sits beside the lane so the arm swings across it like a gate.
-      w.spinner({ pos: [2.1, 0, 10], length: 6.4, height: 0.7, speed: 1.2, thick: 0.35 });
-    },
-  },
-  {
-    name: 'Jump Shot',
-    theme: 'morning',
-    hint: 'Hit the ramp hard enough to clear the pit',
-    length: 19,
-    pins: tri(4, 0, 18.6, 0.85),
-    target: 6,
-    build(w) {
-      // Kicker ramp, a foam pit, then a raised pin deck.
-      w.ramp({ from: [0, 0.25, 7.5], to: [0, 0.95, 10], width: 2.4, thick: 0.3, mat: 'hazard', tile: 1, friction: 0.05 });
-      w.block({ pos: [0, 0.27, 11.25], size: [3, 0.04, 2.5], mat: 'foam', tile: 1 });
-      w.block({ pos: [0, 0.55, 17.25], size: [3, 0.6, 9.5], mat: 'lane', tile: 0, friction: 0.04, slick: true });
-    },
-  },
-  {
     name: 'Pyramid Scheme',
     theme: 'sunset',
     hint: 'Fifteen pins. Throw hard.',
@@ -63,43 +28,5 @@ export const ALLEY = [
     throws: 2,
     target: 9,
     width: 3.6,
-  },
-  {
-    name: 'Twin Decks',
-    theme: 'sunset',
-    hint: 'Two racks, three balls',
-    width: 4.4,
-    pins: [...tri(3, -1.25, 19), ...tri(3, 1.25, 19)],
-    throws: 3,
-    target: 9,
-    build(w) {
-      w.block({ pos: [0, 0.55, 13.5], size: [0.25, 0.6, 9], mat: 'steelGrey', tile: 1 });
-    },
-  },
-  {
-    name: 'Bumper Lane',
-    theme: 'sunset',
-    hint: 'Steel posts in the lane. Find the line through.',
-    pins: tri(4, 0, 18.6),
-    throws: 2,
-    target: 7,
-    build(w) {
-      for (const [x, z] of [[-1.05, 8], [1.05, 8], [0, 13]]) {
-        w.rod({ pos: [x, 0.75, z], radius: 0.15, length: 1, axis: 'y', mat: 'steelRed', restitution: 0.6 });
-      }
-    },
-  },
-  {
-    name: 'Long Lane',
-    theme: 'dusk',
-    hint: 'Twenty-six metres of oiled lane and a sweeper halfway down',
-    length: 26,
-    width: 2.6,
-    pins: tri(4, 0, 26.6),
-    throws: 2,
-    target: 7,
-    build(w) {
-      w.spinner({ pos: [1.9, 0, 15], length: 5.6, height: 0.7, speed: 1.1, thick: 0.35 });
-    },
   },
 ];
