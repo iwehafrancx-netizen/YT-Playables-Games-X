@@ -83,4 +83,37 @@ export const GOLF = [
       { at: [-4.5, 21, 4.5, 31], top: 3.4, surface: 'green' },
     ],
   },
+  {
+    name: 'Island Hopper',
+    theme: 'dusk',
+    arc: 0.45,
+    par: 4,
+    hint: 'Three small islands and a breeze. Hop, hop, sink.',
+    wind: [1.2, 0],
+    cup: [0, 42],
+    pads: [
+      { at: [-2.5, -2.5, 2.5, 2.5] },
+      { at: [-5, 12, -1, 16] },
+      { at: [2, 24, 6, 28] },
+      { at: [-3.5, 37, 3.5, 46], surface: 'green' },
+    ],
+  },
+  {
+    name: 'The Gauntlet',
+    theme: 'dusk',
+    arc: 0.4,
+    par: 4,
+    hint: 'Windmill, bunker, a raised green and a headwind',
+    wind: [0, -1.2],
+    cup: [0, 41],
+    pads: [
+      { at: [-4, -3, 4, 22] },
+      { at: [-4, 22, 4, 27], surface: 'sand' },
+      { at: [-5, 27, 5, 31] },
+      { at: [-4.5, 35, 4.5, 45], top: 2.6, surface: 'green' },
+    ],
+    build(w) {
+      w.windmill({ pos: [0, TOP, 12], speed: 1.3 });
+    },
+  },
 ];
