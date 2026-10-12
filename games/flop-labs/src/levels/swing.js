@@ -95,4 +95,43 @@ export const SWING = [
     checks: [{ x: 31, y: 3.5, w: 2.5 }],
     finish: { x: 55, y: 3, w: 5 },
   },
+  {
+    name: 'Saw Pit',
+    theme: 'sunset',
+    par: 12,
+    hint: 'Saws patrol the low swing. Keep your ropes short and high.',
+    hooks: [
+      { x: 4, y: 8.5 },
+      { x: 10.5, y: 9.5 },
+      { x: 17, y: 9.5 },
+      { x: 23.5, y: 9.5 },
+      { x: 30, y: 9 },
+    ],
+    build(w) {
+      w.saw({ pos: [7.2, 3.6, 0], r: 0.7, amp: 1.2, axis: 'y', speed: 1.4 });
+      w.saw({ pos: [13.8, 4, 0], r: 0.7, amp: 1.2, axis: 'y', speed: 1.7, phase: 1.5 });
+      w.saw({ pos: [20.3, 4, 0], r: 0.7, amp: 1.4, axis: 'x', speed: 1.2 });
+      w.saw({ pos: [26.8, 3.6, 0], r: 0.7, amp: 1.2, axis: 'y', speed: 1.9, phase: 3 });
+    },
+    finish: { x: 37, y: 3, w: 5 },
+  },
+  {
+    name: 'Sky High',
+    theme: 'dusk',
+    par: 14,
+    lives: 4,
+    hint: 'High hooks, long gaps. Swing big.',
+    hooks: [
+      { x: 4, y: 9 },
+      { x: 11, y: 11 },
+      { x: 18.5, y: 11.5, move: { dx: 1.8, speed: 1.3 } },
+      { x: 33, y: 11.5 },
+      { x: 40, y: 11, move: { dy: 1.2, speed: 1.7 } },
+      { x: 47, y: 11.5 },
+    ],
+    springs: [{ x: 26, y: 0.6, w: 3.2, power: 15 }],
+    rotors: [{ x: 43.5, y: 6, length: 4.4, speed: 1.6 }],
+    checks: [{ x: 33, y: 4, w: 2.5 }],
+    finish: { x: 54, y: 3, w: 5 },
+  },
 ];

@@ -277,6 +277,7 @@ export class SwingShiftLevel extends Level {
     const other = dummy === a ? b : a;
     if (this.phase !== 'swing') return;
     if (other.kind === 'pit' || other.kind === 'ground') this.fall();
+    else if (other.kind === 'hazard') this.fall(other.label);
     else if (other.kind === 'finish') this.win();
     else if (other.kind === 'check') this.checkpoint();
   }
@@ -293,7 +294,7 @@ export class SwingShiftLevel extends Level {
     }
   }
 
-  fall() {
+  fall(label = 'OOF!') {
     this.phase = 'fallen';
     this.fallT = 1.1;
     if (this.rope) this.release();
@@ -303,7 +304,7 @@ export class SwingShiftLevel extends Level {
     this.dummy.knockOut(2, 1);
     this.audio.impact(0.8, 'rubber');
     this.rig.shake(0.3);
-    this.game.ui.banner(this.lives > 0 ? 'OOF!' : 'OUT OF DUMMIES', this.lives > 0 ? `${this.lives} left` : '');
+    this.game.ui.banner(this.lives > 0 ? label : 'OUT OF DUMMIES', this.lives > 0 ? `${this.lives} left` : '');
   }
 
   respawn() {
