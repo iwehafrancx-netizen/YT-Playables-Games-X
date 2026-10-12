@@ -76,4 +76,30 @@ export const ALLEY = [
       w.block({ pos: [0, 0.55, 13.5], size: [0.25, 0.6, 9], mat: 'steelGrey', tile: 1 });
     },
   },
+  {
+    name: 'Bumper Lane',
+    theme: 'sunset',
+    hint: 'Steel posts in the lane. Find the line through.',
+    pins: tri(4, 0, 18.6),
+    throws: 2,
+    target: 7,
+    build(w) {
+      for (const [x, z] of [[-1.05, 8], [1.05, 8], [0, 13]]) {
+        w.rod({ pos: [x, 0.75, z], radius: 0.15, length: 1, axis: 'y', mat: 'steelRed', restitution: 0.6 });
+      }
+    },
+  },
+  {
+    name: 'Long Lane',
+    theme: 'dusk',
+    hint: 'Twenty-six metres of oiled lane and a sweeper halfway down',
+    length: 26,
+    width: 2.6,
+    pins: tri(4, 0, 26.6),
+    throws: 2,
+    target: 7,
+    build(w) {
+      w.spinner({ pos: [1.9, 0, 15], length: 5.6, height: 0.7, speed: 1.1, thick: 0.35 });
+    },
+  },
 ];
