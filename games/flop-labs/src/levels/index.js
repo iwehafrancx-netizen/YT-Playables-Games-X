@@ -16,6 +16,7 @@ import { SwingShiftLevel } from '../modes/swingShift.js';
 import { SWING } from './swing.js';
 import { PullRigLevel } from '../modes/pullRig.js';
 import { RIG } from './rig.js';
+import { remixes } from './remix.js';
 
 export const DEPARTMENTS = [
   {
@@ -84,6 +85,7 @@ export const DEPARTMENTS = [
 ];
 
 for (const dept of DEPARTMENTS) {
+  dept.levels = [...dept.levels, ...remixes(dept.id, dept.levels)];
   dept.levels.forEach((lvl, i) => {
     lvl.id = `${dept.id}-${i + 1}`;
     lvl.index = i;

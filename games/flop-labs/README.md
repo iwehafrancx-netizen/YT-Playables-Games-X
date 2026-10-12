@@ -18,10 +18,12 @@ lab is a different kind of game, all built on the same jointed, wobbly dummy:
 | **Pull Rig** | Pull-the-pin puzzles: get him down to the green zone without being sawn, spiked or flattened. | Tap a pin to pull it |
 
 Play drops you straight into an endless run: level 1, level 2, level 3…
-The 72 hand-built levels (8 per department) are dealt out in a mixed order —
-the first lap rotates through the departments, one notch harder each time
-round, and every lap after that reshuffles them — so there's always a next
-level and no visible end. Progress and total score are saved; each level earns 1–3 stars,
+The 72 hand-built courses (8 per department) each come in two remixes as
+well — "After Hours" (new sky, tighter limits) and "Flipside" (mirrored) or
+"Overtime" (tighter still) — for 216 levels. They're dealt out in a mixed
+order: the first lap rotates through the departments, one notch harder each
+time round, and every lap after that reshuffles them, so there's always a
+next level and no visible end. Progress and total score are saved; each level earns 1–3 stars,
 and stars unlock new dummy suits.
 
 Keyboard: <kbd>Space</kbd> / <kbd>Enter</kbd> works wherever a tap does.
