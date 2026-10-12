@@ -10,6 +10,7 @@ export const ICONS = {
   star: svg('<path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"/>'),
   target: svg('<circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="1.8"/>'),
   dummy: svg('<circle cx="12" cy="5.5" r="3.3"/><path d="M8 10h8l-.6 6h-2l-.4 6h-2l-.4-6h-2z"/><path d="M8.2 10.5 5 15M15.8 10.5 19 15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'),
+  flag: svg('<path d="M6 21V3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M7 3.5h11l-3 4 3 4H7z"/>'),
   clock: svg('<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M12 7v5.5l3.5 2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>'),
   gearItem: svg('<path d="M12 1.8l1.6 2.6 3-.6.6 3 2.6 1.6-1.2 2.8 1.2 2.8-2.6 1.6-.6 3-3-.6L12 22.2l-1.6-2.6-3 .6-.6-3-2.6-1.6 1.2-2.8-1.2-2.8 2.6-1.6.6-3 3 .6z"/><circle cx="12" cy="12" r="3.4" fill="#15171c"/>'),
   skull: svg('<path d="M12 3a8 8 0 0 0-8 8c0 2.6 1.3 4.5 3 5.6V20h3v-2h1v2h2v-2h1v2h3v-3.4c1.7-1.1 3-3 3-5.6a8 8 0 0 0-8-8z"/><circle cx="9" cy="11.5" r="2" fill="#15171c"/><circle cx="15" cy="11.5" r="2" fill="#15171c"/>'),

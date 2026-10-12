@@ -562,3 +562,40 @@ export function pinSkin() {
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
+
+/** Mown turf: alternating light and dark stripes, one stripe per half tile. */
+export function turf(base = 0x5f9a3c, seed = 71, stripes = true) {
+  const S = 256;
+  const c = makeCanvas(S);
+  const ctx = c.getContext('2d');
+  paintNoise(ctx, S, base, 8, seed, 0.22, 3);
+  if (stripes) {
+    ctx.fillStyle = '#ffffff';
+    ctx.globalAlpha = 0.07;
+    ctx.fillRect(0, 0, S / 2, S);
+    ctx.globalAlpha = 1;
+  }
+  speckle(ctx, S, 900, seed + 1, '#b9dc7c', 0.8);
+  speckle(ctx, S, 700, seed + 2, '#2f5a1c', 0.9);
+  return toTexture(c);
+}
+
+export function soil(seed = 81) {
+  const S = 128;
+  const c = makeCanvas(S);
+  const ctx = c.getContext('2d');
+  paintNoise(ctx, S, 0x6b4f35, 10, seed, 0.45, 4);
+  speckle(ctx, S, 300, seed + 1, '#3d2a1a', 1.6);
+  speckle(ctx, S, 200, seed + 2, '#a08566', 1);
+  return toTexture(c);
+}
+
+export function sand(seed = 91) {
+  const S = 128;
+  const c = makeCanvas(S);
+  const ctx = c.getContext('2d');
+  paintNoise(ctx, S, 0xe0c98f, 12, seed, 0.2, 3);
+  speckle(ctx, S, 900, seed + 1, '#b59c62', 0.7);
+  speckle(ctx, S, 500, seed + 2, '#fff3cf', 0.7);
+  return toTexture(c);
+}

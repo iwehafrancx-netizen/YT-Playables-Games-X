@@ -10,6 +10,8 @@ import { PinAlleyLevel } from '../modes/pinAlley.js';
 import { ALLEY } from './alley.js';
 import { CrashCourseLevel } from '../modes/crashCourse.js';
 import { CRASH } from './crash.js';
+import { FlopGolfLevel } from '../modes/flopGolf.js';
+import { GOLF } from './golf.js';
 
 export const DEPARTMENTS = [
   {
@@ -53,6 +55,13 @@ export const DEPARTMENTS = [
     theme: 'noon',
     Mode: CrashCourseLevel,
     levels: CRASH,
+  },
+  {
+    id: 'golf',
+    name: 'Flop Golf',
+    theme: 'morning',
+    Mode: FlopGolfLevel,
+    levels: GOLF,
   },
 ];
 
