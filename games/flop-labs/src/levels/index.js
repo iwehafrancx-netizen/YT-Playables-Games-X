@@ -14,6 +14,8 @@ import { FlopGolfLevel } from '../modes/flopGolf.js';
 import { GOLF } from './golf.js';
 import { SwingShiftLevel } from '../modes/swingShift.js';
 import { SWING } from './swing.js';
+import { PullRigLevel } from '../modes/pullRig.js';
+import { RIG } from './rig.js';
 
 export const DEPARTMENTS = [
   {
@@ -71,6 +73,13 @@ export const DEPARTMENTS = [
     theme: 'noon',
     Mode: SwingShiftLevel,
     levels: SWING,
+  },
+  {
+    id: 'pins',
+    name: 'Pull Rig',
+    theme: 'noon',
+    Mode: PullRigLevel,
+    levels: RIG,
   },
 ];
 
