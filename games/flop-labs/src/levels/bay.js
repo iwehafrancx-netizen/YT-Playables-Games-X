@@ -113,4 +113,68 @@ export const BAY = [
       for (let i = 0; i < 4; i++) w.barrel({ pos: [6 + (i % 2) * 0.65, 0.45, 20 + Math.floor(i / 2) * 0.65] });
     },
   },
+  {
+    name: 'Skyline',
+    theme: 'sunset',
+    speed: 19,
+    shots: 5,
+    par: 3,
+    pitch: 40,
+    reveal: 0.4,
+    lookAhead: 18,
+    hint: 'One on the roof, one behind the wall, one riding the lift',
+    build(w) {
+      w.container({ pos: [-5, 0, 26], yaw: 90, color: 'steelBlue' });
+      w.container({ pos: [-5, 2.6, 26], yaw: 93, color: 'steelRed' });
+      w.bullseye({ pos: [-5, 6.05, 25.3], radius: 0.85, post: false });
+      w.block({ pos: [4.5, 1.6, 17], size: [6, 3.2, 0.6], mat: 'wall', tile: 2 });
+      w.bullseye({ pos: [4.5, 1.6, 22.5], radius: 0.9 });
+      w.block({ pos: [1, 0.1, 30], size: [0.4, 0.2, 0.4], mat: 'hazard', tile: 1 });
+      w.bullseye({ pos: [1, 3.6, 30], radius: 0.8, move: (t) => [0, Math.sin(t * 1.1) * 2.4, 0] });
+      crateStack(w, 0, 23, 3, { kind: 'cardboard', size: 0.6 });
+      for (let i = 0; i < 4; i++) w.barrel({ pos: [7 + (i % 2) * 0.65, 0.45, 24 + Math.floor(i / 2) * 0.65] });
+    },
+  },
+  {
+    name: 'Spin Cycle',
+    theme: 'dusk',
+    speed: 18,
+    shots: 5,
+    par: 3,
+    pitch: 32,
+    reveal: 0.4,
+    hint: 'Fire between the blades',
+    build(w) {
+      w.rotor({ pos: [0, 2.6, 15], length: 5, speed: 1.3 });
+      w.block({ pos: [0, 1.2, 15.4], size: [0.4, 2.4, 0.4], mat: 'steelGrey', tile: 1 });
+      w.bullseye({ pos: [0, 2.6, 20], radius: 0.9 });
+      w.spinner({ pos: [-5.5, 0, 19], length: 6, height: 1.6, speed: 1.6 });
+      w.bullseye({ pos: [-5.5, 2.8, 23], radius: 0.85 });
+      w.bullseye({ pos: [6, 1.8, 24], radius: 0.85, move: (t) => [Math.sin(t * 1.2) * 2.2, 0, 0] });
+      w.block({ pos: [6, 0.1, 24], size: [5, 0.2, 0.4], mat: 'hazard', tile: 1 });
+      tower(w, 3, 26, 3, { kind: 'cardboard', size: 0.6 });
+      crateStack(w, -2, 27, 2);
+    },
+  },
+  {
+    name: 'Long Shot',
+    theme: 'dusk',
+    speed: 21,
+    shots: 6,
+    par: 4,
+    pitch: 30,
+    reveal: 0.32,
+    lookAhead: 24,
+    hint: 'Far, small and moving. Take your time.',
+    build(w) {
+      w.bullseye({ pos: [-7, 2, 32], radius: 0.75 });
+      w.block({ pos: [0, 2, 36], size: [2, 4, 2], mat: 'steelOrange', tile: 1 });
+      w.bullseye({ pos: [0, 4.85, 35.6], radius: 0.8, post: false });
+      w.bullseye({ pos: [6, 2.5, 36], radius: 0.75, move: (t) => [0, 0, Math.sin(t * 0.8) * 3] });
+      w.bullseye({ pos: [10, 1.6, 28], radius: 0.7 });
+      for (let i = 0; i < 6; i++) w.barrel({ pos: [9 + (i % 3) * 0.66, 0.45, 25.5 + Math.floor(i / 3) * 0.7] });
+      crateStack(w, -4, 36, 3);
+      tower(w, 3, 33, 4, { kind: 'cardboard', size: 0.6 });
+    },
+  },
 ];
