@@ -140,4 +140,88 @@ export const DROP = [
       w.cone({ pos: [-2, 0.27, 16] });
     },
   },
+  {
+    name: 'Rooftop',
+    theme: 'sunset',
+    start: [0, 8.2, -0.6],
+    stars: [1200, 2400, 3300],
+    hint: 'Off the roof, onto the awning, into the skip',
+    camAim: [7, 2, -4],
+    lookAim: [0, -3, 5],
+    camFall: [7.5, 3.5, -2],
+    build(w, L) {
+      landing(w, { h: 8.2, depth: 3.4 });
+      w.ramp({ from: [0, 8.2, 0.2], to: [0, 7.4, 3.6], width: 3.2, mat: 'concreteDark', tile: 1.5, friction: 0.4 });
+      w.block({ pos: [0, 3.7, 1.8], size: [3.4, 7.4, 3.4], mat: 'wall', tile: 2 });
+      w.trampoline({ pos: [0, 3.6, 6.4], size: [2.8, 2.4], power: 11 });
+      for (const sx of [-1.4, 1.4]) w.block({ pos: [sx, 1.2, 10.2], size: [0.14, 2.4, 0.14], mat: 'steelGrey', tile: 1 });
+      for (let i = 0; i < 7; i++) w.plank({ pos: [-1.2 + i * 0.4, 2.45, 10.2], size: [0.36, 0.06, 2.6], mass: 6 });
+      for (let i = 0; i < 6; i++) w.crate({ pos: [-0.82 + (i % 3) * 0.82, 0.41 + Math.floor(i / 3) * 0.8, 13.4] });
+      w.dumpster({ pos: [0, 0, 16.8] });
+      L.zone({ pos: [0, 0.7, 16.8], size: [2.4, 1.4, 1.6], points: 2000, label: 'IN THE SKIP!' });
+    },
+  },
+  {
+    name: 'Rotor Shaft',
+    theme: 'dusk',
+    start: [-4.3, 14.47, 0],
+    facing: 90,
+    stars: [3600, 5400, 6800],
+    hint: 'Rotors bat him about on the way down. Aim for the centre bin.',
+    camAim: [3.4, -4.4, 17],
+    lookAim: [3.4, -5.6, 0],
+    camFall: [0, 1, 15],
+    fences: false,
+    build(w, L) {
+      w.block({ pos: [0, 8, -0.95], size: [11.4, 16, 0.2], mat: 'steelGreen', tile: 2 });
+      w.block({ pos: [0, 8, 0.95], size: [11.4, 16, 0.12], mat: 'glass', cast: false });
+      for (const sx of [-5.6, 5.6]) w.block({ pos: [sx, 8, 0], size: [0.2, 16, 2], mat: 'steelGrey', tile: 1 });
+      w.block({ pos: [-4.4, 14.3, 0], size: [2.2, 0.3, 1.8], mat: 'hazard', tile: 1 });
+      w.rotor({ pos: [-1.5, 11.2, 0], length: 3.2, speed: 1.1 });
+      w.rotor({ pos: [2.6, 11.4, 0], length: 3.2, speed: -1 });
+      w.rotor({ pos: [0.4, 7.6, 0], length: 3.6, speed: 0.9 });
+      for (const [x, y] of [[-3.9, 8.6], [-3.2, 6.2], [3.9, 8.6], [3.2, 6.2], [-1.6, 5.4], [2.4, 5.4]]) {
+        w.rod({ pos: [x, y, 0], radius: 0.13, length: 1.8, axis: 'z', mat: 'steel', restitution: 0.5 });
+      }
+      for (let row = 0; row < 2; row++) {
+        const y = 4.2 - row * 1.3;
+        for (let x = -4.55 + (row % 2) * 0.65; x <= 4.6; x += 1.3) w.rod({ pos: [x, y, 0], radius: 0.13, length: 1.8, axis: 'z', mat: 'steel', restitution: 0.5 });
+      }
+      const bins = [-5.5, -3.3, -1.1, 1.1, 3.3, 5.5];
+      for (let i = 1; i < bins.length - 1; i++) w.block({ pos: [bins[i], 0.8, 0], size: [0.14, 1.6, 1.8], mat: 'hazard', tile: 1 });
+      const pts = [500, 1500, 3000, 1500, 500];
+      const labels = ['BIN', 'GOOD BIN', 'JACKPOT!', 'GOOD BIN', 'BIN'];
+      for (let i = 0; i < 5; i++) {
+        L.zone({ pos: [(bins[i] + bins[i + 1]) / 2, 0.8, 0], size: [2.1, 1.6, 1.8], points: pts[i], label: labels[i] });
+      }
+    },
+  },
+  {
+    name: 'Demolition Run',
+    theme: 'dusk',
+    start: [0, 7.2, -0.8],
+    stars: [1000, 2000, 3200],
+    hint: 'Barrels, a sweeper, a trampoline and a crate wall. Then the skip.',
+    camAim: [6.5, 1.4, -5],
+    lookAim: [0, -2.5, 6],
+    camFall: [7.5, 3.5, -3],
+    maxPush: 7,
+    build(w, L) {
+      landing(w, { h: 7.2, depth: 3.2 });
+      w.stairs({ pos: [0, 7.2, 0], count: 22, rise: 0.3, run: 0.5, width: 3.4 });
+      sideWalls(w, { from: -3, to: 11, h: 1, x: 1.8 });
+      for (let i = 0; i < 6; i++) {
+        const step = 3 + i * 3;
+        w.barrel({ pos: [(i % 2 ? 0.8 : -0.8), 7.2 - step * 0.3 + 0.46, (step + 0.5) * 0.5], color: i % 2 ? 'steelBlue' : 'steelRed' });
+      }
+      w.block({ pos: [0, 0.3, 12.6], size: [3.4, 0.6, 2.4], mat: 'concreteDark', tile: 1.5 });
+      w.spinner({ pos: [0, 0.6, 12.6], length: 3.2, height: 0.75, speed: 2.6 });
+      w.trampoline({ pos: [0, 0.5, 15.6], size: [2.6, 2.6], power: 12 });
+      for (let r = 0; r < 4; r++) {
+        for (let i = 0; i < 4 - r; i++) w.crate({ pos: [-1.23 + i * 0.82 + r * 0.41, 0.41 + r * 0.8, 20] });
+      }
+      w.dumpster({ pos: [0, 0, 23.6] });
+      L.zone({ pos: [0, 0.7, 23.6], size: [2.4, 1.4, 1.6], points: 2500, label: 'IN THE SKIP!' });
+    },
+  },
 ];
