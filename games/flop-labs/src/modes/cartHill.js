@@ -2,10 +2,8 @@ import * as THREE from 'three';
 import { AttemptLevel } from './attemptLevel.js';
 import { Cart } from '../world/cart.js';
 import { Track, trackPose } from '../world/track.js';
-import { landingTarget } from '../render/textures.js';
 
 const _v = new THREE.Vector3();
-const DOWN = { x: 0, y: -1, z: 0 };
 const ROLLING = 0.25; // m/s² of rolling resistance
 
 /**
@@ -21,10 +19,7 @@ export class CartHillLevel extends AttemptLevel {
     this.chargeT = 0;
     this.settle = 0;
     this.runTime = 0;
-    this.air = 0;
-    this.airBest = 0;
     this.bailed = false;
-    this.targets = [];
 
     this.yard({ mat: def.ground ?? 'concrete', fences: def.fences ?? true, extent: def.extent ?? 40 });
     this.track = new Track(this.world, def.path);
@@ -55,18 +50,6 @@ export class CartHillLevel extends AttemptLevel {
     this.hud.hint(this.attempt === 1 ? def.hint ?? 'Hold to wind up · release to push · tap again to BAIL' : `Attempt ${this.attempt} — beat ${this.bestRun.toLocaleString()}`);
     this.hud.meter('Push', 0);
     this.cameraFor(start.pos, true);
-  }
-
-  /** Painted landing target; where the dummy comes to rest decides the points. */
-  landing({ pos, radius = 4, points = [200, 500, 1000] }) {
-    const mat = new THREE.MeshStandardMaterial({ map: landingTarget(points), roughness: 0.8, transparent: true, polygonOffset: true, polygonOffsetFactor: -2 });
-    const m = new THREE.Mesh(new THREE.CircleGeometry(radius, 48), mat);
-    m.rotation.x = -Math.PI / 2;
-    m.position.set(pos[0], pos[1] + 0.012, pos[2]);
-    m.receiveShadow = true;
-    this.world.add(m);
-    this.world.disposables.push(m.geometry, mat, mat.map);
-    this.targets.push({ centre: new THREE.Vector3(...pos), radius, points });
   }
 
   cameraFor(p, snap = false) {
@@ -205,13 +188,6 @@ export class CartHillLevel extends AttemptLevel {
     }
   }
 
-  /** Height of the dummy's middle above whatever is below it. */
-  clearance(com) {
-    const handles = this.dummy.ragdoll.handles;
-    const hit = this.physics.castRay({ x: com.x, y: com.y, z: com.z }, DOWN, 30, (c) => !handles.has(c.handle) && this.physics.info(c.handle)?.kind !== 'cart');
-    return hit ? hit.distance : 30;
-  }
-
   tick(dt) {
     this.cart.update(dt);
     if (this.time % 0.2 < dt) this.checkProps();
@@ -235,20 +211,7 @@ export class CartHillLevel extends AttemptLevel {
       this.audio.loop('rumble', this.onTrack ? Math.min(1, this.speed / 11) : 0, 'rumble');
       this.audio.loop('wind', Math.min(1, this.dummy.velocity(_v).length() / 16), 'wind');
 
-      const h = this.clearance(com);
-      if (this.bailed && h > 0.9) {
-        this.air += dt;
-      } else if (this.air > 0) {
-        if (this.air > 0.35) {
-          const pts = Math.round(this.air * 250);
-          this.runScore += pts;
-          this.hud.set('run', this.runScore.toLocaleString());
-          this.fx.text(com.clone().add(new THREE.Vector3(0, 1.2, 0)), `AIR ${this.air.toFixed(1)}s +${pts}`, { color: '#9fe8ff', size: 26 });
-          this.audio.coin(2);
-        }
-        this.airBest = Math.max(this.airBest, this.air);
-        this.air = 0;
-      }
+      this.trackAir(dt, com, this.bailed);
 
       const still = this.bailed && this.dummy.speed() < 0.4;
       this.settle = still ? this.settle + dt : 0;
@@ -262,18 +225,7 @@ export class CartHillLevel extends AttemptLevel {
     this.audio.loop('rumble', 0, 'rumble');
     this.audio.loop('wind', 0, 'wind');
     this.hud.clearButtons();
-    const pelvis = this.dummy.partPosition('pelvis');
-    for (const t of this.targets) {
-      const d = Math.hypot(pelvis.x - t.centre.x, pelvis.z - t.centre.z);
-      if (Math.abs(pelvis.y - t.centre.y) > 1.2 || d > t.radius) continue;
-      const pts = d < t.radius * 0.33 ? t.points[2] : d < t.radius * 0.66 ? t.points[1] : t.points[0];
-      this.runScore += pts;
-      const bull = pts === t.points[2];
-      this.fx.text(pelvis.clone().add(new THREE.Vector3(0, 1.2, 0)), `${bull ? 'BULLSEYE!' : 'ON TARGET'} +${pts}`, { color: bull ? '#ff7a6b' : '#ffe066', size: bull ? 34 : 28, life: 1.6 });
-      this.audio.ding(bull ? 4 : 2);
-      if (bull) this.fx.confetti(pelvis, 80);
-      break;
-    }
+    this.runScore += this.landingBonus();
     this.runScore += this.zoneBonus(com);
     this.endRun();
   }
