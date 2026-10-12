@@ -151,6 +151,8 @@ export class Cart {
       { x: 0, y: 0, z: 0, w: 1 },
     );
     this.belt = this.world.physics.world.createImpulseJoint(data, this.body, ragdoll.parts.pelvis.body, true);
+    this.rider = ragdoll;
+    ragdoll.setCollisionFilter(Group.ALL & ~(Group.WORLD | Group.PROP));
     this.belt.setContactsEnabled(false);
   }
 
@@ -158,6 +160,7 @@ export class Cart {
     if (!this.belt) return;
     this.world.physics.world.removeImpulseJoint(this.belt, true);
     this.belt = null;
+    this.rider?.setCollisionFilter(Group.ALL);
   }
 
   /**

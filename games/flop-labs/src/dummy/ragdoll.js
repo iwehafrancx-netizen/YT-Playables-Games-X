@@ -377,6 +377,18 @@ export class Ragdoll {
     }
   }
 
+  /**
+   * Restricts what the dummy collides with (a mask of Group bits). Used while
+   * he's strapped into a vehicle: a welded limb dragging on the ground would
+   * otherwise feed the solver until the joints explode.
+   */
+  setCollisionFilter(filter = Group.ALL) {
+    for (const name of ORDER) {
+      const b = this.parts[name].body;
+      for (let i = 0; i < b.numColliders(); i++) b.collider(i).setCollisionGroups(groups(Group.DUMMY, filter));
+    }
+  }
+
   forEachBody(fn) {
     for (const name of ORDER) fn(this.parts[name].body, name);
   }

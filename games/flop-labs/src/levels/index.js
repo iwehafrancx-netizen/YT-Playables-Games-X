@@ -8,6 +8,8 @@ import { HopYardLevel } from '../modes/hopYard.js';
 import { HOP } from './hop.js';
 import { PinAlleyLevel } from '../modes/pinAlley.js';
 import { ALLEY } from './alley.js';
+import { CrashCourseLevel } from '../modes/crashCourse.js';
+import { CRASH } from './crash.js';
 
 export const DEPARTMENTS = [
   {
@@ -44,6 +46,13 @@ export const DEPARTMENTS = [
     theme: 'dusk',
     Mode: PinAlleyLevel,
     levels: ALLEY,
+  },
+  {
+    id: 'crash',
+    name: 'Crash Course',
+    theme: 'noon',
+    Mode: CrashCourseLevel,
+    levels: CRASH,
   },
 ];
 
