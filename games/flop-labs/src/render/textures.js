@@ -499,3 +499,66 @@ export function landingTarget(points = [200, 500, 1000]) {
   t.anisotropy = 8;
   return t;
 }
+
+/** Maple lane boards with the aiming arrows and the foul line. */
+export function laneWood(length = 16, seed = 61) {
+  const W = 256;
+  const H = 1024;
+  const c = makeCanvas(W, H);
+  const ctx = c.getContext('2d');
+  const rand = rng(seed);
+  const boards = 13;
+  const bw = W / boards;
+  for (let i = 0; i < boards; i++) {
+    const tone = 205 + Math.floor(rand() * 30);
+    ctx.fillStyle = `rgb(${tone},${tone - 38},${tone - 92})`;
+    ctx.fillRect(i * bw, 0, bw, H);
+    for (let k = 0; k < 18; k++) {
+      ctx.strokeStyle = `rgba(120,70,30,${0.05 + rand() * 0.08})`;
+      ctx.lineWidth = 0.6 + rand();
+      const x = i * bw + rand() * bw;
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x + (rand() - 0.5) * 3, H);
+      ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(70,40,15,0.35)';
+    ctx.fillRect(i * bw, 0, 1, H);
+  }
+  // Arrows a third of the way down, dots near the foul line.
+  const toV = (m) => H - (m / length) * H;
+  ctx.fillStyle = '#7a2a1a';
+  for (let i = 1; i < boards; i += 2) {
+    const x = i * bw + bw / 2;
+    const y = toV(4.2 + Math.abs(i - boards / 2) * 0.25);
+    ctx.beginPath();
+    ctx.moveTo(x, y - 18);
+    ctx.lineTo(x + 5, y);
+    ctx.lineTo(x - 5, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x, toV(1.2), 2.5, 0, 7);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#20232a';
+  ctx.fillRect(0, toV(0.5) - 3, W, 6);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+
+/** Bowling-pin skin: lacquered white with the two red neck stripes (v runs base to crown). */
+export function pinSkin() {
+  const c = makeCanvas(32, 256);
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#f4f2ec';
+  ctx.fillRect(0, 0, 32, 256);
+  ctx.fillStyle = '#d0281f';
+  ctx.fillRect(0, 256 * (1 - 0.66), 32, 9);
+  ctx.fillRect(0, 256 * (1 - 0.61), 32, 9);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}

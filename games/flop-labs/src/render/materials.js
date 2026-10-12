@@ -38,6 +38,8 @@ export const Mat = {
   gold: () => once('gold', () => std({ color: 0xf5c518, emissive: 0x6b4d00, emissiveIntensity: 0.6, roughness: 0.25, metalness: 0.9 })),
   saw: () => once('saw', () => std({ color: 0xd9dde3, roughness: 0.25, metalness: 1 })),
   glass: () => once('glass', () => std({ color: 0xbfe6ff, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.35 })),
+  lane: () => once('lane', () => std({ map: tex.laneWood(), roughness: 0.22, metalness: 0.05 })),
+  pin: () => once('pin', () => std({ map: tex.pinSkin(), roughness: 0.18, metalness: 0 })),
   marker: () => once('marker', () => std({ map: tex.marker(), roughness: 0.5, transparent: true })),
 };
 

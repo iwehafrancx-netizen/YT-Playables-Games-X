@@ -6,6 +6,8 @@ import { CartHillLevel } from '../modes/cartHill.js';
 import { CART } from './cart.js';
 import { HopYardLevel } from '../modes/hopYard.js';
 import { HOP } from './hop.js';
+import { PinAlleyLevel } from '../modes/pinAlley.js';
+import { ALLEY } from './alley.js';
 
 export const DEPARTMENTS = [
   {
@@ -36,6 +38,13 @@ export const DEPARTMENTS = [
     Mode: HopYardLevel,
     levels: HOP,
   },
+  {
+    id: 'alley',
+    name: 'Pin Alley',
+    theme: 'dusk',
+    Mode: PinAlleyLevel,
+    levels: ALLEY,
+  },
 ];
 
 for (const dept of DEPARTMENTS) {
@@ -47,10 +56,16 @@ for (const dept of DEPARTMENTS) {
 
 const ALL = DEPARTMENTS.flatMap((dept) => dept.levels.map((level) => ({ dept, level })));
 
-// First lap: departments take turns and each gets harder as the lap goes on.
+// Departments take turns in this order; each pass through them deals the
+// next-hardest course from each, so difficulty climbs steadily.
+const ROTATION = ['bay', 'hop', 'alley', 'drop', 'crash', 'cart', 'golf', 'crane', 'pins'];
 const FIRST_LAP = [];
-for (let i = 0; i < 5; i++) {
-  for (const id of ['bay', 'hop', 'drop', 'cart']) FIRST_LAP.push(ALL.find((e) => e.dept.id === id && e.level.index === i));
+const deepest = Math.max(...DEPARTMENTS.map((d) => d.levels.length));
+for (let i = 0; i < deepest; i++) {
+  for (const id of ROTATION) {
+    const entry = ALL.find((e) => e.dept.id === id && e.level.index === i);
+    if (entry) FIRST_LAP.push(entry);
+  }
 }
 
 function rng(seed) {

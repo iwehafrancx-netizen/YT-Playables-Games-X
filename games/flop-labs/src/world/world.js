@@ -94,7 +94,7 @@ export class World {
   }
 
   /** Static box. `pos` is the centre. */
-  block({ pos, size, rot, mat = 'concrete', tile = 2, friction = 0.8, restitution = 0.05, kind = 'static', cast = true, rounded = 0, visible = true }) {
+  block({ pos, size, rot, mat = 'concrete', tile = 2, friction = 0.8, restitution = 0.05, kind = 'static', cast = true, rounded = 0, visible = true, slick = false }) {
     const q = quatFrom(rot);
     const [w, h, d] = size;
     let mesh = null;
@@ -106,8 +106,11 @@ export class World {
       this.add(mesh);
     }
     const body = this.fixedBody(pos, q);
+    const desc = RAPIER.ColliderDesc.cuboid(w / 2, h / 2, d / 2).setFriction(friction).setRestitution(restitution).setCollisionGroups(groups(Group.WORLD));
+    // Slick surfaces (an oiled lane) stay slippery whatever touches them.
+    if (slick) desc.setFrictionCombineRule(RAPIER.CoefficientCombineRule.Min);
     const collider = this.physics.createCollider(
-      RAPIER.ColliderDesc.cuboid(w / 2, h / 2, d / 2).setFriction(friction).setRestitution(restitution).setCollisionGroups(groups(Group.WORLD)),
+      desc,
       body,
       { kind, material: SOUND_FOR[mat] ?? 'concrete' },
     );
@@ -246,6 +249,33 @@ export class World {
       body,
       { kind: 'prop', prop, material: 'wood' },
     );
+    return prop;
+  }
+
+  /** Oversized bowling pin (the dummy is the ball). `h` is the pin height. */
+  pin({ pos, h = 1.1, mass = 4 }) {
+    const prof = [
+      [0, 0], [0.067, 0], [0.1, 0.04], [0.145, 0.15], [0.159, 0.26], [0.15, 0.36], [0.12, 0.47],
+      [0.075, 0.58], [0.06, 0.65], [0.068, 0.74], [0.084, 0.84], [0.075, 0.93], [0.045, 0.985], [0, 1],
+    ].map(([r, y]) => new THREE.Vector2(r * h, y * h - h / 2));
+    this.lathes ??= new Map();
+    let geo = this.lathes.get(h);
+    if (!geo) {
+      geo = new THREE.LatheGeometry(prof, 20);
+      this.lathes.set(h, geo);
+      this.disposables.push(geo);
+    }
+    const mesh = new THREE.Mesh(geo, Mat.pin());
+    mesh.castShadow = mesh.receiveShadow = true;
+    this.add(mesh);
+    const body = this.dynamicBody([pos[0], pos[1] + h / 2, pos[2]], new THREE.Quaternion(), { angDamp: 0.2 });
+    const prop = this.registerProp(body, mesh, { kind: 'pin', material: 'wood', down: false });
+    const opts = (d) => d.setFriction(0.45).setRestitution(0.3).setCollisionGroups(groups(Group.PROP)).setActiveEvents(RAPIER.ActiveEvents.CONTACT_FORCE_EVENTS).setContactForceEventThreshold(40);
+    const info = { kind: 'prop', prop, material: 'wood' };
+    // Belly, neck and crown; the heavy belly keeps the centre of mass low like a real pin.
+    this.physics.createCollider(opts(RAPIER.ColliderDesc.cylinder(0.25 * h, 0.14 * h).setTranslation(0, -0.23 * h, 0)).setMass(mass * 0.75), body, info);
+    this.physics.createCollider(opts(RAPIER.ColliderDesc.capsule(0.08 * h, 0.065 * h).setTranslation(0, 0.18 * h, 0)).setMass(mass * 0.15), body, info);
+    this.physics.createCollider(opts(RAPIER.ColliderDesc.ball(0.085 * h).setTranslation(0, 0.34 * h, 0)).setMass(mass * 0.1), body, info);
     return prop;
   }
 
