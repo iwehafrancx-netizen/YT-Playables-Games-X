@@ -314,9 +314,10 @@ export class PullRigLevel extends Level {
       // Standing until the floor goes; then he's just cargo.
       if (this.standing && d.velocity(_v).y < -1.5) {
         this.standing = false;
+        // Arms in: he drops like a sack, which keeps the rigs fair.
         d.balance = 0;
-        d.setPose('starfish');
-        d.setMuscle(0.4);
+        d.setPose('tuck');
+        d.setMuscle(0.6);
         this.audio.whoosh(0.6);
       }
       const pelvis = d.partPosition('pelvis');
