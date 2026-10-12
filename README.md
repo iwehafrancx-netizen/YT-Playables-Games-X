@@ -7,7 +7,9 @@ zipped and uploaded as-is.
 
 ## Games
 
-_Coming soon._
+| Game | Pitch |
+|---|---|
+| [Flop Labs](games/flop-labs) | A 3D physics party of nine mini-games starring one very floppy crash-test dummy: cannons, carts, cars, bowling, golf, rope swings, pin puzzles and more, dealt out as an endless run. |
 
 ## Running a game locally
 

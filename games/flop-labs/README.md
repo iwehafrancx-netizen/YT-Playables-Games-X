@@ -11,12 +11,17 @@ lab is a different kind of game, all built on the same jointed, wobbly dummy:
 | **Drop Test** | Shove a standing dummy down stairs, scaffolds and pegboards; every bump, bonk and crunch scores. | Drag to aim the shove · release to push |
 | **Cart Hill** | Ride a shopping cart down a ramp and bail at the right moment to land on the target. | Hold to wind up · release to push · tap to bail |
 | **Hop Yard** | Hop a self-balancing dummy across moving, tilting and crumbling platforms. | Tap to hop · hold for a big jump · tap again in mid-air |
+| **Pin Alley** | The dummy is the bowling ball. Knock down giant pins past pillars, sweepers and ramps. | Swipe up to bowl · swipe at an angle to steer |
+| **Crash Course** | Floor a crash-test car down the runway; the barrier stops the car, not the passenger. Judge the speed to land him on target. | Hold for gas · let go to coast |
+| **Flop Golf** | The dummy is the golf ball. Island holes on a lake, with sand, a windmill and crosswinds. | Pull back to aim and set power · let go to swing |
+| **Swing Shift** | Rope-swing along hooks over a crash mat, past rotors, saws and walls. | Hold to grab the nearest hook · let go to fling |
+| **Pull Rig** | Pull-the-pin puzzles: get him down to the green zone without being sawn, spiked or flattened. | Tap a pin to pull it |
 
 Play drops you straight into an endless run: level 1, level 2, level 3…
-The 20 hand-built courses (5 per department) are dealt out in a mixed order —
-the first lap rotates through the departments from easiest to hardest, and
-every lap after that reshuffles them — so there's always a next level and no
-visible end. Progress and total score are saved; each level earns 1–3 stars,
+The 72 hand-built levels (8 per department) are dealt out in a mixed order —
+the first lap rotates through the departments, one notch harder each time
+round, and every lap after that reshuffles them — so there's always a next
+level and no visible end. Progress and total score are saved; each level earns 1–3 stars,
 and stars unlock new dummy suits.
 
 Keyboard: <kbd>Space</kbd> / <kbd>Enter</kbd> works wherever a tap does.
@@ -43,7 +48,7 @@ src/
   physics/           Rapier world wrapper
   dummy/             ragdoll physics + visuals
   render/            renderer, materials, textures, effects, camera
-  world/             level building blocks (props, cannon, cart, track)
+  world/             level building blocks (props, hazards, cannon, cart, car, track)
   modes/             one class per department
   levels/            level data for each department, plus the endless sequence
   ui/                menus, HUD and modals
