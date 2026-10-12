@@ -80,4 +80,30 @@ export const CRASH = [
       L.landing({ pos: [0, 0, 57], radius: 4 });
     },
   },
+  {
+    name: 'Pool Party',
+    theme: 'morning',
+    barrier: 40,
+    stars: [500, 1000, 1600],
+    hint: 'A small raft in a big foam pool. Find the speed for it.',
+    build(w, L) {
+      w.block({ pos: [0, 0.2, 62], size: [14, 0.4, 16], mat: 'foam', tile: 1.5 });
+      w.block({ pos: [0, 0.45, 64], size: [5.6, 0.9, 5.6], mat: 'crate', tile: 1.5 });
+      L.landing({ pos: [0, 0.9, 64], radius: 2.7, points: [300, 700, 1400] });
+    },
+  },
+  {
+    name: 'Loading Dock',
+    theme: 'dusk',
+    barrier: 40,
+    stars: [500, 1000, 1700],
+    hint: 'Flat out up the ramp — stop him on the dock target',
+    build(w, L) {
+      w.ramp({ from: [0, 0, 55], to: [0, 1.5, 64.5], width: 4, thick: 0.3, mat: 'steelGrey', tile: 1.5, friction: 0.5 });
+      w.block({ pos: [0, 0.75, 69], size: [8, 1.5, 9], mat: 'concreteDark', tile: 1.5 });
+      w.block({ pos: [0, 1.52, 64.65], size: [8, 0.04, 0.3], mat: 'hazard', tile: 1 });
+      L.landing({ pos: [0, 1.5, 66.4], radius: 2.2, points: [500, 900, 1500] });
+      for (let i = 0; i < 6; i++) w.crate({ pos: [-3.2 + (i % 2) * 0.82, 1.91 + Math.floor(i / 2) * 0.8, 72] });
+    },
+  },
 ];
