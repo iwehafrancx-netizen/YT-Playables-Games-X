@@ -5,6 +5,8 @@ export const ICONS = {
   play: svg('<path d="M7 4.5v15a1 1 0 0 0 1.5.9l12-7.5a1 1 0 0 0 0-1.8l-12-7.5A1 1 0 0 0 7 4.5z"/>'),
   retry: svg('<path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M20.5 3.5v5h-5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'),
   next: svg('<path d="M8.5 4.5 16 12l-7.5 7.5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>'),
+  back: svg('<path d="M15.5 4.5 8 12l7.5 7.5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>'),
+  grid: svg('<rect x="4" y="4" width="7" height="7" rx="1.8"/><rect x="13" y="4" width="7" height="7" rx="1.8"/><rect x="4" y="13" width="7" height="7" rx="1.8"/><rect x="13" y="13" width="7" height="7" rx="1.8"/>'),
   home: svg('<path d="M3.5 11.2 12 4l8.5 7.2V20a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/>'),
   gear: svg('<path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm9 4.7v-2.4l-2.5-.6a7 7 0 0 0-.7-1.6l1.4-2.2-1.7-1.7-2.2 1.4a7 7 0 0 0-1.6-.7L13.2 3h-2.4l-.6 2.5a7 7 0 0 0-1.6.7L6.4 4.8 4.7 6.5l1.4 2.2a7 7 0 0 0-.7 1.6L3 10.8v2.4l2.5.6c.2.6.4 1.1.7 1.6l-1.4 2.2 1.7 1.7 2.2-1.4c.5.3 1 .5 1.6.7l.5 2.4h2.4l.6-2.5c.6-.2 1.1-.4 1.6-.7l2.2 1.4 1.7-1.7-1.4-2.2c.3-.5.5-1 .7-1.6z"/>'),
   star: svg('<path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"/>'),

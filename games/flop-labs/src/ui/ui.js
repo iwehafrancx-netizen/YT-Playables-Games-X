@@ -66,7 +66,7 @@ export class UI {
     return el;
   }
 
-  title({ level = 1, onPlay, onSettings, onWardrobe }) {
+  title({ level = 1, canReplay = false, onPlay, onReplay, onSettings, onWardrobe }) {
     this.clearScreens();
     const el = h(`
       <div class="screen title-screen">
@@ -79,12 +79,42 @@ export class UI {
           <button class="btn primary big" data-act="play">${icon('play')}<span>Play</span></button>
           ${level > 1 ? `<span class="resume-note">Continue from level ${level}</span>` : ''}
           <div class="row">
+            ${canReplay ? `<button class="btn ghost" data-act="replay">${icon('grid')}<span>Replay</span></button>` : ''}
             <button class="btn ghost" data-act="wardrobe">${icon('shirt')}<span>Wardrobe</span></button>
             <button class="btn ghost" data-act="settings">${icon('gear')}<span>Settings</span></button>
           </div>
         </div>
       </div>`);
-    this.screens.appendChild(this.bind(el, { play: onPlay, settings: onSettings, wardrobe: onWardrobe }));
+    this.screens.appendChild(this.bind(el, { play: onPlay, replay: onReplay, settings: onSettings, wardrobe: onWardrobe }));
+  }
+
+  /** Every level the player has passed, grouped by department, ready to play again. */
+  replay({ groups, onPick, onBack }) {
+    this.clearScreens();
+    const sections = groups
+      .map(({ dept, entries }) => {
+        const tiles = entries
+          .map(
+            ({ n, level, rec }) => `
+          <button class="tile" data-act="pick" data-arg="${n}">
+            <span class="tile-num">${n}</span>
+            <span class="tile-name">${esc(level.name)}</span>
+            <span class="tile-stars">${stars(rec.stars)}</span>
+          </button>`,
+          )
+          .join('');
+        return `<section class="replay-group"><h3>${esc(dept.name)}</h3><div class="tile-grid">${tiles}</div></section>`;
+      })
+      .join('');
+    const el = h(`
+      <div class="screen menu-screen">
+        <header class="menu-head">
+          <button class="icon-btn" data-act="back" aria-label="Back">${icon('back')}</button>
+          <h2>Replay</h2>
+        </header>
+        ${sections}
+      </div>`);
+    this.screens.appendChild(this.bind(el, { pick: (n) => onPick(Number(n)), back: onBack }));
   }
 
   /** In-level heads-up display. Returns a small API the level drives. */

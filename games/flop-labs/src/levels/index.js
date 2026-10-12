@@ -139,3 +139,9 @@ export function levelAt(n) {
   if (!lapCache.has(k)) lapCache.set(k, lap(k));
   return lapCache.get(k)[i % ALL.length];
 }
+
+/** The run number a course first appears at, for replaying it from the menu. */
+export function numberOf(id) {
+  const i = lap(0).findIndex((e) => e.level.id === id);
+  return i < 0 ? 0 : i + 1;
+}

@@ -1,6 +1,6 @@
 import { STEP } from '../physics/physics.js';
 import { yt } from '../platform/yt.js';
-import { DEPARTMENTS, levelAt } from '../levels/index.js';
+import { DEPARTMENTS, levelAt, numberOf } from '../levels/index.js';
 import { Showcase } from '../modes/showcase.js';
 import { SUIT_UNLOCKS } from '../ui/ui.js';
 
@@ -71,9 +71,31 @@ export class Game {
     this.input.handler = null;
     this.ui.title({
       level: this.save.data.level,
+      canReplay: this.replayGroups().length > 0,
       onPlay: () => this.startLevel(this.save.data.level),
+      onReplay: () => this.showReplay(),
       onSettings: () => this.ui.settings({ save: this.save, onClose: () => this.ui.closeModal() }),
       onWardrobe: () => this.openWardrobe(),
+    });
+  }
+
+  /** Passed levels, grouped by department in the order they were met. */
+  replayGroups() {
+    return DEPARTMENTS.map((dept) => ({
+      dept,
+      entries: dept.levels
+        .map((level) => ({ level, rec: this.save.level(level.id) }))
+        .filter((e) => e.rec.done)
+        .map((e) => ({ ...e, n: e.rec.n ?? numberOf(e.level.id) }))
+        .sort((a, b) => a.n - b.n),
+    })).filter((g) => g.entries.length > 0);
+  }
+
+  showReplay() {
+    this.ui.replay({
+      groups: this.replayGroups(),
+      onPick: (n) => this.startLevel(n, { replay: true }),
+      onBack: () => this.showTitle(),
     });
   }
 
@@ -89,21 +111,21 @@ export class Game {
   }
 
   /** Level numbers just keep counting; the course behind each one comes from the endless sequence. */
-  startLevel(n) {
+  startLevel(n, { replay = false } = {}) {
     const { dept, level } = levelAt(n);
     this.ui.clearScreens();
     this.ui.closeModal();
     this.ui.clearHud();
     this.paused = false;
-    this.current = { n, dept, level };
+    this.current = { n, dept, level, replay };
     this.setScene(new dept.Mode(this, level, dept));
     this.ui.banner(`Level ${n}`, level.name);
   }
 
   levelFinished(level, result) {
-    const { n, level: def } = this.current;
+    const { n, level: def, replay } = this.current;
     const prev = this.save.level(def.id);
-    this.save.record(def.id, { stars: result.stars, score: result.passed ? result.score : 0, done: result.passed });
+    this.save.record(def.id, { stars: result.stars, score: result.passed ? result.score : 0, done: result.passed, n });
     if (result.passed) {
       this.save.data.level = Math.max(this.save.data.level, n + 1);
       this.save.data.score += Math.round(result.score);
@@ -124,9 +146,10 @@ export class Game {
         total: this.save.data.score,
         isBest: result.passed && prev.best > 0 && result.score > prev.best,
         // A stubborn level can be skipped after a couple of tries so the run keeps moving.
-        canSkip: !result.passed && (this.fails[n] = (this.fails[n] ?? 0) + 1) >= 2,
-        onRetry: () => this.startLevel(n),
-        onNext: () => this.startLevel(n + 1),
+        canSkip: !replay && !result.passed && (this.fails[n] = (this.fails[n] ?? 0) + 1) >= 2,
+        onRetry: () => this.startLevel(n, { replay }),
+        // A replay hands back to the run where the player left it.
+        onNext: () => this.startLevel(replay ? this.save.data.level : n + 1),
         onSkip: () => {
           this.save.data.level = Math.max(this.save.data.level, n + 1);
           this.save.flush();
@@ -148,7 +171,7 @@ export class Game {
     this.ui.pause({
       save: this.save,
       onResume: () => this.resume(),
-      onRestart: () => this.startLevel(this.current.n),
+      onRestart: () => this.startLevel(this.current.n, { replay: this.current.replay }),
       onHome: () => this.showTitle(),
     });
   }

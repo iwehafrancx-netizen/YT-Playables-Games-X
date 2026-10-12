@@ -40,12 +40,13 @@ export class Save {
   }
 
   /** Records a result, keeping the best stars and score. Returns true if anything improved. */
-  record(id, { stars, score, done }) {
+  record(id, { stars, score, done, n }) {
     const prev = this.level(id);
     const next = {
       stars: Math.max(prev.stars, stars),
       best: Math.max(prev.best, Math.round(score)),
       done: prev.done || done,
+      n: prev.n ?? n,
     };
     const improved = next.stars > prev.stars || next.best > prev.best || next.done !== prev.done;
     this.data.levels[id] = next;
