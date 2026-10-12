@@ -209,52 +209,7 @@ export class HopYardLevel extends Level {
   }
 
   addSaw(p) {
-    const w = this.world;
-    const r = p.r ?? 0.55;
-    const g = new THREE.Group();
-    const shape = new THREE.Shape();
-    const n = 18;
-    for (let i = 0; i < n * 2; i++) {
-      const a = (i / (n * 2)) * Math.PI * 2;
-      const rr = i % 2 ? r * 0.82 : r;
-      if (i === 0) shape.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
-      else shape.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
-    }
-    const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.05, bevelEnabled: false });
-    geo.center();
-    const blade = w.mesh(geo, 'saw');
-    const hub = w.mesh(new THREE.CylinderGeometry(r * 0.25, r * 0.25, 0.12, 16), 'steelRed');
-    hub.rotation.x = Math.PI / 2;
-    g.add(blade, hub);
-    w.add(g);
-    // Guide rail showing the saw's travel
-    const amp = p.amp ?? 0;
-    if (amp) {
-      const len = amp * 2 + r * 2;
-      const rail = w.mesh(new THREE.BoxGeometry(p.axis === 'x' ? len : 0.08, p.axis === 'x' ? 0.08 : len, 0.05), 'darkSteel', { cast: false });
-      rail.position.set(p.x, p.y, -0.1);
-      w.add(rail);
-    }
-    const body = this.physics.createBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(p.x, p.y, 0));
-    this.physics.createCollider(
-      RAPIER.ColliderDesc.cylinder(0.1, r * 0.9)
-        .setRotation({ x: Math.SQRT1_2, y: 0, z: 0, w: Math.SQRT1_2 })
-        .setCollisionGroups(groups(Group.WORLD))
-        .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),
-      body,
-      { kind: 'hazard', material: 'metal', label: 'SAWED!' },
-    );
-    const sp = p.sp ?? 1.6;
-    const ph = p.ph ?? 0;
-    w.mover({
-      body,
-      object: g,
-      fn: (time) => {
-        const o = Math.sin(time * sp + ph) * amp;
-        const q = new THREE.Quaternion().setFromAxisAngle(Z_AXIS, -time * 9);
-        return { pos: [p.x + (p.axis === 'x' ? o : 0), p.y + (p.axis === 'x' ? 0 : o), 0], rot: { x: q.x, y: q.y, z: q.z, w: q.w } };
-      },
-    });
+    const { body } = this.world.saw({ pos: [p.x, p.y, 0], r: p.r, amp: p.amp, axis: p.axis, speed: p.sp, phase: p.ph });
     this.hazards.push({ body });
   }
 

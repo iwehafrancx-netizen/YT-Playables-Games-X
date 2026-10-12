@@ -523,6 +523,74 @@ export class World {
     });
   }
 
+  /** Spinning circular saw, optionally sliding along `axis` by ±`amp`. Touching it is a 'hazard' contact. */
+  saw({ pos, r = 0.55, amp = 0, axis = 'y', speed = 1.6, phase = 0 }) {
+    const [x, y, z] = pos;
+    const g = new THREE.Group();
+    const shape = new THREE.Shape();
+    const n = 18;
+    for (let i = 0; i < n * 2; i++) {
+      const a = (i / (n * 2)) * Math.PI * 2;
+      const rr = i % 2 ? r * 0.82 : r;
+      if (i === 0) shape.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
+      else shape.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+    }
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.05, bevelEnabled: false });
+    geo.center();
+    const blade = this.mesh(geo, 'saw');
+    const hub = this.mesh(new THREE.CylinderGeometry(r * 0.25, r * 0.25, 0.12, 16), 'steelRed');
+    hub.rotation.x = Math.PI / 2;
+    g.add(blade, hub);
+    this.add(g);
+    if (amp) {
+      // Guide rail showing the saw's travel
+      const len = amp * 2 + r * 2;
+      const rail = this.mesh(new THREE.BoxGeometry(axis === 'x' ? len : 0.08, axis === 'x' ? 0.08 : len, 0.05), 'darkSteel', { cast: false });
+      rail.position.set(x, y, z - 0.1);
+      this.add(rail);
+    }
+    const body = this.physics.createBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(x, y, z));
+    this.physics.createCollider(
+      RAPIER.ColliderDesc.cylinder(0.1, r * 0.9)
+        .setRotation({ x: Math.SQRT1_2, y: 0, z: 0, w: Math.SQRT1_2 })
+        .setCollisionGroups(groups(Group.WORLD))
+        .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),
+      body,
+      { kind: 'hazard', material: 'metal', label: 'SAWED!' },
+    );
+    const spin = new THREE.Vector3(0, 0, 1);
+    const mover = this.mover({
+      body,
+      object: g,
+      fn: (t) => {
+        const o = Math.sin(t * speed + phase) * amp;
+        const q = new THREE.Quaternion().setFromAxisAngle(spin, -t * 9);
+        return { pos: [x + (axis === 'x' ? o : 0), y + (axis === 'x' ? 0 : o), z], rot: { x: q.x, y: q.y, z: q.z, w: q.w } };
+      },
+    });
+    return { body, mover };
+  }
+
+  /** Heavy steel wrecking ball. */
+  ball({ pos, r = 0.45, mass = 90 }) {
+    const mesh = this.mesh(new THREE.SphereGeometry(r, 28, 18), 'steel');
+    this.add(mesh);
+    const body = this.dynamicBody(pos, new THREE.Quaternion(), { angDamp: 0.2, ccd: true });
+    const prop = this.registerProp(body, mesh, { kind: 'ball', material: 'metal' });
+    this.physics.createCollider(
+      RAPIER.ColliderDesc.ball(r)
+        .setMass(mass)
+        .setFriction(0.5)
+        .setRestitution(0.2)
+        .setCollisionGroups(groups(Group.PROP))
+        .setActiveEvents(RAPIER.ActiveEvents.CONTACT_FORCE_EVENTS)
+        .setContactForceEventThreshold(60),
+      body,
+      { kind: 'prop', prop, material: 'metal' },
+    );
+    return prop;
+  }
+
   /** Open-top skip: the classic place for a crash dummy to end up. */
   dumpster({ pos, yaw = 0, size = [2.6, 1.3, 1.8], color = 'steelGreen' }) {
     const [w, h, d] = size;
