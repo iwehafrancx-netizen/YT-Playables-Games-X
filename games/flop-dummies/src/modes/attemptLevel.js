@@ -140,13 +140,10 @@ export class AttemptLevel extends Level {
     });
   }
 
-  rebuild() {
-    for (const d of this.dummies) d.view.dispose();
-    this.dummies.length = 0;
-    this.world.dispose();
-    this.physics.dispose();
-    this.audio.stopLoops();
-    this.fx.clear();
-    this.build();
+  /** One more attempt; the best run so far still counts. */
+  revive() {
+    this.attempts++;
+    this.finishing = false;
+    this.rebuild();
   }
 }

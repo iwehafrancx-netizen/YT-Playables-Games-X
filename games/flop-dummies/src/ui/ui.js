@@ -267,7 +267,8 @@ export class UI {
     );
   }
 
-  results({ passed, stars: n, score, total, isBest, title, subtitle, reason, stats = [], canSkip, onRetry, onNext, onSkip, onHome }) {
+  results({ passed, stars: n, score, total, isBest, title, subtitle, reason, stats = [], canRevive, reviveIsPaid, canSkip, ads, onRevive, onRetry, onNext, onSkip, onHome }) {
+    const adTag = '<span class="ad-tag">AD</span>';
     const el = this.modal(
       `<div class="result ${passed ? 'pass' : 'fail'}">
         <div class="stamp">${passed ? 'Test passed' : 'Test failed'}</div>
@@ -278,16 +279,34 @@ export class UI {
         ${passed ? `<p class="total">Total score <b>${Math.round(total).toLocaleString()}</b></p>` : ''}
         ${stats.length ? `<ul class="stats">${stats.map(([k, v]) => `<li><span>${esc(k)}</span><b>${esc(v)}</b></li>`).join('')}</ul>` : ''}
         <div class="col">
-          ${passed ? `<button class="btn primary big next-btn" data-act="next"><span>Next level</span>${icon('next')}</button>` : `<button class="btn primary big" data-act="retry">${icon('retry')}<span>Try again</span></button>`}
+          ${passed ? `<button class="btn primary big next-btn" data-act="next"><span>Next level</span>${icon('next')}</button>` : ''}
+          ${canRevive ? `<button class="btn primary big revive-btn" data-act="revive">${icon('play')}<span>Revive</span>${reviveIsPaid ? adTag : ''}<i class="countdown">5</i></button>` : ''}
+          ${passed ? '' : `<button class="btn ${canRevive ? '' : 'primary big'}" data-act="retry">${icon('retry')}<span>Try again</span></button>`}
           <div class="row">
             <button class="btn small" data-act="home" aria-label="Main menu">${icon('home')}</button>
             ${passed ? `<button class="btn small" data-act="retry">${icon('retry')}<span>Replay</span></button>` : ''}
-            ${canSkip ? `<button class="btn small" data-act="skip"><span>Skip</span>${icon('next')}</button>` : ''}
+            ${canSkip ? `<button class="btn small" data-act="skip"><span>Skip level</span>${ads ? adTag : icon('next')}</button>` : ''}
           </div>
         </div>
       </div>`,
-      { retry: onRetry, next: onNext, skip: onSkip, home: onHome },
+      { revive: onRevive, retry: onRetry, next: onNext, skip: onSkip, home: onHome },
     );
+    // Revive is a limited-time offer: five seconds, then it's gone.
+    const revive = el.querySelector('.revive-btn');
+    if (revive) {
+      let left = 5;
+      const count = revive.querySelector('.countdown');
+      const timer = setInterval(() => {
+        left--;
+        if (!revive.isConnected || this.modalEl.classList.contains('ad-hold')) return left <= 0 && clearInterval(timer);
+        if (left > 0) count.textContent = left;
+        else {
+          clearInterval(timer);
+          revive.classList.add('gone');
+          setTimeout(() => revive.remove(), 300);
+        }
+      }, 1000);
+    }
     // Count the score up, then drop the stars in one by one.
     const val = el.querySelector('.score-val');
     const target = Number(val.dataset.score);

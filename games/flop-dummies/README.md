@@ -67,8 +67,30 @@ npx serve dist    # or any static server
 
 ## Building for upload
 
+One codebase, one upload per storefront. The platform SDK is chosen at build
+time (`src/platform/`), so each zip only talks to its own SDK.
+
 ```
-npm run build     # minified bundle in dist/ (index.html at the root)
-npm run zip       # dist/ zipped as flop-dummies.zip, ready to upload
-npm run preview   # preview/flop-dummies.html: one self-contained file to open anywhere
+npm run zip                    # YouTube Playables   → flop-dummies.zip
+npm run zip:crazygames-basic   # CrazyGames Basic    → flop-dummies-crazygames-basic.zip (no ads)
+npm run zip:crazygames-full    # CrazyGames Full     → flop-dummies-crazygames-full.zip
+npm run zip:playgama           # Playgama Bridge     → flop-dummies-playgama.zip
+npm run zip:all                # all four
+npm run preview                # preview/flop-dummies.html: one self-contained file to open anywhere
 ```
+
+### Ads (CrazyGames Full Launch and Playgama)
+
+| When | Ad | Notes |
+|---|---|---|
+| Tapping **Next level** after every second level passed | Interstitial | Natural break between levels; CrazyGames caps midgame ads at one per 3 minutes, Playgama waits 60 s after start and between ads (`platform/playgama-bridge-config.json`). |
+| **Revive** on the fail card, every second use | Rewarded | Continues the failed level where it stopped. Offered for 5 seconds, then the button goes. |
+| **Skip level** on the fail card | Rewarded | Shown on every fail. |
+| **Try again** | — | Never shows an ad. |
+
+Rewarded ads are always the player's choice and never the only way forward:
+Try again is free, and every level can be finished without them. The reward
+is only given for a watched ad (closing early gives nothing); if no ad can be
+served the player gets it anyway. The game pauses and mutes for every ad and
+reports gameplay start and stop around play, menus and ads. The YouTube and
+CrazyGames Basic builds make no ad calls at all: Revive and Skip are free.

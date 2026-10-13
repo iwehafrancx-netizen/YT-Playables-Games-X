@@ -145,6 +145,25 @@ export class Level {
     this.tick?.(dt);
   }
 
+  /** Whether a failed run can pick up where it left off (see `revive`). */
+  canRevive() {
+    return this.revive !== Level.prototype.revive;
+  }
+
+  /** Puts a failed level back into play where it left off. Modes that support it override this. */
+  revive() {}
+
+  /** Tears the world down and builds the level again from its definition. */
+  rebuild() {
+    for (const d of this.dummies) d.view.dispose();
+    this.dummies.length = 0;
+    this.world.dispose();
+    this.physics.dispose();
+    this.audio.stopLoops();
+    this.fx.clear();
+    this.build();
+  }
+
   /** Ends the level and hands the result to the game. */
   finish(result) {
     if (this.state === 'done') return;

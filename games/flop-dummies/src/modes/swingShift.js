@@ -379,6 +379,13 @@ export class SwingShiftLevel extends Level {
     }
   }
 
+  /** One more dummy, back at the last checkpoint. */
+  revive() {
+    this.lives = 1;
+    this.hud.set('lives', this.lives);
+    this.respawn();
+  }
+
   complete(passed) {
     this.phase = 'done';
     const par = this.def.par;

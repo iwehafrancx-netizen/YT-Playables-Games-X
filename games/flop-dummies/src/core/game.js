@@ -1,5 +1,5 @@
 import { STEP } from '../physics/physics.js';
-import { yt } from '../platform/yt.js';
+import { platform } from '../platform/index.js';
 import { DEPARTMENTS, levelAt, numberOf } from '../levels/index.js';
 import { Showcase } from '../modes/showcase.js';
 import { SUIT_UNLOCKS } from '../ui/ui.js';
@@ -20,19 +20,22 @@ export class Game {
     this.last = performance.now();
     this.baseFov = stage.camera.fov;
     this.timeScale = 1;
-    this.fails = {};
+    // Ads: an interstitial after every second level passed, and a rewarded ad
+    // on every second revive and on every skip. Retrying never shows an ad.
+    this.passedSinceAd = 0;
+    this.revives = 0;
 
     ui.onPause = () => this.pause();
     ui.onSettingsChanged = () => this.applySettings();
     this.applySettings();
 
-    yt.onPause(() => this.pause(true));
-    yt.onResume(() => this.audio.resume());
-    yt.onAudioEnabledChange((on) => this.audio.setEnabled(on));
-    this.audio.setEnabled(yt.isAudioEnabled());
+    platform.onPause(() => this.pause(true));
+    platform.onResume(() => !this.adPlaying && this.audio.resume());
+    platform.onAudioEnabledChange((on) => this.audio.setEnabled(on));
+    this.audio.setEnabled(platform.isAudioEnabled());
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) this.pause(true);
-      else this.audio.resume();
+      else if (!this.adPlaying) this.audio.resume();
     });
 
     // First user gesture unlocks audio (browsers require it).
@@ -65,6 +68,7 @@ export class Game {
   }
 
   showTitle() {
+    platform.gameplayStop();
     this.ui.clearHud();
     this.ui.closeModal();
     if (!(this.scene instanceof Showcase)) this.setScene(new Showcase(this, { theme: 'morning' }, { theme: 'morning' }));
@@ -120,6 +124,66 @@ export class Game {
     this.current = { n, dept, level, replay };
     this.setScene(new dept.Mode(this, level, dept));
     this.ui.banner(`Level ${n}`, level.name);
+    platform.levelEvent('level_started');
+    platform.gameplayStart();
+  }
+
+  /** Plays a platform ad with the game paused and muted, then picks up where it was. */
+  async showAd(kind) {
+    this.adPlaying = true;
+    this.ui.modalEl.classList.add('ad-hold');
+    this.paused = true;
+    this.audio.suspend();
+    platform.gameplayStop();
+    const outcome = kind === 'rewarded' ? await platform.rewarded() : (await platform.interstitial(), 'done');
+    this.adPlaying = false;
+    this.ui.modalEl.classList.remove('ad-hold');
+    this.paused = false;
+    this.last = performance.now();
+    this.audio.resume();
+    return outcome;
+  }
+
+  /**
+   * Rewarded ads only ever pay out for a finished ad. If none can be served
+   * the reward is given anyway; closing the ad early gives nothing.
+   */
+  async earn(reason) {
+    if (!platform.ads) return true;
+    const outcome = await this.showAd('rewarded');
+    if (outcome === 'skipped') {
+      this.ui.toast(`Watch the whole ad to ${reason}`);
+      return false;
+    }
+    return true;
+  }
+
+  async nextLevel(n) {
+    if (platform.ads && this.passedSinceAd >= 2) {
+      this.passedSinceAd = 0;
+      await this.showAd('interstitial');
+    }
+    this.startLevel(n);
+  }
+
+  async skipLevel(n) {
+    if (!(await this.earn('skip this level'))) return;
+    this.save.data.level = Math.max(this.save.data.level, n + 1);
+    this.save.flush();
+    this.startLevel(n + 1);
+  }
+
+  /** Every second revive is paid for with a rewarded ad. */
+  async revive() {
+    const paid = (this.revives + 1) % 2 === 0;
+    if (paid && !(await this.earn('revive'))) return;
+    this.revives++;
+    const scene = this.scene;
+    this.ui.closeModal();
+    scene.state = 'play';
+    scene.revive();
+    platform.gameplayStart();
+    this.ui.toast('Revived!');
   }
 
   levelFinished(level, result) {
@@ -130,31 +194,35 @@ export class Game {
       this.save.data.level = Math.max(this.save.data.level, n + 1);
       this.save.data.score += Math.round(result.score);
       this.save.flush();
-      yt.sendScore(this.save.data.score);
+      platform.sendScore(this.save.data.score);
+      this.passedSinceAd++;
       this.audio.win();
       this.fx.confetti(this.rig.look.clone(), 120);
+      platform.happy();
     } else {
       this.audio.lose();
     }
+    platform.levelEvent(result.passed ? 'level_completed' : 'level_failed');
+    platform.gameplayStop();
     setTimeout(() => {
       if (this.scene !== level) return;
-      this.ui.clearHud();
+      // A failed level keeps its HUD under the card, ready for a revive.
+      if (result.passed) this.ui.clearHud();
       this.ui.results({
         ...result,
         title: `Level ${n}`,
         subtitle: def.name,
         total: this.save.data.score,
         isBest: result.passed && prev.best > 0 && result.score > prev.best,
-        // A stubborn level can be skipped after a couple of tries so the run keeps moving.
-        canSkip: !replay && !result.passed && (this.fails[n] = (this.fails[n] ?? 0) + 1) >= 2,
+        ads: platform.ads,
+        canRevive: !result.passed && level.canRevive(),
+        reviveIsPaid: platform.ads && (this.revives + 1) % 2 === 0,
+        canSkip: !result.passed && !replay,
+        onRevive: () => this.revive(),
         onRetry: () => this.startLevel(n, { replay }),
         // A replay hands back to the run where the player left it.
-        onNext: () => this.startLevel(replay ? this.save.data.level : n + 1),
-        onSkip: () => {
-          this.save.data.level = Math.max(this.save.data.level, n + 1);
-          this.save.flush();
-          this.startLevel(n + 1);
-        },
+        onNext: () => this.nextLevel(replay ? this.save.data.level : n + 1),
+        onSkip: () => this.skipLevel(n),
         onHome: () => this.showTitle(),
       });
     }, result.passed ? 1100 : 900);
@@ -168,6 +236,7 @@ export class Game {
     if (this.paused) return;
     this.paused = true;
     if (fromSystem) this.audio.suspend();
+    platform.gameplayStop();
     this.ui.pause({
       save: this.save,
       onResume: () => this.resume(),
@@ -179,6 +248,7 @@ export class Game {
   resume() {
     this.paused = false;
     this.ui.closeModal();
+    platform.gameplayStart();
     this.audio.resume();
     this.last = performance.now();
   }
@@ -220,7 +290,7 @@ export class Game {
       try {
         this.frame(now);
       } catch (err) {
-        yt.logError(err);
+        platform.logError(err);
       }
     };
     requestAnimationFrame(loop);

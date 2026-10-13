@@ -274,7 +274,11 @@ export class PinAlleyLevel extends Level {
       });
       return;
     }
-    // Clear the fallen pins, then reset for the next ball.
+    this.nextBall();
+  }
+
+  /** Clears the fallen pins and sets up the next ball. */
+  nextBall() {
     for (const p of this.pins.filter((q) => q.down)) {
       this.physics.removeBody(p.body);
       this.world.group.remove(p.mesh);
@@ -282,5 +286,12 @@ export class PinAlleyLevel extends Level {
     this.pins = this.pins.filter((p) => !p.down);
     this.newBowler();
     this.hud.hint('Pick off the rest!');
+  }
+
+  /** One extra ball at whatever is still standing. */
+  revive() {
+    this.throws++;
+    this.hud.set('throws', this.throws - this.thrown);
+    this.nextBall();
   }
 }

@@ -239,6 +239,13 @@ export class WreckingCrewLevel extends Level {
     this.game.ui.banner(all ? 'FLATTENED IT ALL!' : 'TIME!', `${this.knocked}/${this.total} wrecked`);
   }
 
+  /** Ten more seconds on the clock. */
+  revive() {
+    this.left = 10;
+    this.phase = 'play';
+    this.hud.set('time', 10);
+  }
+
   complete() {
     this.phase = 'done';
     this.audio.loop('wind', 0, 'wind');

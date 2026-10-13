@@ -804,6 +804,46 @@ button:focus-visible {
   font-size: 18px;
 }
 
+.ad-tag {
+  margin-left: 4px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #1b1b1f;
+  color: var(--yellow);
+  font-family: var(--body, inherit);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.btn.primary.revive-btn {
+  position: relative;
+  background: linear-gradient(180deg, #3fd38a, #22a866);
+  box-shadow: 0 5px 0 #17824e, 0 8px 18px rgba(0, 0, 0, 0.35);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.revive-btn .countdown {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  color: #1b1b1f;
+  font-style: normal;
+  font-size: 16px;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+}
+
+.revive-btn.gone {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
 .resume-note {
   margin-top: -6px;
   font-weight: 700;

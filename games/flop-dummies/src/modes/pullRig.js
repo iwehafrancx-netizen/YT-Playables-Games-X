@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Level } from './level.js';
-import { RAPIER, Group, groups } from '../physics/physics.js';
+import { RAPIER, Group, groups, STEP } from '../physics/physics.js';
 import { Mat } from '../render/materials.js';
 
 const DEPTH = 1.6;
@@ -22,6 +22,7 @@ export class PullRigLevel extends Level {
     this.pins = [];
     this.panes = [];
     this.pulls = 0;
+    this.log = [];
     this.focus = -1;
     this.phase = 'play';
     this.settle = 0;
@@ -216,10 +217,11 @@ export class PullRigLevel extends Level {
     }
   }
 
-  pull(pin) {
+  pull(pin, quiet = false) {
     pin.pulled = true;
     pin.t = 0;
     this.pulls++;
+    this.log.push({ i: this.pins.indexOf(pin), t: this.physics.time });
     this.idle = 0;
     this.hud.set('pulls', this.pulls);
     this.hud.bump('pulls');
@@ -227,6 +229,7 @@ export class PullRigLevel extends Level {
     // Anything resting on a pin may have fallen asleep; it has to notice the pin going.
     for (const p of this.world.props) p.body.wakeUp();
     this.dummy.ragdoll.forEachBody((b) => b.wakeUp());
+    if (quiet) return;
     this.audio.noise(0.25, { freq: 2600, q: 2, gain: 0.25, sweep: 0.5 });
     this.audio.click();
     this.fx.puff(pin.a, { count: 3, color: 0xffffff, size: 0.3 });
@@ -333,6 +336,26 @@ export class PullRigLevel extends Level {
       this.endT -= dt;
       if (this.endT <= 0) this.complete(this.phase === 'won');
     }
+  }
+
+  /**
+   * Rewinds to the moment before the fatal pull: the rig is rebuilt and the
+   * earlier pulls are replayed at their original physics times. The
+   * simulation is deterministic, so everything lands exactly where it was.
+   */
+  revive() {
+    const replay = this.log.slice(0, -1);
+    const until = this.log.at(-1)?.t ?? 0;
+    this.rebuild();
+    let k = 0;
+    while (this.physics.time < until - 1e-6) {
+      while (k < replay.length && replay[k].t <= this.physics.time + 1e-6) this.pull(this.pins[replay[k++].i], true);
+      this.fixedUpdate(STEP);
+      this.physics.step();
+      this.update(STEP);
+    }
+    this.physics.snapAll();
+    this.hud.hint('Rewound — try a different pin');
   }
 
   complete(passed) {

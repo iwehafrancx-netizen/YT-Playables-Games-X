@@ -231,6 +231,14 @@ export class BallisticsLevel extends Level {
     }
   }
 
+  /** Two more dummies in the cannon; every target already down stays down. */
+  revive() {
+    this.shotsLeft += 2;
+    this.hud.set('shots', this.shotsLeft);
+    this.phase = 'reload';
+    this.reloadT = 0.3;
+  }
+
   endShot(allHit) {
     this.active = null;
     if (allHit) {
