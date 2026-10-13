@@ -1,12 +1,16 @@
 {
   "name": "flop-dummies",
   "version": "1.0.0",
-  "description": "Flop Dummies — a physics ragdoll game for YouTube Playables",
+  "description": "Flop Dummies \u2014 a physics ragdoll game for YouTube Playables, CrazyGames and Playgama",
   "scripts": {
     "build": "node build.mjs",
     "dev": "node build.mjs --dev",
     "preview": "node build.mjs --preview",
-    "zip": "node build.mjs && cd dist && zip -qr ../flop-dummies.zip ."
+    "zip": "node build.mjs && cd dist && zip -qr ../flop-dummies.zip .",
+    "zip:crazygames-basic": "node build.mjs --target=crazygames-basic && cd dist-crazygames-basic && zip -qr ../flop-dummies-crazygames-basic.zip .",
+    "zip:crazygames-full": "node build.mjs --target=crazygames-full && cd dist-crazygames-full && zip -qr ../flop-dummies-crazygames-full.zip .",
+    "zip:playgama": "node build.mjs --target=playgama && cd dist-playgama && zip -qr ../flop-dummies-playgama.zip .",
+    "zip:all": "npm run zip && npm run zip:crazygames-basic && npm run zip:crazygames-full && npm run zip:playgama"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.19.3",

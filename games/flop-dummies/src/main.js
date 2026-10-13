@@ -8,7 +8,7 @@ import { Input } from './core/input.js';
 import { Save } from './core/save.js';
 import { Game } from './core/game.js';
 import { UI } from './ui/ui.js';
-import { yt } from './platform/yt.js';
+import { platform } from './platform/index.js';
 
 async function boot() {
   const app = document.getElementById('app');
@@ -16,14 +16,15 @@ async function boot() {
   const audio = new Audio();
   const ui = new UI(app, audio);
   ui.loading(0.05, 'Warming up the lab…');
-  yt.firstFrameReady();
+  platform.firstFrameReady();
+  await platform.init();
 
   let stage;
   try {
     stage = new Stage(canvas);
   } catch (err) {
     ui.error('This device could not start WebGL.');
-    yt.logError(err);
+    platform.logError(err);
     return;
   }
   ui.loading(0.25, 'Calibrating dummies…');
@@ -42,12 +43,12 @@ async function boot() {
   ui.loading(1);
   game.run();
   setTimeout(() => ui.hideLoading(), 250);
-  yt.gameReady();
+  platform.gameReady();
   window.__game = game;
 }
 
 boot().catch((err) => {
   console.error(err);
-  yt.logError(err);
+  platform.logError(err);
   document.querySelector('#loading .load-text').textContent = 'Something went wrong while loading. Please reload.';
 });

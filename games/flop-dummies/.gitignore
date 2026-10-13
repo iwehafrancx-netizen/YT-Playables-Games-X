@@ -1,5 +1,5 @@
 node_modules/
 dist/
-preview/
+dist-*/
 preview/
 *.zip

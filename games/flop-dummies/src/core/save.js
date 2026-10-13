@@ -1,4 +1,4 @@
-import { yt, inPlayables } from '../platform/yt.js';
+import { platform } from '../platform/index.js';
 
 const LOCAL_KEY = 'flop-labs-save';
 const VERSION = 1;
@@ -20,7 +20,7 @@ export class Save {
   async load() {
     let text = null;
     try {
-      text = inPlayables ? await yt.loadData() : localStorage.getItem(LOCAL_KEY);
+      text = await platform.loadData(LOCAL_KEY);
     } catch {
       text = null;
     }
@@ -71,8 +71,7 @@ export class Save {
   async write() {
     const text = JSON.stringify(this.data);
     try {
-      if (inPlayables) await yt.saveData(text);
-      else localStorage.setItem(LOCAL_KEY, text);
+      await platform.saveData(LOCAL_KEY, text);
     } catch (err) {
       console.warn('save failed', err);
     }

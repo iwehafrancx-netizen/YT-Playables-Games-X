@@ -1,8 +1,8 @@
-// Single point of contact with the YouTube Playables SDK. Every call is a
-// no-op outside Playables so the game runs in any browser during development.
+// YouTube Playables. Every call is a no-op outside Playables so the game runs
+// in any browser during development; progress then lives in localStorage.
 
 const sdk = typeof window !== 'undefined' ? window.ytgame : undefined;
-export const inPlayables = Boolean(sdk?.IN_PLAYABLES_ENV);
+const inPlayables = Boolean(sdk?.IN_PLAYABLES_ENV);
 
 function safe(fn, fallback) {
   try {
@@ -13,7 +13,12 @@ function safe(fn, fallback) {
   }
 }
 
-export const yt = {
+export const youtube = {
+  name: 'youtube',
+  ads: false,
+
+  async init() {},
+
   firstFrameReady() {
     if (inPlayables) safe(() => sdk.game.firstFrameReady());
   },
@@ -21,6 +26,11 @@ export const yt = {
   gameReady() {
     if (inPlayables) safe(() => sdk.game.gameReady());
   },
+
+  gameplayStart() {},
+  gameplayStop() {},
+  levelEvent() {},
+  happy() {},
 
   onPause(cb) {
     if (inPlayables) safe(() => sdk.system.onPause(cb));
@@ -38,23 +48,24 @@ export const yt = {
     if (inPlayables) safe(() => sdk.system.onAudioEnabledChange(cb));
   },
 
-  async language() {
-    if (!inPlayables) return navigator.language || 'en';
-    return safe(() => sdk.system.getLanguage(), Promise.resolve('en'));
-  },
-
-  async loadData() {
-    if (!inPlayables) return null;
+  async loadData(key) {
+    if (!inPlayables) return localStorage.getItem(key);
     return safe(() => sdk.game.loadData(), Promise.resolve(''));
   },
 
-  async saveData(text) {
-    if (!inPlayables) return;
+  async saveData(key, text) {
+    if (!inPlayables) return localStorage.setItem(key, text);
     await safe(() => sdk.game.saveData(text), Promise.resolve());
   },
 
   sendScore(value) {
     if (inPlayables) safe(() => sdk.engagement.sendScore({ value: Math.max(0, Math.round(value)) }));
+  },
+
+  async interstitial() {},
+
+  async rewarded() {
+    return 'unavailable';
   },
 
   logError(err) {
