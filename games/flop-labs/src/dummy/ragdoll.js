@@ -21,16 +21,16 @@ export const PARTS = {
 // Foot box relative to the shin centre.
 export const FOOT = { half: [0.05, 0.035, 0.1], offset: [0, -0.215, 0.04] };
 
-// parent, child, world anchor at rest, joint type, soft limit in degrees (spherical only)
+// parent, child, world anchor at rest, joint type, bend and twist limits in degrees (spherical only)
 export const JOINTS = [
-  { name: 'waist', parent: 'pelvis', child: 'chest', at: [0, 1.035, 0], type: 'ball', limit: 55 },
-  { name: 'neck', parent: 'chest', child: 'head', at: [0, 1.46, 0], type: 'ball', limit: 60 },
-  { name: 'shoulderL', parent: 'chest', child: 'upperArmL', at: [0.24, 1.37, 0], type: 'ball', limit: 170 },
-  { name: 'shoulderR', parent: 'chest', child: 'upperArmR', at: [-0.24, 1.37, 0], type: 'ball', limit: 170 },
+  { name: 'waist', parent: 'pelvis', child: 'chest', at: [0, 1.035, 0], type: 'ball', limit: 45, twist: 40 },
+  { name: 'neck', parent: 'chest', child: 'head', at: [0, 1.46, 0], type: 'ball', limit: 50, twist: 70 },
+  { name: 'shoulderL', parent: 'chest', child: 'upperArmL', at: [0.24, 1.37, 0], type: 'ball', limit: 170, twist: 80 },
+  { name: 'shoulderR', parent: 'chest', child: 'upperArmR', at: [-0.24, 1.37, 0], type: 'ball', limit: 170, twist: 80 },
   { name: 'elbowL', parent: 'upperArmL', child: 'lowerArmL', at: [0.24, 1.105, 0], type: 'hinge', min: -2.5, max: 0 },
   { name: 'elbowR', parent: 'upperArmR', child: 'lowerArmR', at: [-0.24, 1.105, 0], type: 'hinge', min: -2.5, max: 0 },
-  { name: 'hipL', parent: 'pelvis', child: 'thighL', at: [0.09, 0.83, 0], type: 'ball', limit: 135 },
-  { name: 'hipR', parent: 'pelvis', child: 'thighR', at: [-0.09, 0.83, 0], type: 'ball', limit: 135 },
+  { name: 'hipL', parent: 'pelvis', child: 'thighL', at: [0.09, 0.83, 0], type: 'ball', limit: 135, twist: 45 },
+  { name: 'hipR', parent: 'pelvis', child: 'thighR', at: [-0.09, 0.83, 0], type: 'ball', limit: 135, twist: 45 },
   { name: 'kneeL', parent: 'thighL', child: 'shinL', at: [0.09, 0.445, 0], type: 'hinge', min: 0, max: 2.5 },
   { name: 'kneeR', parent: 'thighR', child: 'shinR', at: [-0.09, 0.445, 0], type: 'hinge', min: 0, max: 2.5 },
 ];
@@ -264,6 +264,20 @@ export class Ragdoll {
   }
 
   /**
+   * Pushes the child back along `axis` (world space, unit) when a joint is
+   * `over` radians past its limit: stop it opening further, then ease it back.
+   */
+  limit(pb, cb, axis, over) {
+    const wrel = vec(cb.angvel(), _mv2).sub(vec(pb.angvel(), _v3));
+    const closing = wrel.dot(axis);
+    const target = Math.min(over * 40, 14);
+    if (closing >= target) return;
+    solveAngular(cb.effectiveWorldInvInertia(), pb.effectiveWorldInvInertia(), _mv3.copy(axis).multiplyScalar(target - closing), _imp);
+    cb.applyTorqueImpulse(_imp, true);
+    pb.applyTorqueImpulse(_imp.negate(), true);
+  }
+
+  /**
    * After each step: cap runaway spin and project any stretched joint back
    * together, parent first, so a big impact can't visibly tear him apart.
    */
@@ -272,10 +286,11 @@ export class Ragdoll {
       const b = this.parts[name].body;
       const w = b.angvel();
       const spin = Math.hypot(w.x, w.y, w.z);
-      if (spin > MAX_SPIN) {
-        const k = MAX_SPIN / spin;
-        b.setAngvel({ x: w.x * k, y: w.y * k, z: w.z * k }, true);
-      }
+      const v = b.linvel();
+      // Nearly still: bleed off the last twitches so he settles instead of buzzing.
+      const settling = Math.hypot(v.x, v.y, v.z) < 0.35 && spin < 4 ? 0.8 : 1;
+      const k = Math.min(settling, MAX_SPIN / Math.max(spin, 1e-6));
+      if (k < 1) b.setAngvel({ x: w.x * k, y: w.y * k, z: w.z * k }, true);
     }
     for (const j of this.joints) {
       const pb = j.parentPart.body;
@@ -350,7 +365,8 @@ export class Ragdoll {
       const q = this.targets[j.name];
       const sgn = q.w < 0 ? -1 : 1;
       const k = MOTOR_STIFFNESS[j.name] * m;
-      const d = MOTOR_DAMPING[j.name] * (Math.sqrt(m) + 0.08);
+      // Even knocked out, a crash dummy's joints have friction: limbs swing, they don't flail.
+      const d = MOTOR_DAMPING[j.name] * Math.max(0.35, Math.sqrt(m) + 0.08);
       const raw = j.joint.rawSet;
       if (j.type === 'hinge') {
         raw.jointConfigureMotorPosition(j.joint.handle, 3, 2 * Math.asin(sgn * q.x), k, d);
@@ -362,12 +378,13 @@ export class Ragdoll {
     }
   }
 
-  /** Soft cone limits on the ball joints; the rest of the muscle work is done by joint motors. */
+  /**
+   * Bend and twist limits on the ball joints, solved as velocity constraints
+   * each step; the rest of the muscle work is done by joint motors.
+   */
   applyMuscles() {
     const qp = _mq1;
     const qc = _mq2;
-    const wrel = _mv2;
-    const want = _mv3;
     for (const j of this.joints) {
       if (j.type !== 'ball') continue;
       const pb = j.parentPart.body;
@@ -376,15 +393,17 @@ export class Ragdoll {
       rot(cb, qc);
       _q.copy(qp).invert().multiply(qc);
       if (_q.w < 0) _q.set(-_q.x, -_q.y, -_q.z, -_q.w);
-      const angle = 2 * Math.acos(Math.min(1, _q.w));
-      const over = angle - j.limit * D2R;
-      if (over <= 0) continue;
-      vec(cb.angvel(), wrel).sub(vec(pb.angvel(), _v3));
-      rotationError(qp, qc, want);
-      want.normalize().multiplyScalar(over * 20).sub(wrel).multiplyScalar(0.4);
-      solveAngular(cb.effectiveWorldInvInertia(), pb.effectiveWorldInvInertia(), want, _imp);
-      cb.applyTorqueImpulse(_imp, true);
-      pb.applyTorqueImpulse(_imp.negate(), true);
+      const bend = 2 * Math.acos(Math.min(1, _q.w)) - j.limit * D2R;
+      if (bend > 0) {
+        rotationError(qp, qc, _mv1);
+        if (_mv1.lengthSq() > 1e-10) this.limit(pb, cb, _mv1.normalize(), bend);
+      }
+      // Twist about the child's own bone: past this, an arm corkscrews. Near a
+      // full swing the twist is ill-defined, so it's left alone there.
+      if (Math.hypot(_q.y, _q.w) < 0.35) continue;
+      const twist = 2 * Math.atan2(_q.y, _q.w);
+      const over = Math.abs(twist) - j.twist * D2R;
+      if (over > 0) this.limit(pb, cb, _mv1.set(0, -Math.sign(twist), 0).applyQuaternion(qc), over);
     }
 
     if (this.balance > 0.001) this.applyBalance();
