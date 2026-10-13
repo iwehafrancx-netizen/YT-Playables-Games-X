@@ -35,7 +35,7 @@ const SOUND_FOR = {
   concrete: 'concrete', concreteDark: 'concrete', asphalt: 'concrete', wall: 'concrete', grass: 'concrete',
   crate: 'wood', cardboard: 'cardboard', hazard: 'metal', steel: 'metal', darkSteel: 'metal',
   steelBlue: 'metal', steelRed: 'metal', steelGreen: 'metal', steelOrange: 'metal', steelGrey: 'metal',
-  rubber: 'rubber', foam: 'rubber', crashMat: 'rubber', fairway: 'concrete', green: 'concrete', soil: 'concrete', sand: 'cardboard', trampoline: 'rubber', glass: 'glass', white: 'wood', bullseye: 'wood',
+  rubber: 'rubber', foam: 'rubber', crashMat: 'rubber', trampoline: 'rubber', glass: 'glass', white: 'wood', bullseye: 'wood',
 };
 
 /**
@@ -440,54 +440,6 @@ export class World {
       fn: (t) => {
         const q = new THREE.Quaternion().setFromAxisAngle(axis, phase + t * speed);
         return { pos, rot: { x: q.x, y: q.y, z: q.z, w: q.w } };
-      },
-    });
-  }
-
-  /**
-   * Mini-golf windmill facing -Z: a tower with a tunnel through its base and
-   * sails turning across the mouth of it. `pos` is the centre of the base.
-   */
-  windmill({ pos, speed = 1, phase = 0 }) {
-    const [x, y, z] = pos;
-    const W = 4.4, D = 2.6, H = 4.2, gap = 2.3, mouth = 1.7;
-    const side = (W - gap) / 2;
-    for (const s of [-1, 1]) this.block({ pos: [x + s * (gap / 2 + side / 2), y + H / 2, z], size: [side, H, D], mat: 'white', tile: 1 });
-    this.block({ pos: [x, y + mouth + (H - mouth) / 2, z], size: [gap, H - mouth, D], mat: 'white', tile: 1 });
-    const roof = this.mesh(new THREE.ConeGeometry(W * 0.78, 2.2, 4), 'steelRed');
-    roof.position.set(x, y + H + 1.1, z);
-    roof.rotation.y = Math.PI / 4;
-    this.add(roof);
-
-    const hubY = y + 2.9;
-    const front = z - D / 2 - 0.25;
-    const g = new THREE.Group();
-    const L = 5.4;
-    for (const a of [0, Math.PI / 2]) {
-      const sail = this.mesh(new THREE.BoxGeometry(0.6, L, 0.12), 'crate');
-      sail.rotation.z = a;
-      g.add(sail);
-    }
-    const hub = this.mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.3, 16), 'darkSteel');
-    hub.rotation.x = Math.PI / 2;
-    g.add(hub);
-    this.add(g);
-    const body = this.physics.createBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(x, hubY, front));
-    for (const a of [0, Math.PI / 2]) {
-      const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), a);
-      this.physics.createCollider(
-        RAPIER.ColliderDesc.cuboid(0.3, L / 2, 0.08).setRotation({ x: q.x, y: q.y, z: q.z, w: q.w }).setFriction(0.4).setCollisionGroups(groups(Group.WORLD)),
-        body,
-        { kind: 'static', material: 'wood' },
-      );
-    }
-    const axis = new THREE.Vector3(0, 0, 1);
-    return this.mover({
-      body,
-      object: g,
-      fn: (t) => {
-        const q = new THREE.Quaternion().setFromAxisAngle(axis, phase + t * speed);
-        return { pos: [x, hubY, front], rot: { x: q.x, y: q.y, z: q.z, w: q.w } };
       },
     });
   }

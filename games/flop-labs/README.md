@@ -12,9 +12,9 @@ lab is a different kind of game, all built on the same jointed, wobbly dummy:
 | **Cart Hill** | Ride a shopping cart down a ramp and bail at the right moment to land on the target. | Hold to wind up · release to push · tap to bail |
 | **Hop Yard** | Hop a self-balancing dummy across moving, tilting and crumbling platforms. | Tap to hop · hold for a big jump · tap again in mid-air |
 | **Pin Alley** | The dummy is the bowling ball. Two lanes of giant pins. | Swipe up to bowl · swipe at an angle to steer |
-| **Dummy Dunk** | The dummy is the basketball. Swish, bank shots, a defender, moving and sky-high hoops. | Flick up to shoot · flick at an angle to steer |
+| **Flip Test** | Springboard backflips: tuck to spin, open up to stop, and stick the landing on his feet. Diving boards, moving mats and triple flips. | Tap to jump · hold to flip · let go to land |
+| **Wrecking Crew** | Hung by his ankles from a gantry crane, the dummy is the wrecking ball. Flatten crate towers, walls, barrels and pins before the shift ends. | Drag sideways to swing · drag up and down to winch |
 | **Crash Course** | Floor a crash-test car down the runway; the barrier stops the car, not the passenger. Judge the speed to land him on target. | Hold for gas · let go to coast |
-| **Flop Golf** | The dummy is the golf ball. Island holes on a lake, with sand, a windmill and crosswinds. | Pull back to aim and set power · let go to swing |
 | **Swing Shift** | Rope-swing along hooks over a crash mat, past rotors, saws and walls. | Hold to grab the nearest hook · let go to fling |
 | **Pull Rig** | Pull-the-pin puzzles: get him down to the green zone without being sawn, spiked or flattened. | Tap a pin to pull it |
 

@@ -189,19 +189,6 @@ export class Audio {
     this.tone(360, 1100, 0.2, { type: 'sine', gain: 0.12, at: 0.02 });
   }
 
-  splash(strength = 1) {
-    this.noise(0.7, { freq: 1600, q: 0.6, type: 'lowpass', gain: 0.55 * strength, sweep: 0.15 });
-    this.noise(0.35, { freq: 4200, q: 0.8, gain: 0.2 * strength, attack: 0.02, sweep: 0.5 });
-    this.tone(320, 90, 0.18, { type: 'sine', gain: 0.25 * strength });
-  }
-
-  /** Ball-in-the-cup rattle. */
-  cup() {
-    this.tone(1250, 1250, 0.07, { type: 'triangle', gain: 0.18 });
-    this.tone(990, 990, 0.08, { type: 'triangle', gain: 0.16, at: 0.09 });
-    this.tone(1180, 1180, 0.1, { type: 'triangle', gain: 0.12, at: 0.16 });
-  }
-
   crack() {
     this.noise(0.18, { freq: 2200, q: 3, gain: 0.4, sweep: 0.4 });
     this.tone(500, 160, 0.12, { type: 'square', gain: 0.1 });

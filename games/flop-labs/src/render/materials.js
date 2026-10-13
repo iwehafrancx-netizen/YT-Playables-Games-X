@@ -41,10 +41,6 @@ export const Mat = {
   glass: () => once('glass', () => std({ color: 0xbfe6ff, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.35 })),
   lane: () => once('lane', () => std({ map: tex.laneWood(), roughness: 0.22, metalness: 0.05 })),
   pin: () => once('pin', () => std({ map: tex.pinSkin(), roughness: 0.18, metalness: 0 })),
-  fairway: () => once('fairway', () => std({ map: tex.turf(), roughness: 0.95 })),
-  green: () => once('green', () => std({ map: tex.turf(0x6fb548, 73, false), roughness: 0.85 })),
-  soil: () => once('soil', () => std({ map: tex.soil(), roughness: 1 })),
-  sand: () => once('sand', () => std({ map: tex.sand(), roughness: 1 })),
   marker: () => once('marker', () => std({ map: tex.marker(), roughness: 0.5, transparent: true })),
 };
 

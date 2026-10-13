@@ -10,14 +10,14 @@ import { PinAlleyLevel } from '../modes/pinAlley.js';
 import { ALLEY } from './alley.js';
 import { CrashCourseLevel } from '../modes/crashCourse.js';
 import { CRASH } from './crash.js';
-import { FlopGolfLevel } from '../modes/flopGolf.js';
-import { GOLF } from './golf.js';
 import { SwingShiftLevel } from '../modes/swingShift.js';
 import { SWING } from './swing.js';
 import { PullRigLevel } from '../modes/pullRig.js';
 import { RIG } from './rig.js';
-import { DummyDunkLevel } from '../modes/dummyDunk.js';
-import { DUNK } from './dunk.js';
+import { FlipTestLevel } from '../modes/flipTest.js';
+import { FLIP } from './flip.js';
+import { WreckingCrewLevel } from '../modes/wreckingCrew.js';
+import { WRECK } from './wreck.js';
 import { remixes } from './remix.js';
 
 export const DEPARTMENTS = [
@@ -57,11 +57,18 @@ export const DEPARTMENTS = [
     levels: ALLEY,
   },
   {
-    id: 'dunk',
-    name: 'Dummy Dunk',
+    id: 'flip',
+    name: 'Flip Test',
+    theme: 'morning',
+    Mode: FlipTestLevel,
+    levels: FLIP,
+  },
+  {
+    id: 'wreck',
+    name: 'Wrecking Crew',
     theme: 'noon',
-    Mode: DummyDunkLevel,
-    levels: DUNK,
+    Mode: WreckingCrewLevel,
+    levels: WRECK,
   },
   {
     id: 'crash',
@@ -69,13 +76,6 @@ export const DEPARTMENTS = [
     theme: 'noon',
     Mode: CrashCourseLevel,
     levels: CRASH,
-  },
-  {
-    id: 'golf',
-    name: 'Flop Golf',
-    theme: 'morning',
-    Mode: FlopGolfLevel,
-    levels: GOLF,
   },
   {
     id: 'swing',
