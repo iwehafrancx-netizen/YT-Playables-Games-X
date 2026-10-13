@@ -65,6 +65,17 @@ npm run dev       # unminified build into dist/
 npx serve dist    # or any static server
 ```
 
+## Store art
+
+`thumbnails/` holds the cover art, rendered in-engine:
+
+| File | Use |
+| --- | --- |
+| `cover-1920x1080.png` | CrazyGames landscape cover, Playgama cover |
+| `cover-800x1200.png` | CrazyGames portrait cover |
+| `cover-800x800.png` | CrazyGames square cover |
+| `icon-512x512.png` | Playgama / store icon |
+
 ## Building for upload
 
 One codebase, one upload per storefront. The platform SDK is chosen at build
