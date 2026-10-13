@@ -1,4 +1,4 @@
-# Flop Labs
+# Flop Dummies
 
 Professional crash testing. Unprofessional results.
 
@@ -69,6 +69,6 @@ npx serve dist    # or any static server
 
 ```
 npm run build     # minified bundle in dist/ (index.html at the root)
-npm run zip       # dist/ zipped as flop-labs.zip, ready to upload
-npm run preview   # preview/flop-labs.html: one self-contained file to open anywhere
+npm run zip       # dist/ zipped as flop-dummies.zip, ready to upload
+npm run preview   # preview/flop-dummies.html: one self-contained file to open anywhere
 ```

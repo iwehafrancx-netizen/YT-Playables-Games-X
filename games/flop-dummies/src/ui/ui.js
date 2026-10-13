@@ -72,7 +72,7 @@ export class UI {
       <div class="screen title-screen">
         <div class="logo">
           <div class="logo-stripe"></div>
-          <h1><span class="l1">FLOP</span><span class="l2">LABS</span></h1>
+          <h1><span class="l1">FLOP</span><span class="l2">DUMMIES</span></h1>
           <p class="tagline">Professional crash testing. Unprofessional results.</p>
         </div>
         <div class="title-actions">
@@ -232,7 +232,7 @@ export class UI {
     this.modal(
       `<h2>Settings</h2>
       ${this.toggles(save)}
-      <p class="small">Flop Labs v1.0 — every dummy was harmed in the making of this game.</p>
+      <p class="small">Flop Dummies v1.0 — every dummy was harmed in the making of this game.</p>
       <button class="btn primary" data-act="close">Done</button>`,
       { close: onClose, toggle: (k, b) => this.flip(save, k, b) },
     );

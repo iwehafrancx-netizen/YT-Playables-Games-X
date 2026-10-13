@@ -1,7 +1,7 @@
 // Usage: node build.mjs            → dist/ (upload bundle for YouTube Playables)
-//        node build.mjs --preview  → preview/flop-labs.html (single self-contained file)
+//        node build.mjs --preview  → preview/flop-dummies.html (single self-contained file)
 //        node build.mjs --dev      → dist/ unminified with source maps
-//        node build.mjs --embed    → preview/flop-labs-embed.html: body-only page for hosts that supply the document shell
+//        node build.mjs --embed    → preview/flop-dummies-embed.html: body-only page for hosts that supply the document shell
 import { build } from 'esbuild';
 import { mkdir, readFile, writeFile, rm, stat } from 'node:fs/promises';
 
@@ -32,20 +32,20 @@ const inlineScript = () => `<script>${js.replace(/<\/script/gi, '<\\/script')}</
 
 if (embed) {
   const body = html.slice(html.indexOf('<body>') + 6, html.indexOf('</body>')).replace('<script src="game.js"></script>', inlineScript);
-  const page = `<title>Flop Labs</title>\n<meta name="theme-color" content="#10141a" />\n<style>${css}</style>\n${body.trim()}\n`;
+  const page = `<title>Flop Dummies</title>\n<meta name="theme-color" content="#10141a" />\n<style>${css}</style>\n${body.trim()}\n`;
   await mkdir('preview', { recursive: true });
-  await writeFile('preview/flop-labs-embed.html', page);
-  const { size } = await stat('preview/flop-labs-embed.html');
-  console.log(`preview/flop-labs-embed.html  ${(size / 1024 / 1024).toFixed(2)} MB`);
+  await writeFile('preview/flop-dummies-embed.html', page);
+  const { size } = await stat('preview/flop-dummies-embed.html');
+  console.log(`preview/flop-dummies-embed.html  ${(size / 1024 / 1024).toFixed(2)} MB`);
 } else if (preview) {
   html = html
     .replace('<!--SDK-->', '')
     .replace('<link rel="stylesheet" href="game.css" />', () => `<style>${css}</style>`)
     .replace('<script src="game.js"></script>', inlineScript);
   await mkdir('preview', { recursive: true });
-  await writeFile('preview/flop-labs.html', html);
-  const { size } = await stat('preview/flop-labs.html');
-  console.log(`preview/flop-labs.html  ${(size / 1024 / 1024).toFixed(2)} MB`);
+  await writeFile('preview/flop-dummies.html', html);
+  const { size } = await stat('preview/flop-dummies.html');
+  console.log(`preview/flop-dummies.html  ${(size / 1024 / 1024).toFixed(2)} MB`);
 } else {
   await rm('dist', { recursive: true, force: true });
   await mkdir('dist', { recursive: true });

@@ -1,12 +1,12 @@
 {
-  "name": "flop-labs",
+  "name": "flop-dummies",
   "version": "1.0.0",
-  "description": "Flop Labs — a physics ragdoll game for YouTube Playables",
+  "description": "Flop Dummies — a physics ragdoll game for YouTube Playables",
   "scripts": {
     "build": "node build.mjs",
     "dev": "node build.mjs --dev",
     "preview": "node build.mjs --preview",
-    "zip": "node build.mjs && cd dist && zip -qr ../flop-labs.zip ."
+    "zip": "node build.mjs && cd dist && zip -qr ../flop-dummies.zip ."
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.19.3",
