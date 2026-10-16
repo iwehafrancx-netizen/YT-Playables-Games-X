@@ -2,7 +2,12 @@ import { STEP } from '../physics/physics.js';
 import { platform } from '../platform/index.js';
 import { DEPARTMENTS, levelAt, numberOf } from '../levels/index.js';
 import { Showcase } from '../modes/showcase.js';
+import { BossFightLevel } from '../modes/bossFight.js';
+import { BOSS_EVERY, BOSS_DEPT, bossFor } from '../levels/boss.js';
 import { SUIT_UNLOCKS } from '../ui/ui.js';
+
+// Interstitials come round on a 3–5–3 rhythm of levels passed, then repeat.
+const BREAKS = [3, 5, 3];
 
 /** Top-level flow: title → an endless run of levels → results, plus the frame loop. */
 export class Game {
@@ -20,9 +25,11 @@ export class Game {
     this.last = performance.now();
     this.baseFov = stage.camera.fov;
     this.timeScale = 1;
-    // Ads: an interstitial after every second level passed, and a rewarded ad
-    // on every second revive and on every skip. Retrying never shows an ad.
+    // Ads: interstitials between levels on the BREAKS rhythm; rewarded ads on
+    // every second revive, on every skip and to unlock a boss fight. Retrying
+    // never shows an ad.
     this.passedSinceAd = 0;
+    this.breakIndex = 0;
     this.revives = 0;
 
     ui.onPause = () => this.pause();
@@ -159,11 +166,47 @@ export class Game {
   }
 
   async nextLevel(n) {
-    if (platform.ads && this.passedSinceAd >= 2) {
+    if (platform.ads && this.passedSinceAd >= BREAKS[this.breakIndex]) {
       this.passedSinceAd = 0;
+      this.breakIndex = (this.breakIndex + 1) % BREAKS.length;
       await this.showAd('interstitial');
     }
     this.startLevel(n);
+  }
+
+  /** After every sixth level a boss steps in. Fighting it costs a rewarded ad; skipping is free. */
+  offerBoss(n) {
+    const boss = bossFor(n);
+    this.ui.clearHud();
+    this.ui.bossOffer({
+      name: boss.name,
+      mk: boss.mk,
+      ads: platform.ads,
+      onFight: async () => {
+        if (await this.earn('fight the boss')) this.startBoss(n);
+      },
+      onSkip: () => this.nextLevel(n + 1),
+    });
+  }
+
+  startBoss(n) {
+    const def = bossFor(n);
+    this.ui.clearScreens();
+    this.ui.closeModal();
+    this.ui.clearHud();
+    this.paused = false;
+    this.current = { n, boss: def };
+    this.setScene(new BossFightLevel(this, def, BOSS_DEPT));
+    this.ui.banner(def.name, `Boss fight · Mk ${def.mk}`);
+    platform.levelEvent('level_started');
+    platform.gameplayStart();
+  }
+
+  /** Restarts whatever is being played, level or boss. */
+  restart() {
+    const { n, boss, replay } = this.current;
+    if (boss) this.startBoss(n);
+    else this.startLevel(n, { replay });
   }
 
   async skipLevel(n) {
@@ -187,6 +230,7 @@ export class Game {
   }
 
   levelFinished(level, result) {
+    if (this.current.boss) return this.bossFinished(level, result);
     const { n, level: def, replay } = this.current;
     const prev = this.save.level(def.id);
     this.save.record(def.id, { stars: result.stars, score: result.passed ? result.score : 0, done: result.passed, n });
@@ -221,8 +265,46 @@ export class Game {
         onRevive: () => this.revive(),
         onRetry: () => this.startLevel(n, { replay }),
         // A replay hands back to the run where the player left it.
-        onNext: () => this.nextLevel(replay ? this.save.data.level : n + 1),
+        onNext: () => {
+          if (!replay && n % BOSS_EVERY === 0) this.offerBoss(n);
+          else this.nextLevel(replay ? this.save.data.level : n + 1);
+        },
         onSkip: () => this.skipLevel(n),
+        onHome: () => this.showTitle(),
+      });
+    }, result.passed ? 1100 : 900);
+  }
+
+  /** The boss is a bonus round: win or lose, the run carries on at the next level. */
+  bossFinished(level, result) {
+    const { n, boss } = this.current;
+    if (result.passed) {
+      this.save.data.score += Math.round(result.score);
+      this.save.flush();
+      platform.sendScore(this.save.data.score);
+      this.audio.win();
+      this.fx.confetti(this.rig.look.clone(), 120);
+      platform.happy();
+    } else {
+      this.audio.lose();
+    }
+    platform.levelEvent(result.passed ? 'level_completed' : 'level_failed');
+    platform.gameplayStop();
+    setTimeout(() => {
+      if (this.scene !== level) return;
+      if (result.passed) this.ui.clearHud();
+      this.ui.results({
+        ...result,
+        title: 'Boss fight',
+        subtitle: `${boss.name} · Mk ${boss.mk}`,
+        total: this.save.data.score,
+        ads: platform.ads,
+        canRevive: !result.passed && level.canRevive(),
+        reviveIsPaid: platform.ads && (this.revives + 1) % 2 === 0,
+        canContinue: !result.passed,
+        onRevive: () => this.revive(),
+        onRetry: () => this.startBoss(n),
+        onNext: () => this.nextLevel(n + 1),
         onHome: () => this.showTitle(),
       });
     }, result.passed ? 1100 : 900);
@@ -240,7 +322,7 @@ export class Game {
     this.ui.pause({
       save: this.save,
       onResume: () => this.resume(),
-      onRestart: () => this.startLevel(this.current.n, { replay: this.current.replay }),
+      onRestart: () => this.restart(),
       onHome: () => this.showTitle(),
     });
   }

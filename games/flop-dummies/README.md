@@ -29,6 +29,24 @@ and stars unlock new dummy suits.
 
 Keyboard: <kbd>Space</kbd> / <kbd>Enter</kbd> works wherever a tap does.
 
+### Boss fights
+
+After every sixth level a boss turns up between levels — a bonus round the
+player can take or skip. It's a different game altogether: a sumo ring on top
+of a tower, a self-balancing dummy you walk around, and a charging robot that
+wants you off the edge. It turns, revs (a red lane shows where it's going) and
+charges in a straight line. Get a pylon between you and it: a charge into a
+pylon stuns it, and only a dive into a stunned boss hurts it. Hurt bosses
+leap and slam the ring with a shockwave; a dive carries you over it. Three
+hearts; getting rammed or falling off costs one.
+
+Controls: drag to walk (WASD / arrows) · tap to dive (<kbd>Space</kbd>) · a
+quick flick dives that way.
+
+Each boss is tougher than the last (more health, faster charges, shorter
+stuns, and from Mk 3 it stomps between charges too). Win or lose, the run
+carries on at the next level; a win adds a big score bonus.
+
 ## Tech
 
 - [three.js](https://threejs.org) rendering with a physical sky, image-based
@@ -94,14 +112,16 @@ npm run preview                # preview/flop-dummies.html: one self-contained f
 
 | When | Ad | Notes |
 |---|---|---|
-| Tapping **Next level** after every second level passed | Interstitial | Natural break between levels; CrazyGames caps midgame ads at one per 3 minutes, Playgama waits 60 s after start and between ads (`platform/playgama-bridge-config.json`). |
+| Tapping **Next level**, on a 3–5–3 rhythm of levels passed (after 3, then 5 more, then 3 more, then round again) | Interstitial | Natural break between levels; CrazyGames caps midgame ads at one per 3 minutes, Playgama waits 60 s after start and between ads (`platform/playgama-bridge-config.json`). |
+| **Fight boss** on the boss card (after every sixth level) | Rewarded | The boss is a bonus round; **Skip boss** is free and goes straight on to the next level. Retrying a boss and continuing after a lost fight are free. |
 | **Revive** on the fail card, every second use | Rewarded | Continues the failed level where it stopped. Offered for 5 seconds, then the button goes. |
 | **Skip level** on the fail card | Rewarded | Shown on every fail. |
 | **Try again** | — | Never shows an ad. |
 
 Rewarded ads are always the player's choice and never the only way forward:
-Try again is free, and every level can be finished without them. The reward
-is only given for a watched ad (closing early gives nothing); if no ad can be
-served the player gets it anyway. The game pauses and mutes for every ad and
+Try again is free, every level can be finished without them, and the boss can
+always be skipped. The reward is only given for a watched ad (closing early
+gives nothing); if no ad can be served the player gets it anyway. The game pauses and mutes for every ad and
 reports gameplay start and stop around play, menus and ads. The YouTube and
-CrazyGames Basic builds make no ad calls at all: Revive and Skip are free.
+CrazyGames Basic builds make no ad calls at all: Revive, Skip and boss fights
+are free.

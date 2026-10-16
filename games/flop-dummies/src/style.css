@@ -852,6 +852,40 @@ button:focus-visible {
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
+.boss-offer .stamp {
+  color: #ff7a6b;
+}
+
+.boss-face {
+  width: 76px;
+  height: 76px;
+  margin: 12px auto 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, #3a2224, #1b1b1f);
+  color: #ff7a6b;
+  box-shadow: 0 0 0 4px rgba(255, 122, 107, 0.25), 0 0 28px rgba(255, 90, 70, 0.45);
+  animation: bossPulse 1.1s ease-in-out infinite;
+}
+
+.boss-face svg {
+  width: 46px;
+  height: 46px;
+}
+
+@keyframes bossPulse {
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 7px rgba(255, 122, 107, 0.18), 0 0 40px rgba(255, 90, 70, 0.6);
+  }
+}
+
+.btn.primary.boss-btn {
+  background: linear-gradient(180deg, #ff7a5c, #e2463a);
+  box-shadow: 0 5px 0 #a8281f, 0 8px 18px rgba(0, 0, 0, 0.35);
+}
+
 .reason {
   color: #ffb4ab;
   font-weight: 700;
