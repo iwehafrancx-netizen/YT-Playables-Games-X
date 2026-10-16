@@ -189,6 +189,12 @@ export class Audio {
     this.tone(360, 1100, 0.2, { type: 'sine', gain: 0.12, at: 0.02 });
   }
 
+  /** An engine revving up: the boss winding up for a charge. */
+  rev() {
+    this.tone(70, 260, 0.75, { type: 'sawtooth', gain: 0.13, attack: 0.06 });
+    this.noise(0.75, { freq: 300, q: 2, gain: 0.14, attack: 0.15, sweep: 3 });
+  }
+
   crack() {
     this.noise(0.18, { freq: 2200, q: 3, gain: 0.4, sweep: 0.4 });
     this.tone(500, 160, 0.12, { type: 'square', gain: 0.1 });
