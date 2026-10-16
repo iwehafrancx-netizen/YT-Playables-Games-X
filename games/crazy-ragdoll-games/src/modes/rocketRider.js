@@ -8,7 +8,7 @@ const GRAVITY = 9;
 const MAX_UP = 6;
 const MAX_DOWN = -7.5;
 const CEILING = 13;
-const HAND = { x: 0, y: -0.13, z: 0 };
+const CHEST = { x: 0, y: 0.17, z: 0 }; // top of the chest, in its local frame
 const RING_R = 1.25;
 // Head and torso crash into walls; legs only count if they hit the floor.
 const PROBES = ['head', 'chest', 'pelvis'];
@@ -136,10 +136,13 @@ export class RocketRiderLevel extends Level {
   }
 
   attach() {
-    const d = this.spawnDummy({ position: [this.x - 0.05, this.y - 2.55, 0], yaw: Math.PI / 2, pose: 'hang', muscle: 0.75 });
-    this.joints = ['lowerArmL', 'lowerArmR'].map((part, i) =>
-      this.physics.world.createImpulseJoint(RAPIER.JointData.spherical({ x: 0, y: -0.4, z: i ? -0.15 : 0.15 }, HAND), this.rocket, d.parts[part].body, true),
-    );
+    const d = this.spawnDummy({ position: [this.x - 0.05, this.y - 0.38 - 0.15 - 1.41, 0], yaw: Math.PI / 2, pose: 'hang', muscle: 0.65 });
+    // Strapped in by a harness at the chest: the heavy core takes the pull.
+    // Pinning the light hands instead fights the arm limits and the solver
+    // blows the body apart.
+    this.joints = [this.physics.world.createImpulseJoint(RAPIER.JointData.rope(0.15, { x: 0, y: -0.38, z: 0 }, CHEST), this.rocket, d.parts.chest.body, true)];
+    // Already moving with the rocket, so the first step isn't a jolt.
+    d.ragdoll.setVelocity({ x: this.speed, y: this.vy, z: 0 });
     this.rider = d;
     this.rocketMesh.visible = true;
     this.physics.snapAll();
@@ -352,8 +355,10 @@ export class RocketRiderLevel extends Level {
   cameraFor(snap = false) {
     const portrait = this.stage.width < this.stage.height;
     const x = this.phase === 'landing' || this.phase === 'done' ? this.rider.com(_a).x : this.x;
-    const look = new THREE.Vector3(x + (portrait ? 2 : 4), portrait ? 6 : 5.5, 0);
-    const pos = new THREE.Vector3(x + (portrait ? 2 : 4), portrait ? 7 : 6.2, portrait ? 26 : 17);
+    // Follow the climb part of the way, so the rocket never leaves the frame.
+    const y = THREE.MathUtils.lerp(portrait ? 6 : 5.5, this.y - 1.2, 0.55);
+    const look = new THREE.Vector3(x + (portrait ? 2 : 4), y, 0);
+    const pos = new THREE.Vector3(x + (portrait ? 2 : 4), y + 0.7, portrait ? 26 : 17);
     if (snap) this.rig.set(pos, look);
     else this.rig.aim(pos, look, 5, 6);
     this.stage.focusShadows(look, 18);

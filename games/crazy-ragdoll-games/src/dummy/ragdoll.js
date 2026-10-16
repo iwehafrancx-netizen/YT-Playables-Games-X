@@ -534,10 +534,25 @@ export class Ragdoll {
     for (const name of ORDER) this.parts[name].body.setGravityScale(s, true);
   }
 
-  /** Puts every part back into `pose` at a new root position, at rest. */
-  teleport(position, yaw = 0, pose = this.poseName) {
+  /**
+   * Turns him into a statue where he lies: every part becomes fixed (or
+   * kinematic, to be carried by something that moves) and the muscles stop.
+   */
+  freeze(kinematic = false) {
+    const type = kinematic ? RAPIER.RigidBodyType.KinematicPositionBased : RAPIER.RigidBodyType.Fixed;
+    for (const name of ORDER) this.parts[name].body.setBodyType(type, true);
+    for (const [list, fn] of [[this.physics.preStep, this._pre], [this.physics.postStep, this._post]]) {
+      const i = list.indexOf(fn);
+      if (i >= 0) list.splice(i, 1);
+    }
+    this.frozen = true;
+  }
+
+  /** Puts every part back into `pose` at a new root position, at rest; `tilt` lays him over. */
+  teleport(position, yaw = 0, pose = this.poseName, tilt = null) {
     this.facing.set(Math.sin(yaw), 0, Math.cos(yaw));
     const rootRot = new Quaternion().setFromAxisAngle(UP, yaw);
+    if (tilt) rootRot.premultiply(tilt);
     const placed = this.solvePose(getPose(pose), new Vector3(...position), rootRot);
     this.setPose(pose);
     for (const name of ORDER) {

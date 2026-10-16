@@ -4,15 +4,16 @@ import { RAPIER, Group, groups } from '../physics/physics.js';
 import { SUITS } from '../dummy/dummyView.js';
 
 const SUIT_IDS = Object.keys(SUITS);
-const HAND = { x: 0, y: -0.13, z: 0 }; // end of the forearm, in its local frame
-const SETTLE_SPEED = 1;
-const HOLD_TIME = 0.5; // seconds the tower has to stand at the line
+const CHEST = { x: 0, y: 0.17, z: 0 }; // top of the chest, in its local frame
+const SET_SPEED = 0.9; // below this a landed ragdoll starts to set
+const SET_TIME = 0.3;
 const _a = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 
 /**
  * Stack Attack: a crane swings ragdolls over a podium. Tap to let go and pile
- * them up past the line before you run out. A floppy tower is still a tower.
+ * them up past the line before you run out. Each one lands floppy, then sets
+ * solid where it came to rest, so the tower is exactly as good as your drops.
  */
 export class StackAttackLevel extends Level {
   setup() {
@@ -21,7 +22,8 @@ export class StackAttackLevel extends Level {
     this.used = 0;
     this.goal = def.goal ?? 3.4;
     this.best = 0;
-    this.heldT = 0;
+    this.height = 0;
+    this.statues = [];
     this.phase = 'play';
     this.craneT = 0;
     this.carried = null;
@@ -129,15 +131,15 @@ export class StackAttackLevel extends Level {
   load() {
     const x = this.hookX();
     const d = this.spawnDummy({
-      position: [x, this.railY - 2.85, 0],
+      position: [x, this.railY - 0.75 - 0.12 - 1.41, 0],
       yaw: 0,
       pose: 'hang',
       muscle: 0.7,
       suit: SUIT_IDS[(this.used + (this.game.save.data.suit === 'classic' ? 0 : 1)) % SUIT_IDS.length],
     });
-    const joints = ['lowerArmL', 'lowerArmR'].map((part) =>
-      this.physics.world.createImpulseJoint(RAPIER.JointData.spherical({ x: 0, y: -0.75, z: 0 }, HAND), this.hook, d.parts[part].body, true),
-    );
+    // Held by the scruff on a short rope: pinning the hands to a moving crane
+    // fights the arm limits and shakes the body apart.
+    const joints = [this.physics.world.createImpulseJoint(RAPIER.JointData.rope(0.12, { x: 0, y: -0.75, z: 0 }, CHEST), this.hook, d.parts.chest.body, true)];
     this.carried = { d, joints };
     this.physics.snapAll();
   }
@@ -146,6 +148,10 @@ export class StackAttackLevel extends Level {
     if (!this.carried || this.phase !== 'play') return;
     const { d, joints } = this.carried;
     for (const j of joints) this.physics.world.removeImpulseJoint(j, true);
+    // It drops more or less straight down from where it is: carrying the
+    // crane's full sideways speed would fling even a perfect drop off the podium.
+    const v = d.velocity(_a);
+    d.ragdoll.addVelocity({ x: -v.x * 0.75, y: 0, z: -v.z * 0.75 });
     // Curled up they make chunky building blocks; spread out they make a rug.
     d.setPose('tuck');
     d.setMuscle(0.8);
@@ -183,20 +189,50 @@ export class StackAttackLevel extends Level {
     }
   }
 
-  /** Height of the pile: the highest settled part standing on the podium. */
-  towerHeight() {
+  onPodium(p, margin = 0.9) {
     const [w, dd] = this.baseSize;
-    let top = 0;
-    for (const d of this.dummies) {
-      if (!d.dropped) continue;
-      if (d.speed() > SETTLE_SPEED) continue;
-      for (const name in d.parts) {
-        const t = d.parts[name].body.translation();
-        if (Math.abs(t.x) > w / 2 + 1.3 || Math.abs(t.z) > dd / 2 + 1.3) continue;
-        top = Math.max(top, t.y + 0.1);
+    return Math.abs(p.x) < w / 2 + margin && Math.abs(p.z) < dd / 2 + margin && p.y > this.baseTop - 0.2;
+  }
+
+  /** A landed ragdoll that has come to rest on the pile sets solid. */
+  settle(d, dt) {
+    d.stillT = d.speed() < SET_SPEED ? (d.stillT ?? 0) + dt : 0;
+    d.landedT = (d.landedT ?? 0) + dt;
+    if (d.stillT < SET_TIME && d.landedT < 4) return;
+    const c = d.com(_a);
+    if (!this.onPodium(c)) {
+      if (c.y < this.baseTop - 0.3) {
+        d.lost = true;
+        this.fx.text(c.clone().add(new THREE.Vector3(0, 1, 0)), 'MISSED!', { color: '#ff7a6b', size: 24 });
       }
+      return;
     }
-    return top;
+    d.frozen = true;
+    d.ragdoll.freeze(!!this.turn);
+    if (this.turn) {
+      // Remember where each part sits on the turntable, to carry it round.
+      _q.setFromAxisAngle(_a.set(0, 1, 0), -this.spin);
+      d.ragdoll.forEachBody((body) => {
+        const t = body.translation();
+        const r = body.rotation();
+        this.statues.push({
+          body,
+          p: new THREE.Vector3(t.x, t.y, t.z).applyQuaternion(_q),
+          q: _q.clone().multiply(new THREE.Quaternion(r.x, r.y, r.z, r.w)),
+        });
+      });
+    }
+    let top = 0;
+    d.ragdoll.forEachBody((body) => {
+      const t = body.translation();
+      if (this.onPodium(t, 1.3)) top = Math.max(top, t.y + 0.12);
+    });
+    const gain = top - this.height;
+    this.height = Math.max(this.height, top);
+    this.best = this.height;
+    this.audio.impact(0.6, 'wood');
+    this.fx.puff(c, { count: 6, size: 0.6, color: 0xffffff });
+    if (gain > 0.05) this.fx.text(c.clone().add(new THREE.Vector3(0, 1.1, 0)), `+${gain.toFixed(1)}m`, { color: '#3c86e8', size: 26 });
   }
 
   fixedUpdate(dt) {
@@ -208,9 +244,19 @@ export class StackAttackLevel extends Level {
       _q.setFromAxisAngle(_a.set(0, 1, 0), this.spin);
       this.podiumBody.setNextKinematicRotation({ x: _q.x, y: _q.y, z: _q.z, w: _q.w });
     }
+    if (this.turn) {
+      for (const s of this.statues) {
+        const p = _a.copy(s.p).applyQuaternion(_q);
+        s.body.setNextKinematicTranslation({ x: p.x, y: p.y, z: p.z });
+        const r = _q.clone().multiply(s.q);
+        s.body.setNextKinematicRotation({ x: r.x, y: r.y, z: r.z, w: r.w });
+      }
+    }
     const wind = this.def.wind ?? 0;
-    if (wind) {
-      for (const d of this.dummies) if (d.dropped && d.com().y > this.baseTop + 0.5) d.ragdoll.addVelocity({ x: wind * dt, y: 0, z: 0 });
+    for (const d of this.dummies) {
+      if (!d.dropped || d.frozen || d.lost) continue;
+      if (wind && d.com(_a).y > this.baseTop + 0.5) d.ragdoll.addVelocity({ x: wind * dt, y: 0, z: 0 });
+      if (d.flopped) this.settle(d, dt);
     }
   }
 
@@ -220,21 +266,17 @@ export class StackAttackLevel extends Level {
       this.waitT -= dt;
       if (this.waitT <= 0) this.load();
     }
-    const h = this.towerHeight();
-    this.best = Math.max(this.best, h);
+    const h = this.height;
     this.hud.set('height', `${h.toFixed(1)}/${this.goal.toFixed(1)}m`);
     this.goalLine.material.opacity = h >= this.goal ? 0.85 + Math.sin(this.time * 18) * 0.15 : 0.85;
 
     if (this.phase === 'play') {
-      if (h >= this.goal) {
-        this.heldT += dt;
-        if (this.heldT >= HOLD_TIME) this.win();
-      } else this.heldT = 0;
-      // Out of ragdolls: give the last one time to land, then call it.
-      if (this.left <= 0 && !this.carried && h < this.goal) {
-        const moving = this.dummies.some((d) => d.speed() > SETTLE_SPEED);
-        this.outT = moving ? 0 : (this.outT ?? 0) + dt;
-        if (this.outT > 1.2) this.lose();
+      if (h >= this.goal) this.win();
+      // Out of ragdolls: once the last one has set or fallen, call it.
+      const pending = this.dummies.some((d) => d.dropped && !d.frozen && !d.lost);
+      if (this.left <= 0 && !this.carried && !pending && h < this.goal) {
+        this.outT = (this.outT ?? 0) + dt;
+        if (this.outT > 0.8) this.lose();
       }
     } else if (this.phase === 'end') {
       this.endT -= dt;
