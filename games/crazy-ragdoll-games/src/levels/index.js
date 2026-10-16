@@ -8,6 +8,12 @@ import { WipeoutLevel } from '../modes/wipeout.js';
 import { WIPE } from './wipe.js';
 import { PinballLevel } from '../modes/pinball.js';
 import { PIN } from './pin.js';
+import { PlinkoLevel } from '../modes/plinko.js';
+import { PLINKO } from './plinko.js';
+import { BounceUpLevel } from '../modes/bounceUp.js';
+import { BOUNCE } from './bounce.js';
+import { SlideLevel } from '../modes/slide.js';
+import { SLIDE } from './slide.js';
 import { remixes } from './remix.js';
 
 export const DEPARTMENTS = [
@@ -16,6 +22,9 @@ export const DEPARTMENTS = [
   { id: 'rocket', name: 'Rocket Rider', theme: 'studio', Mode: RocketRiderLevel, levels: ROCKET },
   { id: 'wipe', name: 'Wipeout', theme: 'studio', Mode: WipeoutLevel, levels: WIPE },
   { id: 'pin', name: 'Ragdoll Pinball', theme: 'studio', Mode: PinballLevel, levels: PIN },
+  { id: 'plinko', name: 'Plinko Party', theme: 'studio', Mode: PlinkoLevel, levels: PLINKO },
+  { id: 'bounce', name: 'Bounce Up', theme: 'studio', Mode: BounceUpLevel, levels: BOUNCE },
+  { id: 'slide', name: "Slip 'n' Slide", theme: 'studio', Mode: SlideLevel, levels: SLIDE },
 ];
 
 for (const dept of DEPARTMENTS) {
