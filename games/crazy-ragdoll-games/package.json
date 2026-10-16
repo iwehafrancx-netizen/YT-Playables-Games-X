@@ -1,0 +1,25 @@
+{
+  "name": "crazy-ragdoll-games",
+  "version": "1.0.0",
+  "description": "Crazy Ragdoll Games \u2014 physics ragdoll party games for Playgama, CrazyGames and YouTube Playables",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs --dev",
+    "preview": "node build.mjs --preview",
+    "zip": "node build.mjs && cd dist && zip -qr ../crazy-ragdoll-games.zip .",
+    "zip:crazygames-basic": "node build.mjs --target=crazygames-basic && cd dist-crazygames-basic && zip -qr ../crazy-ragdoll-games-crazygames-basic.zip .",
+    "zip:crazygames-full": "node build.mjs --target=crazygames-full && cd dist-crazygames-full && zip -qr ../crazy-ragdoll-games-crazygames-full.zip .",
+    "zip:playgama": "node build.mjs --target=playgama && cd dist-playgama && zip -qr ../crazy-ragdoll-games-playgama.zip .",
+    "zip:all": "npm run zip && npm run zip:crazygames-basic && npm run zip:crazygames-full && npm run zip:playgama"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.19.3",
+    "@fontsource/lilita-one": "^5.3.0",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  },
+  "type": "module",
+  "private": true
+}
