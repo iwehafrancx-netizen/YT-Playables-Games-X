@@ -117,6 +117,7 @@ npm run preview                # preview/flop-dummies.html: one self-contained f
 | **Revive** on the fail card, every second use | Rewarded | Continues the failed level where it stopped. Offered for 5 seconds, then the button goes. |
 | **Skip level** on the fail card | Rewarded | Shown on every fail. |
 | **Try again** | — | Never shows an ad. |
+| Game start (preroll) | Platform | Not requested by the game. CrazyGames and Playgama run their own prerolls where a portal allows them; a game-side call at start would break CrazyGames' "no ads before gameplay" rule and can double up on Playgama. |
 
 Rewarded ads are always the player's choice and never the only way forward:
 Try again is free, every level can be finished without them, and the boss can
