@@ -700,6 +700,58 @@ button:focus-visible {
   font-weight: 600;
 }
 
+.unlock {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 0 auto 10px;
+  max-width: 300px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.unlock > svg {
+  grid-row: span 2;
+  width: 26px;
+  height: 26px;
+  color: var(--yellow);
+}
+
+.unlock span svg {
+  width: 14px;
+  height: 14px;
+  vertical-align: -2px;
+  color: var(--yellow);
+}
+
+.unlock i {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.unlock em {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #ffd23a, #ff9f1c);
+}
+
+.up-next {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.up-next b {
+  color: #fff;
+}
+
 .total {
   margin: -4px 0 12px;
   color: var(--muted);
@@ -873,6 +925,60 @@ button:focus-visible {
   font-size: 14px;
   color: #fff;
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+.intro .stamp {
+  color: #3c86e8;
+}
+
+.intro-face {
+  width: 72px;
+  height: 72px;
+  margin: 12px auto 0;
+  display: grid;
+  place-items: center;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #ffd23a, #ff9f1c);
+  color: #fff;
+  box-shadow: 0 5px 0 #d97a00, 0 10px 22px rgba(0, 0, 0, 0.25);
+  animation: introBob 1.4s ease-in-out infinite;
+}
+
+.intro-face svg {
+  width: 40px;
+  height: 40px;
+}
+
+@keyframes introBob {
+  50% {
+    transform: translateY(-5px) rotate(-4deg);
+  }
+}
+
+.how {
+  list-style: none;
+  margin: 10px 0 16px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  text-align: left;
+}
+
+.how li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  font-weight: 700;
+}
+
+.how svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  color: #ffd23a;
 }
 
 .boss-offer .stamp {
@@ -1065,9 +1171,16 @@ button:focus-visible {
   }
 }
 
-@media (max-height: 520px) {
+@media (max-height: 600px) {
   .panel {
     padding: 14px 18px;
+  }
+  .result .total,
+  .up-next {
+    display: none;
+  }
+  .unlock {
+    margin-bottom: 8px;
   }
   .panel h2 {
     font-size: 26px;
@@ -1110,5 +1223,20 @@ button:focus-visible {
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-height: 600px) {
+  .intro-face {
+    display: none;
+  }
+
+  .how {
+    margin: 6px 0 10px;
+    gap: 6px;
+  }
+
+  .how li {
+    padding: 6px 10px;
   }
 }

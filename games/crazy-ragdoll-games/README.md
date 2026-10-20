@@ -1,6 +1,6 @@
 # Crazy Ragdoll Games
 
-Five ways to fling a ragdoll. Zero ways to be careful.
+Eight ways to fling a ragdoll. Zero ways to be careful.
 
 A physics party game on a clean white studio stage. Every game is played with
 the same floppy, fully jointed ragdoll — in a new coat of paint each time:
@@ -12,16 +12,21 @@ the same floppy, fully jointed ragdoll — in a new coat of paint each time:
 | **Rocket Rider** | He's hanging on to a rocket. Thread the gates, dodge the blocks, collect the rings, and he lets go over the landing pad. | Hold to fly up · let go to drop |
 | **Wipeout** | Sweeper arms come round a spinning stage. Hop the low bars, big-jump the tall ones, grab the stars, and stay on till the clock runs out. | Tap to hop · hold for a big jump |
 | **Ragdoll Pinball** | He curls into a ball on a real pinball table: flippers, bumpers, star rollovers. Hit the target score before your three balls drain. | Tap left / right to flip |
+| **Plinko Party** | Aim the dropper and let him tumble down through the pegs into the scoring buckets. Bumpers kick, ×2 buckets double the lot. | Drag to aim · let go to drop |
+| **Bounce Up** | A tower of trampolines. Steer him in the air from pad to pad up to the flag before the clock runs out; purple pads slide. | Hold left / right to steer |
+| **Slip 'n' Slide** | Belly-first down a soapy slide: dodge the blocks and sweepers, hit the ramps, grab the stars, splash into the pool. | Hold left / right to steer |
 
 Play drops you into an endless run: it opens with the crane, then the hammer,
 and after that deals every game in a shuffled order with the difficulty
-climbing. Each course comes back as a tougher "After Hours" remix (warm studio
+climbing. The first time each game comes up, a short card explains the goal
+and the controls before the level starts. The results card shows what's up
+next and how many stars until the next suit unlocks. Each course comes back as a tougher "After Hours" remix (warm studio
 light), and later laps reshuffle everything, so there's always a next level.
 Levels earn 1–3 stars, stars unlock ragdoll colours in the Wardrobe, and
 passed levels can be replayed.
 
 Keyboard: <kbd>Space</kbd> / <kbd>Enter</kbd> works wherever a tap does;
-pinball also takes <kbd>←</kbd> / <kbd>→</kbd>.
+pinball, Plinko, Bounce Up and the slide also take <kbd>←</kbd> / <kbd>→</kbd>.
 
 ### Boss fights
 
@@ -77,7 +82,8 @@ src/
   dummy/     the ragdoll: physics and looks
   render/    renderer, studio lighting, materials, textures, effects, camera
   world/     props and level building blocks
-  modes/     one class per game (stackAttack, hammerSpin, rocketRider, wipeout, pinball, bossFight)
+  modes/     one class per game (stackAttack, hammerSpin, rocketRider, wipeout, pinball,
+             plinko, bounceUp, slide, bossFight)
   levels/    level data for each game, remixes and the endless sequence
   platform/  Playgama, CrazyGames and YouTube SDK adapters
   ui/        menus, HUD and cards

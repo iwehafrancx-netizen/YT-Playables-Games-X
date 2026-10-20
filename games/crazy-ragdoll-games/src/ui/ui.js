@@ -267,7 +267,7 @@ export class UI {
     );
   }
 
-  results({ passed, stars: n, score, total, isBest, title, subtitle, reason, stats = [], canRevive, reviveIsPaid, canSkip, canContinue, ads, onRevive, onRetry, onNext, onSkip, onHome }) {
+  results({ passed, stars: n, score, total, isBest, title, subtitle, reason, stats = [], unlock, upNext, canRevive, reviveIsPaid, canSkip, canContinue, ads, onRevive, onRetry, onNext, onSkip, onHome }) {
     const adTag = '<span class="ad-tag">AD</span>';
     const el = this.modal(
       `<div class="result ${passed ? 'pass' : 'fail'}">
@@ -278,6 +278,8 @@ export class UI {
         <div class="score-line ${!passed && !score ? 'hidden' : ''}"><span class="score-val" data-score="${Math.round(score)}">0</span>${isBest ? '<span class="new-best">New best!</span>' : ''}</div>
         ${passed ? `<p class="total">Total score <b>${Math.round(total).toLocaleString()}</b></p>` : ''}
         ${stats.length ? `<ul class="stats">${stats.map(([k, v]) => `<li><span>${esc(k)}</span><b>${esc(v)}</b></li>`).join('')}</ul>` : ''}
+        ${passed && unlock ? `<div class="unlock">${icon('shirt')}<span><b>${unlock.need - unlock.have}</b> more ${icon('star')} unlocks <b style="color:${unlock.color}">${esc(unlock.label)}</b></span><i><em style="width:${Math.round((100 * unlock.have) / unlock.need)}%"></em></i></div>` : ''}
+        ${passed && upNext ? `<p class="up-next">Up next · <b>${esc(upNext)}</b></p>` : ''}
         <div class="col">
           ${passed ? `<button class="btn primary big next-btn" data-act="next"><span>Next level</span>${icon('next')}</button>` : ''}
           ${canRevive ? `<button class="btn primary big revive-btn" data-act="revive">${icon('play')}<span>Revive</span>${reviveIsPaid ? adTag : ''}<i class="countdown">5</i></button>` : ''}
@@ -327,6 +329,22 @@ export class UI {
         }, 450 + i * 330);
       });
     }
+  }
+
+  /** First time a game comes up: what it is and how to play it. */
+  intro({ name, icon: ic, goal, how, onGo }) {
+    this.modal(
+      `<div class="result intro">
+        <div class="stamp">New game</div>
+        <div class="intro-face">${icon(ic)}</div>
+        <h2>${esc(name)}</h2>
+        <p class="result-sub">${esc(goal)}</p>
+        <ul class="how">${how.map(([i, text]) => `<li>${icon(i)}<span>${esc(text)}</span></li>`).join('')}</ul>
+        <button class="btn primary big" data-act="go">${icon('play')}<span>Let's go!</span></button>
+      </div>`,
+      { go: onGo },
+    );
+    this.audio.ding?.(3);
   }
 
   /** Between levels: a boss wants a word. Fight it (rewarded ad) or carry on. */

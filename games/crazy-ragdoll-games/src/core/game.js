@@ -5,6 +5,7 @@ import { Showcase } from '../modes/showcase.js';
 import { BossFightLevel } from '../modes/bossFight.js';
 import { BOSS_EVERY, BOSS_DEPT, bossFor } from '../levels/boss.js';
 import { SUIT_UNLOCKS } from '../ui/ui.js';
+import { SUITS } from '../dummy/dummyView.js';
 
 // Interstitials come round on a 3–5–3 rhythm of levels passed, then repeat.
 const BREAKS = [3, 5, 3];
@@ -74,6 +75,13 @@ export class Game {
     return DEPARTMENTS.reduce((n, d) => n + this.save.totalStars(d.levels.map((l) => l.id)), 0);
   }
 
+  /** The next suit still locked, and how far the player is from it. */
+  nextUnlock() {
+    const have = this.totalStars();
+    const next = Object.entries(SUIT_UNLOCKS).find(([, need]) => need > have);
+    return next && { label: SUITS[next[0]].label, color: SUITS[next[0]].body, have, need: next[1] };
+  }
+
   showTitle() {
     platform.gameplayStop();
     this.ui.clearHud();
@@ -130,9 +138,31 @@ export class Game {
     this.paused = false;
     this.current = { n, dept, level, replay };
     this.setScene(new dept.Mode(this, level, dept));
-    this.ui.banner(`Level ${n}`, level.name);
     platform.levelEvent('level_started');
-    platform.gameplayStart();
+    const seen = this.save.data.seen ?? [];
+    if (!replay && dept.intro && !seen.includes(dept.id)) this.showIntro(dept, () => this.save.set('seen', [...seen, dept.id]));
+    else {
+      this.ui.banner(`Level ${n}`, level.name);
+      platform.gameplayStart();
+    }
+  }
+
+  /** Holds the freshly built level behind a how-to-play card until the player is ready. */
+  showIntro(dept, onSeen) {
+    const scene = this.scene;
+    this.paused = true;
+    const go = () => {
+      if (this.scene !== scene || !this.paused) return;
+      onSeen();
+      this.ui.closeModal();
+      this.input.handler = scene;
+      this.paused = false;
+      this.last = performance.now();
+      this.ui.banner(`Level ${this.current.n}`, this.current.level.name);
+      platform.gameplayStart();
+    };
+    this.input.handler = { onKeyDown: (k) => (k === 'Space' || k === 'Enter' ? (go(), true) : false) };
+    this.ui.intro({ name: dept.name, ...dept.intro, onGo: go });
   }
 
   /** Plays a platform ad with the game paused and muted, then picks up where it was. */
@@ -262,6 +292,8 @@ export class Game {
         canRevive: !result.passed && level.canRevive(),
         reviveIsPaid: platform.ads && (this.revives + 1) % 2 === 0,
         canSkip: !result.passed && !replay,
+        unlock: this.nextUnlock(),
+        upNext: replay ? null : n % BOSS_EVERY === 0 ? 'Boss fight!' : levelAt(n + 1).dept.name,
         onRevive: () => this.revive(),
         onRetry: () => this.startLevel(n, { replay }),
         // A replay hands back to the run where the player left it.
@@ -315,9 +347,9 @@ export class Game {
       if (fromSystem) this.audio.suspend();
       return;
     }
+    if (fromSystem) this.audio.suspend();
     if (this.paused) return;
     this.paused = true;
-    if (fromSystem) this.audio.suspend();
     platform.gameplayStop();
     this.ui.pause({
       save: this.save,

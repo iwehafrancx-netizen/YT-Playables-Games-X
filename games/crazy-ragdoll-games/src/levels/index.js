@@ -16,15 +16,40 @@ import { SlideLevel } from '../modes/slide.js';
 import { SLIDE } from './slide.js';
 import { remixes } from './remix.js';
 
+// `intro` is the how-to-play card shown the first time each game comes up.
 export const DEPARTMENTS = [
-  { id: 'stack', name: 'Stack Attack', theme: 'studio', Mode: StackAttackLevel, levels: STACK },
-  { id: 'hammer', name: 'Hammer Spin', theme: 'studio', Mode: HammerSpinLevel, levels: HAMMER },
-  { id: 'rocket', name: 'Rocket Rider', theme: 'studio', Mode: RocketRiderLevel, levels: ROCKET },
-  { id: 'wipe', name: 'Wipeout', theme: 'studio', Mode: WipeoutLevel, levels: WIPE },
-  { id: 'pin', name: 'Ragdoll Pinball', theme: 'studio', Mode: PinballLevel, levels: PIN },
-  { id: 'plinko', name: 'Plinko Party', theme: 'studio', Mode: PlinkoLevel, levels: PLINKO },
-  { id: 'bounce', name: 'Bounce Up', theme: 'studio', Mode: BounceUpLevel, levels: BOUNCE },
-  { id: 'slide', name: "Slip 'n' Slide", theme: 'studio', Mode: SlideLevel, levels: SLIDE },
+  {
+    id: 'stack', name: 'Stack Attack', theme: 'studio', Mode: StackAttackLevel, levels: STACK,
+    intro: { icon: 'dummy', goal: 'Pile ragdolls on the podium until the tower passes the red line.', how: [['play', 'Tap to drop the ragdoll off the crane'], ['target', 'Wait till he swings over the podium'], ['star', 'Fewer drops = more stars']] },
+  },
+  {
+    id: 'hammer', name: 'Hammer Spin', theme: 'studio', Mode: HammerSpinLevel, levels: HAMMER,
+    intro: { icon: 'retry', goal: 'Spin the ragdoll round like a hammer and fling him onto the targets.', how: [['play', 'Hold to spin him faster'], ['target', 'Let go when the red ring is on a target'], ['star', 'Bullseyes score the most']] },
+  },
+  {
+    id: 'rocket', name: 'Rocket Rider', theme: 'studio', Mode: RocketRiderLevel, levels: ROCKET,
+    intro: { icon: 'bolt', goal: 'Hang on to the rocket, fly through the gaps and land on the pad.', how: [['play', 'Hold to fly up, let go to drop'], ['skull', "Don't touch the blocks"], ['star', 'Collect the rings for stars']] },
+  },
+  {
+    id: 'wipe', name: 'Wipeout', theme: 'studio', Mode: WipeoutLevel, levels: WIPE,
+    intro: { icon: 'clock', goal: 'Stay on the spinning stage until the clock runs out.', how: [['play', 'Tap to hop the low bars'], ['bolt', 'Hold for a big jump over the tall ones'], ['star', 'Grab stars on the way']] },
+  },
+  {
+    id: 'pin', name: 'Ragdoll Pinball', theme: 'studio', Mode: PinballLevel, levels: PIN,
+    intro: { icon: 'star', goal: 'He is the pinball. Hit the target score before your balls drain.', how: [['back', 'Tap the left side for the left flipper'], ['next', 'Tap the right side for the right flipper'], ['bolt', 'Bumpers and rollovers score big']] },
+  },
+  {
+    id: 'plinko', name: 'Plinko Party', theme: 'studio', Mode: PlinkoLevel, levels: PLINKO,
+    intro: { icon: 'target', goal: 'Drop the ragdoll through the pegs into the best buckets.', how: [['next', 'Drag left or right to aim'], ['play', 'Let go to drop him'], ['star', 'Middle buckets pay most, ×2 doubles your score']] },
+  },
+  {
+    id: 'bounce', name: 'Bounce Up', theme: 'studio', Mode: BounceUpLevel, levels: BOUNCE,
+    intro: { icon: 'heart', goal: 'Bounce from pad to pad all the way up to the flag.', how: [['back', 'Hold the left side to steer left'], ['next', 'Hold the right side to steer right'], ['clock', 'Beat the clock — purple pads move']] },
+  },
+  {
+    id: 'slide', name: "Slip 'n' Slide", theme: 'studio', Mode: SlideLevel, levels: SLIDE,
+    intro: { icon: 'next', goal: 'Slide all the way down and splash into the pool.', how: [['back', 'Hold left or right to steer'], ['skull', 'Dodge the blocks — too many bonks ends the ride'], ['bolt', 'Hit the yellow ramps for big air']] },
+  },
 ];
 
 for (const dept of DEPARTMENTS) {
