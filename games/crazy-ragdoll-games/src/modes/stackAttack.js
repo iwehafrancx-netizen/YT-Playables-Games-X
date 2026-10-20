@@ -177,16 +177,18 @@ export class StackAttackLevel extends Level {
   onImpact(a, b, force, strength) {
     const info = a.kind === 'dummy' ? a : b.kind === 'dummy' ? b : null;
     const d = info && this.dummyFor(info);
-    if (d && d.dropped && strength > 0.15 && !d.flopped) {
-      // First real landing: they go floppy and heavy, which is what makes them stack.
-      d.flopped = true;
-      d.setMuscle(0.6);
-      d.ragdoll.forEachBody((body) => {
-        body.setLinearDamping(4);
-        body.setAngularDamping(4);
-      });
-      this.fx.puff(d.com(), { count: 4, size: 0.5, color: 0xffffff });
-    }
+    if (d && d.dropped && strength > 0.15 && !d.flopped) this.flop(d);
+  }
+
+  /** First real landing: they go floppy and heavy, which is what makes them stack. */
+  flop(d) {
+    d.flopped = true;
+    d.setMuscle(0.6);
+    d.ragdoll.forEachBody((body) => {
+      body.setLinearDamping(4);
+      body.setAngularDamping(4);
+    });
+    this.fx.puff(d.com(), { count: 4, size: 0.5, color: 0xffffff });
   }
 
   onPodium(p, margin = 0.9) {
@@ -200,11 +202,11 @@ export class StackAttackLevel extends Level {
     d.landedT = (d.landedT ?? 0) + dt;
     if (d.stillT < SET_TIME && d.landedT < 4) return;
     const c = d.com(_a);
-    if (!this.onPodium(c)) {
-      if (c.y < this.baseTop - 0.3) {
-        d.lost = true;
-        this.fx.text(c.clone().add(new THREE.Vector3(0, 1, 0)), 'MISSED!', { color: '#ff7a6b', size: 24 });
-      }
+    // Off the podium and below its top: he missed. Draped over the edge of the
+    // pile counts as part of it.
+    if (!this.onPodium(c) && c.y < this.baseTop - 0.3) {
+      d.lost = true;
+      this.fx.text(c.clone().add(new THREE.Vector3(0, 1, 0)), 'MISSED!', { color: '#ff7a6b', size: 24 });
       return;
     }
     d.frozen = true;
@@ -256,6 +258,8 @@ export class StackAttackLevel extends Level {
     for (const d of this.dummies) {
       if (!d.dropped || d.frozen || d.lost) continue;
       if (wind && d.com(_a).y > this.baseTop + 0.5) d.ragdoll.addVelocity({ x: wind * dt, y: 0, z: 0 });
+      // A landing too soft to register as an impact still counts.
+      if (!d.flopped && this.time - d.dropped > 2.5) this.flop(d);
       if (d.flopped) this.settle(d, dt);
     }
   }
