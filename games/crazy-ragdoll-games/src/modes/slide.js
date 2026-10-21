@@ -230,6 +230,13 @@ export class SlideLevel extends Level {
     R.addVelocity({ x: dv.x, y: dv.y, z: dv.z });
 
     if (this.phase !== 'play') return;
+    // Pinned against a block: slide him off whichever side has more room.
+    this.stuckT = v.z < 1 ? (this.stuckT ?? 0) + dt : 0;
+    if (this.stuckT > 1.2) {
+      this.stuckT = 0;
+      const out = this.toWorldDir((c.x > 0 ? -1 : 1) * 4, 1, 2, _a);
+      R.addVelocity({ x: out.x, y: out.y, z: out.z });
+    }
     for (const p of this.pickups) {
       if (p.got || Math.hypot(c.x - p.x, c.z - p.z) > 1 || c.y > p.y + 1.5) continue;
       p.got = true;
