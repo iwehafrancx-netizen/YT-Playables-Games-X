@@ -208,6 +208,7 @@ export class PlinkoLevel extends Level {
     this.stillT = 0;
     this.stillAt = this.ball.com();
     this.ball.setPose('tuck');
+    this.ball.lively = 0.35;
     this.ball.setMuscle(1);
     this.dropped++;
     this.hud.set('drops', this.drops - this.dropped);

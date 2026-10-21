@@ -193,6 +193,8 @@ export class PinballLevel extends Level {
     if (this.ball) this.removeDummy(this.ball);
     const at = this.toWorld((Math.random() - 0.5) * 2, 0.6, -L / 2 + 2.2);
     this.ball = this.spawnDummy({ position: [at.x, at.y, at.z], yaw: Math.PI, pose: 'tuck', muscle: 0.8 });
+    // Mostly a ball: just enough wriggle to read as a body.
+    this.ball.lively = 0.2;
     this.ball.ragdoll.addVelocity({ x: (Math.random() - 0.5) * 3, y: 0, z: 1.5 });
     this.physics.snapAll();
     this.audio.pop();

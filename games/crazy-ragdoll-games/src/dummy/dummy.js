@@ -29,6 +29,10 @@ export class Dummy {
     return this.ragdoll.balance;
   }
 
+  set lively(v) {
+    this.ragdoll.lively = v;
+  }
+
   setMuscle(m) {
     this.baseMuscle = m;
     this.ragdoll.setMuscle(this.knockout > 0 ? Math.min(m, 0.05) : m);

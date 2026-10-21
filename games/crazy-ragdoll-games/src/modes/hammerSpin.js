@@ -98,6 +98,8 @@ export class HammerSpinLevel extends Level {
     // Hung upside down from the boom tip by both ankles.
     this.hammer = this.spawnDummy({ position: [tip.x, tip.y - 0.1, tip.z], yaw: this.angle, pose: 'starfish', muscle: 0.75 });
     const R = this.hammer.ragdoll;
+    // Held by the ankles: loose hips would let the boom snap his legs about.
+    R.legLife = 0;
     // Spawned standing with his soles at the tip, then turned over about it.
     const flip = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI);
     const pivot = _b.copy(tip);
@@ -199,6 +201,7 @@ export class HammerSpinLevel extends Level {
     for (const j of this.ropes) this.physics.world.removeImpulseJoint(j, true);
     this.ropes = [];
     const d = this.hammer;
+    d.ragdoll.legLife = 1;
     const v = this.launch(_b);
     d.ragdoll.setVelocity({ x: v.x, y: v.y, z: v.z });
     d.ragdoll.addSpin(new THREE.Vector3(0, this.spin * 0.4, 0));

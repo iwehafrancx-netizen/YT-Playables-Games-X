@@ -155,6 +155,7 @@ export class StackAttackLevel extends Level {
     // Curled up they make chunky building blocks; spread out they make a rug.
     d.setPose('tuck');
     d.setMuscle(0.8);
+    d.lively = 0.5;
     d.dropped = this.time;
     this.carried = null;
     this.left--;
@@ -183,6 +184,8 @@ export class StackAttackLevel extends Level {
   /** First real landing: they go floppy and heavy, which is what makes them stack. */
   flop(d) {
     d.flopped = true;
+    // Once he's landed, holding still is what lets him set into the tower.
+    d.lively = 0;
     d.setMuscle(0.6);
     d.ragdoll.forEachBody((body) => {
       body.setLinearDamping(4);

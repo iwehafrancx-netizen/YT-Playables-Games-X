@@ -19,6 +19,14 @@ function geo(key, make) {
   return geoCache.get(key);
 }
 
+// Hands and feet: how far they flop (radians) and how springy the flop is.
+const HAND_FLOP = 0.9;
+const FOOT_FLOP = 0.35;
+const FLOP_K = 160;
+const FLOP_C = 11;
+const _w = new THREE.Vector3();
+const _iq = new THREE.Quaternion();
+
 const skinCache = new Map();
 function skins(color) {
   if (!skinCache.has(color)) {
@@ -51,6 +59,8 @@ export class DummyView {
     this.ragdoll = ragdoll;
     this.root = new THREE.Group();
     this.meshes = {};
+    this.flops = [];
+    this.t = 0;
     const s = SUITS[suit] ?? SUITS.classic;
     const skin = skins(s.body);
     this.skin = skin;
@@ -107,15 +117,15 @@ export class DummyView {
         if (name.startsWith('lowerArm')) {
           const hand = geo('hand', () => new THREE.SphereGeometry(0.052, 14, 10));
           const h = new THREE.Mesh(hand, trim);
-          h.position.y = -def.hh - 0.02;
+          h.position.y = -0.03;
           h.scale.set(1, 1.15, 0.8);
-          g.add(shadowed(h));
+          g.add(this.joint(name, -def.hh, shadowed(h), HAND_FLOP));
         }
         if (def.foot) {
           const foot = geo('foot', () => new RoundedBoxGeometry(FOOT.half[0] * 2 + 0.01, FOOT.half[1] * 2, FOOT.half[2] * 2 + 0.01, 2, 0.025));
           const f = new THREE.Mesh(foot, trim);
-          f.position.set(...FOOT.offset);
-          g.add(shadowed(f));
+          f.position.set(FOOT.offset[0], FOOT.offset[1] + def.hh, FOOT.offset[2]);
+          g.add(this.joint(name, -def.hh, shadowed(f), FOOT_FLOP));
         }
       }
       this.meshes[name] = g;
@@ -127,8 +137,39 @@ export class DummyView {
     this.dizzyHold = 0;
   }
 
+  /** A wrist or ankle: the hand or foot hangs off it and flops with the limb's motion. */
+  joint(part, y, mesh, range) {
+    const pivot = new THREE.Group();
+    pivot.position.y = y;
+    pivot.add(mesh);
+    this.flops.push({ pivot, part, range, ax: 0, az: 0, vx: 0, vz: 0, ph: Math.random() * 6 });
+    return pivot;
+  }
+
+  /** Springs each hand and foot against the spin of the bone it hangs from. */
+  flop(dt) {
+    this.t += dt;
+    const step = Math.min(dt, 1 / 30);
+    const life = this.ragdoll.lively;
+    for (const f of this.flops) {
+      const part = this.ragdoll.parts[f.part];
+      if (!part) continue;
+      const w = part.body.angvel();
+      _w.set(w.x, w.y, w.z).applyQuaternion(_iq.copy(this.meshes[f.part].quaternion).invert());
+      const wiggle = Math.sin(this.t * 5 + f.ph) * 0.12 * life * f.range;
+      const tx = THREE.MathUtils.clamp(-_w.x * 0.07 + wiggle, -f.range, f.range);
+      const tz = THREE.MathUtils.clamp(-_w.z * 0.07, -f.range, f.range);
+      f.vx += ((tx - f.ax) * FLOP_K - f.vx * FLOP_C) * step;
+      f.vz += ((tz - f.az) * FLOP_K - f.vz * FLOP_C) * step;
+      f.ax += f.vx * step;
+      f.az += f.vz * step;
+      f.pivot.rotation.set(f.ax, 0, f.az);
+    }
+  }
+
   /** Swaps to X-eyes while the dummy is tumbling or knocked out. */
   update(dt, forceDizzy = false) {
+    this.flop(dt);
     const head = this.ragdoll.parts.head;
     if (!head) return;
     const w = head.body.angvel();

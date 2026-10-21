@@ -90,19 +90,25 @@ function poseQuats(pose) {
 const POSE_CACHE = {};
 
 // Joint motor gains (force based: N·m/rad and N·m·s/rad).
+// Arms and neck are underdamped on purpose: they overshoot and wobble.
 const MOTOR_STIFFNESS = {
-  waist: 1800, neck: 160, shoulderL: 140, shoulderR: 140, elbowL: 60, elbowR: 60,
+  waist: 1800, neck: 130, shoulderL: 100, shoulderR: 100, elbowL: 45, elbowR: 45,
   hipL: 2600, hipR: 2600, kneeL: 2600, kneeR: 2600,
 };
 const MOTOR_DAMPING = {
-  waist: 55, neck: 8, shoulderL: 6, shoulderR: 6, elbowL: 3, elbowR: 3,
+  waist: 55, neck: 4, shoulderL: 3.5, shoulderR: 3.5, elbowL: 1.6, elbowR: 1.6,
   hipL: 80, hipR: 80, kneeL: 80, kneeR: 80,
 };
+// Legs only need full strength to stand on; otherwise they go this loose.
+const LOOSE_LEGS = 0.3;
+const LEGS = new Set(['hipL', 'hipR', 'kneeL', 'kneeR']);
 function getPose(name) {
   return (POSE_CACHE[name] ??= poseQuats(POSES[name]));
 }
 
 const _q = new Quaternion();
+const _euler = new Euler();
+const ZERO3 = [0, 0, 0];
 const _q2 = new Quaternion();
 const _v = new Vector3();
 const _v2 = new Vector3();
@@ -139,10 +145,14 @@ const _a2 = new Vector3();
 const _err = new Vector3();
 const _pv = new Vector3();
 const _cv = new Vector3();
+const _com = new Vector3();
 
 // A limb spinning faster than this is never what the player meant to see,
 // and it's what lets a hard hit pull the joints apart.
 const MAX_SPIN = 30;
+// m/s: the whole body, and any one part relative to the body.
+const MAX_SPEED = 45;
+const MAX_LIMB_SPEED = 30;
 // Joint gap (m) beyond which the child is pulled straight back onto its socket.
 const MAX_GAP = 0.02;
 
@@ -198,6 +208,13 @@ export class Ragdoll {
     this.balanceRate = 8;
     this.balanceGain = 0.12;
     this.stiffness = 1;
+    // How much he moves on his own: 0 holds the pose dead still, 1 is fully alive.
+    this.lively = 1;
+    // Same for the legs alone; off while something holds him by the feet.
+    this.legLife = 1;
+    this.air = 0;
+    this.phase = Math.random() * 10;
+    this.offsets = Object.fromEntries(JOINTS.map((j) => [j.name, [0, 0, 0]]));
     this.facing = new Vector3(Math.sin(yaw), 0, Math.cos(yaw));
     this.poseName = pose;
     this.targets = getPose(pose);
@@ -216,7 +233,9 @@ export class Ragdoll {
         .setRotation({ x: q.x, y: q.y, z: q.z, w: q.w })
         .setLinearDamping(0.05)
         .setAngularDamping(0.6)
-        .setCcdEnabled(true);
+        .setCcdEnabled(true)
+        // A sleeping body ignores its motors, and a dummy at rest would freeze like a statue.
+        .setCanSleep(false);
       const body = W.createRigidBody(desc);
       const info = { kind: 'dummy', part: name, ragdoll: this, material: 'body', ...tag };
 
@@ -257,7 +276,7 @@ export class Ragdoll {
     }
 
     this.updateMotors();
-    this._pre = () => this.applyMuscles();
+    this._pre = (dt) => this.applyMuscles(dt);
     this._post = () => this.holdTogether();
     physics.preStep.push(this._pre);
     physics.postStep.push(this._post);
@@ -282,6 +301,20 @@ export class Ragdoll {
    * together, parent first, so a big impact can't visibly tear him apart.
    */
   holdTogether() {
+    // Nothing in the games moves a body this fast: if the solver ever spits
+    // out such a speed, rein the part back in before it can tear him apart.
+    const v0 = this.velocity(_com);
+    const s0 = v0.length();
+    if (s0 > MAX_SPEED) v0.multiplyScalar(MAX_SPEED / s0);
+    for (const name of ORDER) {
+      const b = this.parts[name].body;
+      const lv = b.linvel();
+      _v.set(lv.x - v0.x, lv.y - v0.y, lv.z - v0.z);
+      const rel = _v.length();
+      if (rel <= MAX_LIMB_SPEED && s0 <= MAX_SPEED) continue;
+      if (rel > MAX_LIMB_SPEED) _v.multiplyScalar(MAX_LIMB_SPEED / rel);
+      b.setLinvel({ x: v0.x + _v.x, y: v0.y + _v.y, z: v0.z + _v.z }, true);
+    }
     for (const name of ORDER) {
       const b = this.parts[name].body;
       const w = b.angvel();
@@ -358,15 +391,26 @@ export class Ragdoll {
     this.updateMotors();
   }
 
-  updateMotors() {
+  updateMotors(offsets = null) {
     this._motorsSet = true;
     const m = this.muscle * this.stiffness;
+    const pose = POSES[this.poseName] ?? {};
+    const loose = this.balance < 0.05 ? 1 + (LOOSE_LEGS - 1) * this.lively * this.legLife : 1;
     for (const j of this.joints) {
-      const q = this.targets[j.name];
+      let q = this.targets[j.name];
+      if (offsets) {
+        const base = pose[j.name] ?? ZERO3;
+        const o = offsets[j.name];
+        let x = base[0] + o[0];
+        // Keep hinge targets inside their limits so the motor never fights the stop.
+        if (j.type === 'hinge') x = Math.min(Math.max(x, j.min / D2R + 2), j.max / D2R - 2);
+        q = _q.setFromEuler(_euler.set(x * D2R, (base[1] + o[1]) * D2R, (base[2] + o[2]) * D2R, 'XYZ'));
+      }
       const sgn = q.w < 0 ? -1 : 1;
-      const k = MOTOR_STIFFNESS[j.name] * m;
+      const leg = LEGS.has(j.name) ? loose : 1;
+      const k = MOTOR_STIFFNESS[j.name] * m * leg;
       // Even knocked out, a crash dummy's joints have friction: limbs swing, they don't flail.
-      const d = MOTOR_DAMPING[j.name] * Math.max(0.35, Math.sqrt(m) + 0.08);
+      const d = MOTOR_DAMPING[j.name] * Math.max(0.35, Math.sqrt(m) + 0.08) * leg;
       const raw = j.joint.rawSet;
       if (j.type === 'hinge') {
         raw.jointConfigureMotorPosition(j.joint.handle, 3, 2 * Math.asin(sgn * q.x), k, d);
@@ -382,7 +426,8 @@ export class Ragdoll {
    * Bend and twist limits on the ball joints, solved as velocity constraints
    * each step; the rest of the muscle work is done by joint motors.
    */
-  applyMuscles() {
+  applyMuscles(dt = 1 / 60) {
+    this.animate(dt);
     const qp = _mq1;
     const qc = _mq2;
     for (const j of this.joints) {
@@ -407,6 +452,52 @@ export class Ragdoll {
     }
 
     if (this.balance > 0.001) this.applyBalance();
+  }
+
+  /**
+   * Life on top of the pose: a little sway and fidget at rest, and the faster
+   * he's going the harder he flails — arms windmilling, legs kicking.
+   */
+  animate(dt) {
+    const life = this.lively;
+    if (life <= 0) {
+      if (this._animated) {
+        this._animated = false;
+        this.updateMotors();
+      }
+      return;
+    }
+    this._animated = true;
+    const want = Math.min(1, Math.max(0, (this.speed() - 1.2) / 3.5));
+    this.air += (want - this.air) * Math.min(1, dt * (want > this.air ? 6 : 1.5));
+    const a = this.air * life;
+    const i = life;
+    this.phase += (2.4 + a * 4.5) * dt;
+    const p = this.phase;
+    const o = this.offsets;
+    const S = Math.sin;
+    const swing = 14 * i + 40 * a;
+    const spread = 9 * i + 22 * a;
+    const bend = 18 * i + 42 * a;
+    o.shoulderL[0] = S(p) * swing;
+    o.shoulderL[2] = S(p * 0.7 + 1) * spread;
+    o.shoulderR[0] = S(p + Math.PI) * swing;
+    o.shoulderR[2] = -S(p * 0.7 + 2.5) * spread;
+    o.elbowL[0] = -(0.5 + 0.5 * S(p * 1.3 + 0.5)) * bend;
+    o.elbowR[0] = -(0.5 + 0.5 * S(p * 1.3 + 2.5)) * bend;
+    o.neck[0] = S(p * 0.9) * (6 * i + 12 * a);
+    o.neck[1] = S(p * 0.6 + 1) * (10 * i + 6 * a);
+    o.waist[0] = S(p * 0.5) * (3 * i + 6 * a);
+    o.waist[2] = S(p * 0.4 + 2) * (3 * i + 3 * a);
+    // Standing legs belong to the balance controller.
+    const legs = this.balance < 0.05 ? this.legLife : 0;
+    const kick = (8 * i + 34 * a) * legs;
+    const knee = (12 * i + 45 * a) * legs;
+    o.hipL[0] = S(p + Math.PI / 2) * kick;
+    o.hipR[0] = S(p - Math.PI / 2) * kick;
+    o.kneeL[0] = (0.5 + 0.5 * S(p + Math.PI)) * knee;
+    o.kneeR[0] = (0.5 + 0.5 * S(p)) * knee;
+    this.updateMotors(o);
   }
 
   /**
