@@ -23,8 +23,8 @@ export const FOOT = { half: [0.05, 0.035, 0.1], offset: [0, -0.215, 0.04] };
 
 // parent, child, world anchor at rest, joint type, bend and twist limits in degrees (spherical only)
 export const JOINTS = [
-  { name: 'waist', parent: 'pelvis', child: 'chest', at: [0, 1.035, 0], type: 'ball', limit: 45, twist: 40 },
-  { name: 'neck', parent: 'chest', child: 'head', at: [0, 1.46, 0], type: 'ball', limit: 50, twist: 70 },
+  { name: 'waist', parent: 'pelvis', child: 'chest', at: [0, 1.035, 0], type: 'ball', limit: 70, twist: 55 },
+  { name: 'neck', parent: 'chest', child: 'head', at: [0, 1.46, 0], type: 'ball', limit: 70, twist: 80 },
   { name: 'shoulderL', parent: 'chest', child: 'upperArmL', at: [0.24, 1.37, 0], type: 'ball', limit: 170, twist: 80 },
   { name: 'shoulderR', parent: 'chest', child: 'upperArmR', at: [-0.24, 1.37, 0], type: 'ball', limit: 170, twist: 80 },
   { name: 'elbowL', parent: 'upperArmL', child: 'lowerArmL', at: [0.24, 1.105, 0], type: 'hinge', min: -2.5, max: 0 },
@@ -92,15 +92,15 @@ const POSE_CACHE = {};
 // Joint motor gains (force based: N·m/rad and N·m·s/rad).
 // Arms and neck are underdamped on purpose: they overshoot and wobble.
 const MOTOR_STIFFNESS = {
-  waist: 1800, neck: 130, shoulderL: 100, shoulderR: 100, elbowL: 45, elbowR: 45,
+  waist: 1000, neck: 75, shoulderL: 60, shoulderR: 60, elbowL: 25, elbowR: 25,
   hipL: 2600, hipR: 2600, kneeL: 2600, kneeR: 2600,
 };
 const MOTOR_DAMPING = {
-  waist: 55, neck: 4, shoulderL: 3.5, shoulderR: 3.5, elbowL: 1.6, elbowR: 1.6,
+  waist: 32, neck: 2.5, shoulderL: 2.2, shoulderR: 2.2, elbowL: 1, elbowR: 1,
   hipL: 80, hipR: 80, kneeL: 80, kneeR: 80,
 };
 // Legs only need full strength to stand on; otherwise they go this loose.
-const LOOSE_LEGS = 0.3;
+const LOOSE_LEGS = 0.18;
 const LEGS = new Set(['hipL', 'hipR', 'kneeL', 'kneeR']);
 function getPose(name) {
   return (POSE_CACHE[name] ??= poseQuats(POSES[name]));
@@ -476,23 +476,23 @@ export class Ragdoll {
     const p = this.phase;
     const o = this.offsets;
     const S = Math.sin;
-    const swing = 14 * i + 40 * a;
+    const swing = 16 * i + 50 * a;
     const spread = 9 * i + 22 * a;
-    const bend = 18 * i + 42 * a;
+    const bend = 22 * i + 50 * a;
     o.shoulderL[0] = S(p) * swing;
     o.shoulderL[2] = S(p * 0.7 + 1) * spread;
     o.shoulderR[0] = S(p + Math.PI) * swing;
     o.shoulderR[2] = -S(p * 0.7 + 2.5) * spread;
     o.elbowL[0] = -(0.5 + 0.5 * S(p * 1.3 + 0.5)) * bend;
     o.elbowR[0] = -(0.5 + 0.5 * S(p * 1.3 + 2.5)) * bend;
-    o.neck[0] = S(p * 0.9) * (6 * i + 12 * a);
+    o.neck[0] = S(p * 0.9) * (8 * i + 16 * a);
     o.neck[1] = S(p * 0.6 + 1) * (10 * i + 6 * a);
-    o.waist[0] = S(p * 0.5) * (3 * i + 6 * a);
-    o.waist[2] = S(p * 0.4 + 2) * (3 * i + 3 * a);
+    o.waist[0] = S(p * 0.5) * (6 * i + 14 * a);
+    o.waist[2] = S(p * 0.4 + 2) * (5 * i + 8 * a);
     // Standing legs belong to the balance controller.
     const legs = this.balance < 0.05 ? this.legLife : 0;
-    const kick = (8 * i + 34 * a) * legs;
-    const knee = (12 * i + 45 * a) * legs;
+    const kick = (10 * i + 42 * a) * legs;
+    const knee = (14 * i + 55 * a) * legs;
     o.hipL[0] = S(p + Math.PI / 2) * kick;
     o.hipR[0] = S(p - Math.PI / 2) * kick;
     o.kneeL[0] = (0.5 + 0.5 * S(p + Math.PI)) * knee;

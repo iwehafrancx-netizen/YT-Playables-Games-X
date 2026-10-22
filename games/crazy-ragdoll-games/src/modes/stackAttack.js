@@ -136,7 +136,8 @@ export class StackAttackLevel extends Level {
       yaw: 0,
       pose: 'hang',
       muscle: 0.7,
-      suit: SUIT_IDS[(this.used + (this.game.save.data.suit === 'classic' ? 0 : 1)) % SUIT_IDS.length],
+      // Each ragdoll on the pile in a different colour, starting with yours.
+      suit: SUIT_IDS[(SUIT_IDS.indexOf(this.game.save.data.suit) + this.used + SUIT_IDS.length) % SUIT_IDS.length],
     });
     // Held by the scruff on a short rope: pinning the hands to a moving crane
     // fights the arm limits and shakes the body apart.

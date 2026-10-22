@@ -9,6 +9,7 @@ import { Save } from './core/save.js';
 import { Game } from './core/game.js';
 import { UI } from './ui/ui.js';
 import { platform } from './platform/index.js';
+import { SUITS } from './dummy/dummyView.js';
 
 async function boot() {
   const app = document.getElementById('app');
@@ -31,6 +32,8 @@ async function boot() {
 
   const save = new Save();
   await Promise.all([loadPhysics(), save.load(), document.fonts?.ready]);
+  // Saves from before the colours were renamed start back on red.
+  if (!SUITS[save.data.suit]) save.data.suit = 'red';
   ui.loading(0.7, 'Stacking crates…');
 
   const rig = new CameraRig(stage.camera);

@@ -7,7 +7,7 @@ import { DummyView } from './dummyView.js';
  * model — hard hits drop muscle tone, which then recovers over time.
  */
 export class Dummy {
-  constructor(ctx, { position = [0, 0, 0], yaw = 0, pose = 'stand', muscle = 1, suit = 'classic', tag } = {}) {
+  constructor(ctx, { position = [0, 0, 0], yaw = 0, pose = 'stand', muscle = 1, suit = 'red', tag } = {}) {
     this.ctx = ctx;
     this.ragdoll = new Ragdoll(ctx.physics, { position, yaw, pose, muscle, tag });
     this.view = new DummyView(ctx.scene, ctx.physics, this.ragdoll, suit);

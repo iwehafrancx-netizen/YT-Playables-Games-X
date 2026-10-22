@@ -4,7 +4,8 @@ Eleven ways to fling a ragdoll. Zero ways to be careful.
 
 A physics party game set in a busy shipping yard: stacked containers, dock
 cranes, and crates and barrels everywhere to crash into. Every game stars the
-same floppy cartoon ragdoll with big googly eyes, in a new outfit each time:
+same super-floppy rubber ragdoll: one bright colour head to toe, big googly
+eyes and a goofy grin.
 
 | Game | Play | Controls |
 |---|---|---|
@@ -24,10 +25,11 @@ Play drops you into an endless run: it opens with the hammer, then the rocket,
 and after that deals every game in a shuffled order with the difficulty
 climbing. The first time each game comes up, a short card explains the goal
 and the controls before the level starts. The results card shows what's up
-next and how many stars until the next outfit unlocks. Each course comes back
+next and how many stars until the next colour unlocks. Each course comes back
 as a tougher "After Hours" remix at sunset, and later laps reshuffle
 everything, so there's always a next level. Levels earn 1–3 stars, stars
-unlock outfits in the Wardrobe, and passed levels can be replayed.
+unlock new colours in the Wardrobe (Red, Yellow, Green, Blue, Purple and
+Pink), and passed levels can be replayed.
 
 Keyboard: <kbd>Space</kbd> / <kbd>Enter</kbd> works wherever a tap does;
 pinball, Plinko, Bounce Up and the slide also take <kbd>←</kbd> / <kbd>→</kbd>, and

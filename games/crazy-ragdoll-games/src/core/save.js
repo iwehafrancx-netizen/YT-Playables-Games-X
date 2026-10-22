@@ -4,7 +4,7 @@ const LOCAL_KEY = 'crazy-ragdoll-save';
 const VERSION = 1;
 
 function blank() {
-  return { v: VERSION, levels: {}, level: 1, score: 0, suit: 'classic', sfx: true, music: true };
+  return { v: VERSION, levels: {}, level: 1, score: 0, suit: 'red', sfx: true, music: true };
 }
 
 /**

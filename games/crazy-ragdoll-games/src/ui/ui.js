@@ -15,7 +15,7 @@ function stars(n, max = 3, cls = '') {
   return out;
 }
 
-export const SUIT_UNLOCKS = { classic: 0, orange: 6, blue: 15, mint: 27, red: 40, white: 55 };
+export const SUIT_UNLOCKS = { red: 0, yellow: 6, green: 15, blue: 27, purple: 40, pink: 55 };
 
 /** DOM layer: menus, HUD and modals drawn over the 3D canvas. */
 export class UI {
@@ -253,7 +253,7 @@ export class UI {
       .join('');
     this.modal(
       `<h2>Wardrobe</h2>
-      <p class="small">Earn stars to unlock new test suits. You have ${icon('star')} ${totalStars}.</p>
+      <p class="small">Earn stars to unlock new colours. You have ${icon('star')} ${totalStars}.</p>
       <div class="suits">${items}</div>
       <button class="btn primary" data-act="close">Done</button>`,
       {
@@ -261,7 +261,7 @@ export class UI {
           onPick(id);
           this.wardrobe({ save, totalStars, onPick, onClose });
         },
-        nope: () => this.toast('Collect more stars to unlock this suit'),
+        nope: () => this.toast('Collect more stars to unlock this colour'),
         close: onClose,
       },
     );

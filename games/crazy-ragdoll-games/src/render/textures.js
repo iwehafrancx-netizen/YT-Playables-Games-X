@@ -476,8 +476,8 @@ export function pinSkin() {
 }
 
 /**
- * Skin for the cartoon head: brows, cheeks and mouth (the eyes are 3D). Same
- * three's sphere UVs: u = 0.25 faces +Z, so the face is drawn there.
+ * The cartoon face, painted on the body colour: brows, cheeks and a big
+ * mouth (the eyes and nose are 3D). three's sphere UVs: u = 0.25 faces +Z.
  */
 export function faceSkin(skin, mood = 'smile') {
   const W = 512;
@@ -487,63 +487,93 @@ export function faceSkin(skin, mood = 'smile') {
   ctx.fillStyle = skin;
   ctx.fillRect(0, 0, W, H);
   const fx = W * 0.25;
-  const brow = mood === 'yell' ? H * 0.25 : H * 0.29;
-  ctx.fillStyle = 'rgba(255, 110, 110, 0.35)';
+  const ink = '#2a1414';
+  const mouth = '#4a0f18';
+  const tongue = '#ff6f8a';
+
+  // Blush.
+  ctx.fillStyle = 'rgba(255, 70, 90, 0.35)';
   for (const s of [-1, 1]) {
     ctx.beginPath();
-    ctx.ellipse(fx + s * 56, H * 0.57, 17, 11, 0, 0, 7);
+    ctx.ellipse(fx + s * 62, H * 0.58, 20, 12, 0, 0, 7);
     ctx.fill();
   }
-  ctx.strokeStyle = '#4a2c1c';
+
+  // Thick, lopsided brows: one always a little higher than the other.
+  ctx.strokeStyle = ink;
   ctx.lineCap = 'round';
-  ctx.lineWidth = 8;
+  ctx.lineWidth = 11;
+  const lift = mood === 'yell' ? -16 : mood === 'dizzy' ? 6 : 0;
   for (const s of [-1, 1]) {
+    const y = H * 0.24 + lift + (s > 0 ? -6 : 4);
     ctx.beginPath();
-    if (mood === 'dizzy') ctx.moveTo(fx + s * 20, brow + 6), ctx.lineTo(fx + s * 50, brow - 4);
-    else ctx.moveTo(fx + s * 18, brow), ctx.quadraticCurveTo(fx + s * 36, brow - 12, fx + s * 54, brow - 2);
+    if (mood === 'dizzy') {
+      ctx.moveTo(fx + s * 16, y + (s > 0 ? -6 : 8));
+      ctx.lineTo(fx + s * 52, y + (s > 0 ? 8 : -6));
+    } else {
+      ctx.moveTo(fx + s * 14, y + 4);
+      ctx.quadraticCurveTo(fx + s * 34, y - 14, fx + s * 56, y);
+    }
     ctx.stroke();
   }
-  const my = H * 0.64;
+
+  const my = H * 0.66;
   if (mood === 'yell') {
-    ctx.fillStyle = '#5a1620';
+    // Huge scream: open right down the chin, uvula and all.
+    ctx.fillStyle = mouth;
     ctx.beginPath();
-    ctx.ellipse(fx, my, 26, 30, 0, 0, 7);
+    ctx.ellipse(fx, my + 4, 34, 40, 0, 0, 7);
     ctx.fill();
-    ctx.fillStyle = '#ff7d8c';
+    ctx.fillStyle = '#7a1a26';
     ctx.beginPath();
-    ctx.ellipse(fx, my + 16, 16, 11, 0, 0, 7);
+    ctx.ellipse(fx, my - 22, 6, 9, 0, 0, 7);
+    ctx.fill();
+    ctx.fillStyle = tongue;
+    ctx.beginPath();
+    ctx.ellipse(fx, my + 30, 22, 13, 0, 0, 7);
     ctx.fill();
     ctx.fillStyle = '#fff';
-    ctx.fillRect(fx - 14, my - 30, 28, 9);
+    ctx.fillRect(fx - 18, my - 36, 36, 10);
   } else if (mood === 'dizzy') {
-    ctx.strokeStyle = '#5a1620';
-    ctx.lineWidth = 7;
+    // Crooked mouth with the tongue lolling out of one side.
+    ctx.strokeStyle = mouth;
+    ctx.lineWidth = 9;
     ctx.beginPath();
-    for (let i = 0; i <= 20; i++) {
-      const x = fx - 30 + i * 3;
-      const y = my + Math.sin(i * 0.9) * 6;
+    for (let i = 0; i <= 24; i++) {
+      const x = fx - 38 + i * 3.2;
+      const y = my + Math.sin(i * 0.8) * 6 + i * 0.6;
       i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
     }
     ctx.stroke();
-  } else {
-    ctx.fillStyle = '#5a1620';
+    ctx.fillStyle = tongue;
     ctx.beginPath();
-    ctx.moveTo(fx - 40, my - 10);
-    ctx.quadraticCurveTo(fx, my - 4, fx + 40, my - 10);
-    ctx.quadraticCurveTo(fx + 30, my + 34, fx, my + 34);
-    ctx.quadraticCurveTo(fx - 30, my + 34, fx - 40, my - 10);
+    ctx.ellipse(fx + 22, my + 22, 13, 20, -0.3, 0, 7);
+    ctx.fill();
+    ctx.strokeStyle = '#d94a68';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(fx + 22, my + 10);
+    ctx.lineTo(fx + 26, my + 32);
+    ctx.stroke();
+  } else {
+    // Goofy grin: wide open, two big buck teeth, tongue at the bottom.
+    ctx.fillStyle = mouth;
+    ctx.beginPath();
+    ctx.moveTo(fx - 54, my - 14);
+    ctx.quadraticCurveTo(fx, my - 4, fx + 54, my - 14);
+    ctx.quadraticCurveTo(fx + 44, my + 44, fx, my + 44);
+    ctx.quadraticCurveTo(fx - 44, my + 44, fx - 54, my - 14);
+    ctx.fill();
+    ctx.fillStyle = tongue;
+    ctx.beginPath();
+    ctx.ellipse(fx + 6, my + 30, 22, 12, 0, 0, 7);
     ctx.fill();
     ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.moveTo(fx - 34, my - 8);
-    ctx.quadraticCurveTo(fx, my - 2, fx + 34, my - 8);
-    ctx.lineTo(fx + 30, my + 2);
-    ctx.quadraticCurveTo(fx, my + 7, fx - 30, my + 2);
-    ctx.fill();
-    ctx.fillStyle = '#ff7d8c';
-    ctx.beginPath();
-    ctx.ellipse(fx, my + 24, 15, 8, 0, 0, 7);
-    ctx.fill();
+    for (const s of [-1, 1]) {
+      ctx.beginPath();
+      ctx.roundRect(fx + (s < 0 ? -15 : 1), my - 10, 14, 20, 3);
+      ctx.fill();
+    }
   }
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
