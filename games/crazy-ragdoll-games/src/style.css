@@ -985,29 +985,19 @@ button:focus-visible {
   color: #ff7a6b;
 }
 
-.boss-face {
-  width: 76px;
-  height: 76px;
-  margin: 12px auto 0;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 40%, #3a2224, #1b1b1f);
-  color: #ff7a6b;
-  box-shadow: 0 0 0 4px rgba(255, 122, 107, 0.25), 0 0 28px rgba(255, 90, 70, 0.45);
-  animation: bossPulse 1.1s ease-in-out infinite;
+.boss-preview {
+  margin: 12px auto 4px;
+  max-width: 300px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
 }
 
-.boss-face svg {
-  width: 46px;
-  height: 46px;
-}
-
-@keyframes bossPulse {
-  50% {
-    transform: scale(1.08);
-    box-shadow: 0 0 0 7px rgba(255, 122, 107, 0.18), 0 0 40px rgba(255, 90, 70, 0.6);
-  }
+.boss-preview svg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .btn.primary.boss-btn {

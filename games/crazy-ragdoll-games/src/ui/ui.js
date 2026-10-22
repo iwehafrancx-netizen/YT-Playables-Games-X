@@ -348,14 +348,14 @@ export class UI {
   }
 
   /** Between levels: a boss wants a word. Fight it (rewarded ad) or carry on. */
-  bossOffer({ name, mk, ads, onFight, onSkip }) {
+  bossOffer({ name, mk, kind, preview, how, ads, onFight, onSkip }) {
     this.modal(
       `<div class="result boss-offer">
         <div class="stamp">Boss incoming</div>
-        <div class="boss-face">${icon('skull')}</div>
         <h2>${esc(name)}</h2>
-        <p class="result-sub">Mk ${mk} · bonus round</p>
-        <p class="small">Lure it into a pylon, then dive into it while it's stunned. Knock it out for a big score bonus.</p>
+        <p class="result-sub">${esc(kind)} · boss ${mk} · bonus round</p>
+        <div class="boss-preview">${preview}</div>
+        <p class="small">${esc(how)} Knock it out for a big score bonus.</p>
         <div class="col">
           <button class="btn primary big boss-btn" data-act="fight">${icon('bolt')}<span>Fight boss</span>${ads ? '<span class="ad-tag">AD</span>' : ''}</button>
           <button class="btn small" data-act="skip"><span>Skip boss</span>${icon('next')}</button>
