@@ -71,11 +71,6 @@ export const POSES = {
     shoulderL: [-165, 0, 12], shoulderR: [-165, 0, -12], elbowL: [-12, 0, 0], elbowR: [-12, 0, 0],
     hipL: [-25, 0, 6], hipR: [-10, 0, -6], kneeL: [45, 0, 0], kneeR: [20, 0, 0],
   },
-  // Sat on a ring, legs out in front, arms up like a rollercoaster rider.
-  sled: {
-    hipL: [-82, 0, 8], hipR: [-82, 0, -8], kneeL: [4, 0, 0], kneeR: [4, 0, 0],
-    shoulderL: [0, 0, 140], shoulderR: [0, 0, -140], elbowL: [-25, 0, 0], elbowR: [-25, 0, 0], waist: [-6, 0, 0],
-  },
   cheer: {
     shoulderL: [0, 0, 150], shoulderR: [0, 0, -150], elbowL: [-20, 0, 0], elbowR: [-20, 0, 0],
   },
