@@ -311,24 +311,6 @@ export function blockWall(seed = 17) {
   return toTexture(c);
 }
 
-export function water() {
-  const S = 256;
-  const c = makeCanvas(S);
-  const ctx = c.getContext('2d');
-  paintNoise(ctx, S, 0x2e6f86, 8, 31, 0.35, 4);
-  return toTexture(c);
-}
-
-export function grass(seed = 41) {
-  const S = 256;
-  const c = makeCanvas(S);
-  const ctx = c.getContext('2d');
-  paintNoise(ctx, S, 0x5d7f3a, 8, seed, 0.4, 4);
-  speckle(ctx, S, 1500, seed + 1, '#9bb85f', 1);
-  speckle(ctx, S, 1000, seed + 2, '#3a4f22', 1.2);
-  return toTexture(c);
-}
-
 export function foam(seed = 51, base = 0x3d8be0, fleck = '#1d4f8a') {
   const S = 128;
   const c = makeCanvas(S);
@@ -349,30 +331,6 @@ export function softDot() {
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, S, S);
   return new THREE.CanvasTexture(c);
-}
-
-export function gearIcon(color = '#f5c518') {
-  const S = 128;
-  const c = makeCanvas(S);
-  const ctx = c.getContext('2d');
-  ctx.translate(S / 2, S / 2);
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  const teeth = 10;
-  for (let i = 0; i < teeth * 2; i++) {
-    const a = (i / (teeth * 2)) * Math.PI * 2;
-    const r = i % 2 ? 46 : 60;
-    ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
-  }
-  ctx.closePath();
-  ctx.fill();
-  ctx.globalCompositeOperation = 'destination-out';
-  ctx.beginPath();
-  ctx.arc(0, 0, 18, 0, 7);
-  ctx.fill();
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  return t;
 }
 
 /** Painted landing target: concentric rings with their point values. */
@@ -612,4 +570,24 @@ export function tntCrate() {
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 4;
   return t;
+}
+
+/** Shipping-container side: painted steel with corrugated ribs and dark top and bottom rails. */
+export function containerSide(base) {
+  const W = 256;
+  const H = 128;
+  const c = makeCanvas(W, H);
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = `#${base.toString(16).padStart(6, '0')}`;
+  ctx.fillRect(0, 0, W, H);
+  for (let x = 0; x < W; x += 10.67) {
+    ctx.fillStyle = 'rgba(255,255,255,0.13)';
+    ctx.fillRect(x, 0, 4, H);
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillRect(x + 6, 0, 3, H);
+  }
+  ctx.fillStyle = 'rgba(20,22,26,0.75)';
+  ctx.fillRect(0, 0, W, 6);
+  ctx.fillRect(0, H - 6, W, 6);
+  return toTexture(c);
 }

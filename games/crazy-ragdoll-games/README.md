@@ -1,6 +1,6 @@
 # Crazy Ragdoll Games
 
-Eleven ways to fling a ragdoll. Zero ways to be careful.
+Fifteen ways to fling a ragdoll. Zero ways to be careful.
 
 A physics party game set in a busy shipping yard: stacked containers, dock
 cranes, and crates and barrels everywhere to crash into. Every game stars the
@@ -20,6 +20,10 @@ eyes and a goofy grin.
 | **Sling Smash** | Fire him from a giant slingshot into crate forts and blow up every TNT crate. Blasts set off the TNT next door. | Drag back to aim · let go to fire |
 | **Ragdoll Bowling** | He curls up into the ball. Time the swinging aim arrow, power up, and bowl at giant pins and barrels. | Hold to power up · let go to bowl |
 | **Crane Swing** | Dangle from a dock crane's rope, pump the swing higher and let go to land on the pad on top of the containers. | Hold to swing higher · let go to fly |
+| **Cannon Blast** | Aim a cannon and fire him at targets: lob over walls, thread windows, bounce off trampolines, hit moving ones. | Drag to aim · let go to fire |
+| **Crash Course** | Drive a test car at a wall and send him through the windscreen onto the landing target. Speed is everything. | Hold for gas · let go to coast |
+| **Cart Hill** | Push him off in a shopping cart down ramps and jumps, then bail out at the right moment to land on the target. | Hold to wind up · let go to push · tap to bail |
+| **Drop Test** | Shove him down stairs, scaffolds and rotor shafts and score every bump, smash and crate on the way down. | Drag to aim the shove · let go to push |
 
 Play drops you into an endless run: it opens with the hammer, then the rocket,
 and after that deals every game in a shuffled order with the difficulty
@@ -88,9 +92,11 @@ src/
   core/      game flow, ads, input, audio, save
   dummy/     the ragdoll: physics and looks
   render/    renderer, sky and lighting, materials, textures, effects, camera
-  world/     props, the cargo yard and level building blocks
+  world/     props, the cargo yard, vehicles (car, cart, cannon) and level building blocks
   modes/     one class per game (stackAttack, hammerSpin, rocketRider, wipeout, pinball,
-             plinko, bounceUp, slide, slingSmash, bowling, craneSwing, bossFight)
+             plinko, bounceUp, slide, slingSmash, bowling, craneSwing, ballistics,
+             crashCourse, cartHill, dropTest, bossFight; attemptLevel is the
+             shared base for games played as best-of-three attempts)
   levels/    level data for each game, remixes and the endless sequence
   platform/  Playgama, CrazyGames and YouTube SDK adapters
   ui/        menus, HUD and cards

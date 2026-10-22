@@ -3,7 +3,7 @@ import { Ragdoll } from './ragdoll.js';
 import { DummyView } from './dummyView.js';
 
 /**
- * A crash-test dummy: physical ragdoll plus its visuals, with a knockout
+ * The ragdoll character: physical body plus its visuals, with a knockout
  * model — hard hits drop muscle tone, which then recovers over time.
  */
 export class Dummy {

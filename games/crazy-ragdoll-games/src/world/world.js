@@ -1,9 +1,17 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RAPIER, Group, groups } from '../physics/physics.js';
-import { Mat } from '../render/materials.js';
+import { Mat, containerMat } from '../render/materials.js';
 
 const D2R = Math.PI / 180;
+export const BOX = [2.44, 2.6, 6.06]; // shipping container width, height, length
+
+let boxGeo = null;
+/** One container shape shared by every level (it's never disposed). */
+export function containerGeometry() {
+  boxGeo ??= new THREE.BoxGeometry(...BOX);
+  return boxGeo;
+}
 
 /** Box geometry whose UVs are scaled to world size, so textures tile at a constant density. */
 function tiledBox(w, h, d, tile) {
@@ -32,11 +40,11 @@ function material(name) {
 }
 
 const SOUND_FOR = {
-  concrete: 'concrete', concreteDark: 'concrete', asphalt: 'concrete', wall: 'concrete', grass: 'concrete',
+  concrete: 'concrete', concreteDark: 'concrete', asphalt: 'concrete', wall: 'concrete',
   crate: 'wood', cardboard: 'cardboard', hazard: 'metal', steel: 'metal', darkSteel: 'metal',
   steelBlue: 'metal', steelRed: 'metal', steelGreen: 'metal', steelOrange: 'metal', steelGrey: 'metal',
   toyRed: 'rubber', toyBlue: 'rubber', toyYellow: 'rubber', toyGreen: 'rubber', toyPurple: 'rubber', toyOrange: 'rubber', toyPink: 'rubber', toyDark: 'rubber',
-  rubber: 'rubber', foam: 'rubber', crashMat: 'rubber', trampoline: 'rubber', glass: 'glass', white: 'wood', bullseye: 'wood',
+  rubber: 'rubber', foam: 'rubber', trampoline: 'rubber', glass: 'glass', white: 'wood', bullseye: 'wood',
 };
 
 /**
@@ -544,7 +552,7 @@ export class World {
     return prop;
   }
 
-  /** Open-top skip: the classic place for a crash dummy to end up. */
+  /** Open-top skip: the classic place for a ragdoll to end up. */
   dumpster({ pos, yaw = 0, size = [2.6, 1.3, 1.8], color = 'steelGreen' }) {
     const [w, h, d] = size;
     const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw * D2R);
@@ -564,39 +572,22 @@ export class World {
     return { center: c, size };
   }
 
-  /** Static scenery that's only there for scale: a shipping container. */
+  /** A shipping container: scenery, or something solid to land on with `collide`. */
   container({ pos, yaw = 0, color = 'steelBlue', collide = true }) {
-    const w = 2.44;
-    const h = 2.6;
-    const d = 6.06;
-    const g = new THREE.Group();
-    const body = this.mesh(new THREE.BoxGeometry(w, h, d), color);
-    g.add(body);
-    const ribGeo = new THREE.BoxGeometry(w + 0.04, h - 0.1, 0.05);
-    this.disposables.push(ribGeo);
-    for (let z = -d / 2 + 0.3; z < d / 2; z += 0.3) {
-      const rib = new THREE.Mesh(ribGeo, Mat[color]());
-      rib.position.z = z;
-      rib.castShadow = false;
-      g.add(rib);
-    }
-    const rail = this.mesh(new THREE.BoxGeometry(w + 0.06, 0.12, d + 0.06), 'darkSteel');
-    rail.position.y = h / 2 - 0.06;
-    const rail2 = rail.clone();
-    rail2.position.y = -h / 2 + 0.06;
-    g.add(rail, rail2);
-    g.position.set(pos[0], pos[1] + h / 2, pos[2]);
-    g.rotation.y = yaw * D2R;
-    this.add(g);
+    const m = new THREE.Mesh(containerGeometry(), containerMat(color));
+    m.castShadow = m.receiveShadow = true;
+    m.position.set(pos[0], pos[1] + BOX[1] / 2, pos[2]);
+    m.rotation.y = yaw * D2R;
+    this.add(m);
     if (collide) {
       const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw * D2R);
-      const b = this.fixedBody([pos[0], pos[1] + h / 2, pos[2]], q);
-      this.physics.createCollider(RAPIER.ColliderDesc.cuboid(w / 2, h / 2, d / 2).setCollisionGroups(groups(Group.WORLD)), b, {
+      const b = this.fixedBody([pos[0], pos[1] + BOX[1] / 2, pos[2]], q);
+      this.physics.createCollider(RAPIER.ColliderDesc.cuboid(BOX[0] / 2, BOX[1] / 2, BOX[2] / 2).setCollisionGroups(groups(Group.WORLD)), b, {
         kind: 'static',
         material: 'metal',
       });
     }
-    return g;
+    return m;
   }
 
   lamp({ pos, yaw = 0, height = 7 }) {

@@ -73,7 +73,7 @@ export class UI {
         <div class="logo">
           <div class="logo-stripe"></div>
           <h1><span class="l1">CRAZY</span><span class="l2">RAGDOLL</span><span class="l3">GAMES</span></h1>
-          <p class="tagline">Eleven ways to fling a ragdoll. Zero ways to be careful.</p>
+          <p class="tagline">Fifteen ways to fling a ragdoll. Zero ways to be careful.</p>
         </div>
         <div class="title-actions">
           <button class="btn primary big" data-act="play">${icon('play')}<span>Play</span></button>

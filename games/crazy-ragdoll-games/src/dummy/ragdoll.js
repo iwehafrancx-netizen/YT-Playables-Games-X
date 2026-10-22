@@ -152,7 +152,7 @@ const _com = new Vector3();
 const MAX_SPIN = 30;
 // m/s: the whole body, and any one part relative to the body.
 const MAX_SPEED = 45;
-const MAX_LIMB_SPEED = 30;
+const MAX_LIMB_SPEED = 24;
 // Joint gap (m) beyond which the child is pulled straight back onto its socket.
 const MAX_GAP = 0.02;
 
@@ -191,7 +191,7 @@ function solveAngular(invA, invB, dw, out) {
 let nextId = 1;
 
 /**
- * Physical crash-test dummy: 11 rigid bodies, ball and hinge joints, and PD
+ * Physical ragdoll: 11 rigid bodies, ball and hinge joints, and PD
  * "muscles" that pull every joint toward a pose. `muscle` scales the joint
  * strength (0 = rag, 1 = stiff); `balance` adds a torque that keeps the torso
  * upright and facing `facing`.
@@ -667,5 +667,3 @@ export class Ragdoll {
     this.joints = [];
   }
 }
-
-export const PART_ORDER = ORDER;
