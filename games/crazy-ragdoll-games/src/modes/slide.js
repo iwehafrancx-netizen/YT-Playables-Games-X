@@ -6,6 +6,7 @@ const W = 7; // slide width
 const TILT = THREE.MathUtils.degToRad(13);
 const STEER = 6; // m/s across the slide
 const BLOCKS = ['toyRed', 'toyBlue', 'toyPurple', 'toyOrange', 'toyGreen'];
+const BODY = new Set(['head', 'chest', 'pelvis', 'thighL', 'thighR']);
 const X = new THREE.Vector3(1, 0, 0);
 const _a = new THREE.Vector3();
 const _b = new THREE.Vector3();
@@ -196,6 +197,8 @@ export class SlideLevel extends Level {
   onContact(a, b) {
     for (const [x, y] of [[a, b], [b, a]]) {
       if (x.kind !== 'block' || y.kind !== 'dummy' || this.phase !== 'play') continue;
+      // A flailing hand brushing past doesn't count; his body hitting it does.
+      if (!BODY.has(y.part)) continue;
       if (this.time - this.lastBonk < 0.8) continue;
       this.lastBonk = this.time;
       this.bonks++;
