@@ -1,9 +1,10 @@
 # Crazy Ragdoll Games
 
-Eight ways to fling a ragdoll. Zero ways to be careful.
+Eleven ways to fling a ragdoll. Zero ways to be careful.
 
-A physics party game on a clean white studio stage. Every game is played with
-the same floppy, fully jointed ragdoll — in a new coat of paint each time:
+A physics party game set in a busy shipping yard: stacked containers, dock
+cranes, and crates and barrels everywhere to crash into. Every game stars the
+same floppy cartoon ragdoll with big googly eyes, in a new outfit each time:
 
 | Game | Play | Controls |
 |---|---|---|
@@ -15,18 +16,22 @@ the same floppy, fully jointed ragdoll — in a new coat of paint each time:
 | **Plinko Party** | Aim the dropper and let him tumble down through the pegs into the scoring buckets. Bumpers kick, ×2 buckets double the lot. | Drag to aim · let go to drop |
 | **Bounce Up** | A tower of trampolines. Steer him in the air from pad to pad up to the flag before the clock runs out; purple pads slide. | Hold left / right to steer |
 | **Slip 'n' Slide** | Belly-first down a soapy slide: dodge the blocks and sweepers, hit the ramps, grab the stars, splash into the pool. | Hold left / right to steer |
+| **Sling Smash** | Fire him from a giant slingshot into crate forts and blow up every TNT crate. Blasts set off the TNT next door. | Drag back to aim · let go to fire |
+| **Ragdoll Bowling** | He curls up into the ball. Time the swinging aim arrow, power up, and bowl at giant pins and barrels. | Hold to power up · let go to bowl |
+| **Crane Swing** | Dangle from a dock crane's rope, pump the swing higher and let go to land on the pad on top of the containers. | Hold to swing higher · let go to fly |
 
-Play drops you into an endless run: it opens with the crane, then the hammer,
+Play drops you into an endless run: it opens with the hammer, then the rocket,
 and after that deals every game in a shuffled order with the difficulty
 climbing. The first time each game comes up, a short card explains the goal
 and the controls before the level starts. The results card shows what's up
-next and how many stars until the next suit unlocks. Each course comes back as a tougher "After Hours" remix (warm studio
-light), and later laps reshuffle everything, so there's always a next level.
-Levels earn 1–3 stars, stars unlock ragdoll colours in the Wardrobe, and
-passed levels can be replayed.
+next and how many stars until the next outfit unlocks. Each course comes back
+as a tougher "After Hours" remix at sunset, and later laps reshuffle
+everything, so there's always a next level. Levels earn 1–3 stars, stars
+unlock outfits in the Wardrobe, and passed levels can be replayed.
 
 Keyboard: <kbd>Space</kbd> / <kbd>Enter</kbd> works wherever a tap does;
-pinball, Plinko, Bounce Up and the slide also take <kbd>←</kbd> / <kbd>→</kbd>.
+pinball, Plinko, Bounce Up and the slide also take <kbd>←</kbd> / <kbd>→</kbd>, and
+Sling Smash aims with the arrow keys.
 
 ### Boss fights
 
@@ -80,10 +85,10 @@ npx serve .        # then open /dist/
 src/
   core/      game flow, ads, input, audio, save
   dummy/     the ragdoll: physics and looks
-  render/    renderer, studio lighting, materials, textures, effects, camera
-  world/     props and level building blocks
+  render/    renderer, sky and lighting, materials, textures, effects, camera
+  world/     props, the cargo yard and level building blocks
   modes/     one class per game (stackAttack, hammerSpin, rocketRider, wipeout, pinball,
-             plinko, bounceUp, slide, bossFight)
+             plinko, bounceUp, slide, slingSmash, bowling, craneSwing, bossFight)
   levels/    level data for each game, remixes and the endless sequence
   platform/  Playgama, CrazyGames and YouTube SDK adapters
   ui/        menus, HUD and cards

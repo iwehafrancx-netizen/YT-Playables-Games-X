@@ -9,6 +9,9 @@ const HARDER = {
   plinko: (l) => ({ goals: l.goals.map((g) => Math.round((g * 1.25) / 100) * 100) }),
   bounce: (l) => ({ time: Math.round(l.time * 0.8) }),
   slide: (l) => ({ maxSpeed: (l.maxSpeed ?? 13) + 2, bonks: Math.max(3, (l.bonks ?? 4) - 1) }),
+  sling: (l) => ({ shots: Math.max(2, (l.shots ?? 3) - 1) }),
+  bowl: (l) => ({ rolls: 1, goals: l.goals.map((g) => g - 1) }),
+  swing: (l) => ({ tries: Math.max(2, (l.tries ?? 3) - 1), pad: { ...l.pad, r: (l.pad.r ?? 2) * 0.8 } }),
 };
 
 export function remixes(dept, levels) {

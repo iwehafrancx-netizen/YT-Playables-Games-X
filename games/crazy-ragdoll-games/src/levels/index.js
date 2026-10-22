@@ -14,6 +14,12 @@ import { BounceUpLevel } from '../modes/bounceUp.js';
 import { BOUNCE } from './bounce.js';
 import { SlideLevel } from '../modes/slide.js';
 import { SLIDE } from './slide.js';
+import { SlingSmashLevel } from '../modes/slingSmash.js';
+import { SLING } from './sling.js';
+import { BowlingLevel } from '../modes/bowling.js';
+import { BOWL } from './bowling.js';
+import { CraneSwingLevel } from '../modes/craneSwing.js';
+import { SWING } from './swing.js';
 import { remixes } from './remix.js';
 
 // `intro` is the how-to-play card shown the first time each game comes up.
@@ -49,6 +55,18 @@ export const DEPARTMENTS = [
   {
     id: 'slide', name: "Slip 'n' Slide", theme: 'morning', Mode: SlideLevel, levels: SLIDE,
     intro: { icon: 'next', goal: 'Slide all the way down and splash into the pool.', how: [['back', 'Hold left or right to steer'], ['skull', 'Dodge the blocks — too many bonks ends the ride'], ['bolt', 'Hit the yellow ramps for big air']] },
+  },
+  {
+    id: 'sling', name: 'Sling Smash', theme: 'noon', Mode: SlingSmashLevel, levels: SLING,
+    intro: { icon: 'bolt', goal: 'Fire him from a giant slingshot and blow up every TNT crate.', how: [['back', 'Drag back to aim and pull'], ['play', 'Let go to fire'], ['bolt', 'TNT explodes, so chain the blasts!']] },
+  },
+  {
+    id: 'bowl', name: 'Ragdoll Bowling', theme: 'sunset', Mode: BowlingLevel, levels: BOWL,
+    intro: { icon: 'target', goal: 'He is the bowling ball. Knock down as many pins as you can.', how: [['next', 'The arrow swings across the lane'], ['play', 'Hold to power up, let go to bowl'], ['star', 'Strike or spare for big bonuses']] },
+  },
+  {
+    id: 'swing', name: 'Crane Swing', theme: 'morning', Mode: CraneSwingLevel, levels: SWING,
+    intro: { icon: 'heart', goal: 'Swing from the crane and land on the pad on top of the containers.', how: [['play', 'Hold to swing higher'], ['next', 'Let go to fly'], ['star', 'Grab the stars on the way']] },
   },
 ];
 

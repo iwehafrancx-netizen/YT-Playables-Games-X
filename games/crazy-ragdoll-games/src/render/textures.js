@@ -550,3 +550,36 @@ export function faceSkin(skin, mood = 'smile') {
   t.anisotropy = 4;
   return t;
 }
+
+/** Red crate face with a hazard border and TNT stencil. */
+export function tntCrate() {
+  const S = 256;
+  const c = makeCanvas(S);
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#d23a2c';
+  ctx.fillRect(0, 0, S, S);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, S, S);
+  ctx.rect(26, 26, S - 52, S - 52);
+  ctx.clip('evenodd');
+  for (let i = -S; i < S * 2; i += 36) {
+    ctx.fillStyle = (i / 36) % 2 ? '#1c1c1c' : '#ffd23a';
+    ctx.beginPath();
+    ctx.moveTo(i, 0);
+    ctx.lineTo(i + 18, 0);
+    ctx.lineTo(i + 18 - S, S);
+    ctx.lineTo(i - S, S);
+    ctx.fill();
+  }
+  ctx.restore();
+  ctx.fillStyle = '#fff4d6';
+  ctx.font = 'bold 92px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('TNT', S / 2, S / 2 + 4);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
+}

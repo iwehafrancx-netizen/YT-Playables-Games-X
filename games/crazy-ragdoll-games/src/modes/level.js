@@ -50,6 +50,16 @@ export class Level {
     clutter(this.world, spots, y);
   }
 
+  /**
+   * Camera distance that fits a side-on box `halfW` wide and `halfH` high
+   * (both half-sizes, metres) into the current screen.
+   */
+  fitDistance(halfW, halfH) {
+    const tan = Math.tan(THREE.MathUtils.degToRad(this.stage.baseFov) / 2);
+    const aspect = this.stage.width / this.stage.height;
+    return Math.max(halfW / (tan * aspect), halfH / tan);
+  }
+
   /** HUD heading: the running level number, never the course name or how many are left. */
   hudTitle() {
     return this.game.current ? `Level ${this.game.current.n}` : this.def.name;
