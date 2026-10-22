@@ -605,6 +605,8 @@ export class World {
     g.position.set(...pos);
     g.rotation.y = yaw * D2R;
     this.add(g);
+    const body = this.fixedBody([pos[0], pos[1] + height / 2, pos[2]], new THREE.Quaternion());
+    this.physics.createCollider(RAPIER.ColliderDesc.cylinder(height / 2, 0.1).setCollisionGroups(groups(Group.WORLD)), body, { kind: 'static', material: 'metal' });
   }
 
   fence({ from, to, height = 2.2 }) {
