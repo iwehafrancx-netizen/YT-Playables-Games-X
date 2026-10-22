@@ -285,31 +285,6 @@ export function bullseye() {
   return toTexture(c);
 }
 
-/** Studio floor: near-white with a faint grid, so motion still reads on a white stage. */
-export function studioFloor() {
-  const S = 512;
-  const c = makeCanvas(S);
-  const ctx = c.getContext('2d');
-  ctx.fillStyle = '#f7f7f5';
-  ctx.fillRect(0, 0, S, S);
-  speckle(ctx, S, 900, 3, 'rgba(0,0,0,0.035)', 1.4);
-  ctx.strokeStyle = 'rgba(40,46,60,0.09)';
-  ctx.lineWidth = 2;
-  for (let i = 0; i <= 4; i++) {
-    const p = (i * S) / 4;
-    ctx.beginPath();
-    ctx.moveTo(p, 0);
-    ctx.lineTo(p, S);
-    ctx.moveTo(0, p);
-    ctx.lineTo(S, p);
-    ctx.stroke();
-  }
-  ctx.strokeStyle = 'rgba(40,46,60,0.16)';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(0, 0, S, S);
-  return toTexture(c);
-}
-
 export function blockWall(seed = 17) {
   const S = 512;
   const c = makeCanvas(S);
@@ -361,94 +336,6 @@ export function foam(seed = 51, base = 0x3d8be0, fleck = '#1d4f8a') {
   paintNoise(ctx, S, base, 16, seed, 0.25, 3);
   speckle(ctx, S, 600, seed + 1, fleck, 1.2);
   return toTexture(c);
-}
-
-/** Crash-test calibration marker: quartered black/yellow disc. */
-export function drawMarker(ctx, x, y, r) {
-  for (let i = 0; i < 4; i++) {
-    ctx.fillStyle = i % 2 ? '#141414' : '#f5c518';
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.arc(x, y, r, (i * Math.PI) / 2, ((i + 1) * Math.PI) / 2);
-    ctx.closePath();
-    ctx.fill();
-  }
-  ctx.strokeStyle = '#141414';
-  ctx.lineWidth = Math.max(1, r * 0.08);
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, 7);
-  ctx.stroke();
-}
-
-export function marker() {
-  const S = 128;
-  const c = makeCanvas(S);
-  const ctx = c.getContext('2d');
-  drawMarker(ctx, S / 2, S / 2, S / 2 - 2);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  return t;
-}
-
-/**
- * Equirectangular head skin: base colour, side markers and a painted face.
- * `mood` is 'calm' or 'dizzy' (X eyes).
- */
-export function headSkin(baseColor, mood = 'calm') {
-  const W = 512;
-  const H = 256;
-  const c = makeCanvas(W, H);
-  const ctx = c.getContext('2d');
-  ctx.fillStyle = baseColor;
-  ctx.fillRect(0, 0, W, H);
-  // subtle moulding seam around the head
-  ctx.fillStyle = 'rgba(0,0,0,0.1)';
-  ctx.fillRect(0, H * 0.5 - 1, W, 2);
-  // three's sphere UVs: u = 0 faces -X, 0.25 faces +Z, 0.5 faces +X.
-  drawMarker(ctx, W * 0.0, H * 0.45, 30);
-  drawMarker(ctx, W * 1.0, H * 0.45, 30);
-  drawMarker(ctx, W * 0.5, H * 0.45, 30);
-  const fx = W * 0.25;
-  const ey = H * 0.46;
-  const dx = 26;
-  ctx.fillStyle = '#16161a';
-  ctx.strokeStyle = '#16161a';
-  ctx.lineCap = 'round';
-  if (mood === 'dizzy') {
-    ctx.lineWidth = 6;
-    for (const s of [-1, 1]) {
-      const x = fx + s * dx;
-      ctx.beginPath();
-      ctx.moveTo(x - 9, ey - 9);
-      ctx.lineTo(x + 9, ey + 9);
-      ctx.moveTo(x + 9, ey - 9);
-      ctx.lineTo(x - 9, ey + 9);
-      ctx.stroke();
-    }
-    ctx.beginPath();
-    ctx.ellipse(fx, ey + 38, 9, 12, 0, 0, 7);
-    ctx.fill();
-  } else {
-    for (const s of [-1, 1]) {
-      ctx.fillStyle = '#fbfbf7';
-      ctx.beginPath();
-      ctx.ellipse(fx + s * dx, ey, 12, 15, 0, 0, 7);
-      ctx.fill();
-      ctx.fillStyle = '#16161a';
-      ctx.beginPath();
-      ctx.ellipse(fx + s * dx + 2, ey + 2, 6, 8, 0, 0, 7);
-      ctx.fill();
-    }
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.moveTo(fx - 13, ey + 38);
-    ctx.lineTo(fx + 13, ey + 38);
-    ctx.stroke();
-  }
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 4;
-  return t;
 }
 
 export function softDot() {
@@ -585,5 +472,81 @@ export function pinSkin() {
   ctx.fillRect(0, 256 * (1 - 0.61), 32, 9);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/**
+ * Skin for the cartoon head: brows, cheeks and mouth (the eyes are 3D). Same
+ * three's sphere UVs: u = 0.25 faces +Z, so the face is drawn there.
+ */
+export function faceSkin(skin, mood = 'smile') {
+  const W = 512;
+  const H = 256;
+  const c = makeCanvas(W, H);
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = skin;
+  ctx.fillRect(0, 0, W, H);
+  const fx = W * 0.25;
+  const brow = mood === 'yell' ? H * 0.25 : H * 0.29;
+  ctx.fillStyle = 'rgba(255, 110, 110, 0.35)';
+  for (const s of [-1, 1]) {
+    ctx.beginPath();
+    ctx.ellipse(fx + s * 56, H * 0.57, 17, 11, 0, 0, 7);
+    ctx.fill();
+  }
+  ctx.strokeStyle = '#4a2c1c';
+  ctx.lineCap = 'round';
+  ctx.lineWidth = 8;
+  for (const s of [-1, 1]) {
+    ctx.beginPath();
+    if (mood === 'dizzy') ctx.moveTo(fx + s * 20, brow + 6), ctx.lineTo(fx + s * 50, brow - 4);
+    else ctx.moveTo(fx + s * 18, brow), ctx.quadraticCurveTo(fx + s * 36, brow - 12, fx + s * 54, brow - 2);
+    ctx.stroke();
+  }
+  const my = H * 0.64;
+  if (mood === 'yell') {
+    ctx.fillStyle = '#5a1620';
+    ctx.beginPath();
+    ctx.ellipse(fx, my, 26, 30, 0, 0, 7);
+    ctx.fill();
+    ctx.fillStyle = '#ff7d8c';
+    ctx.beginPath();
+    ctx.ellipse(fx, my + 16, 16, 11, 0, 0, 7);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(fx - 14, my - 30, 28, 9);
+  } else if (mood === 'dizzy') {
+    ctx.strokeStyle = '#5a1620';
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    for (let i = 0; i <= 20; i++) {
+      const x = fx - 30 + i * 3;
+      const y = my + Math.sin(i * 0.9) * 6;
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    }
+    ctx.stroke();
+  } else {
+    ctx.fillStyle = '#5a1620';
+    ctx.beginPath();
+    ctx.moveTo(fx - 40, my - 10);
+    ctx.quadraticCurveTo(fx, my - 4, fx + 40, my - 10);
+    ctx.quadraticCurveTo(fx + 30, my + 34, fx, my + 34);
+    ctx.quadraticCurveTo(fx - 30, my + 34, fx - 40, my - 10);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.moveTo(fx - 34, my - 8);
+    ctx.quadraticCurveTo(fx, my - 2, fx + 34, my - 8);
+    ctx.lineTo(fx + 30, my + 2);
+    ctx.quadraticCurveTo(fx, my + 7, fx - 30, my + 2);
+    ctx.fill();
+    ctx.fillStyle = '#ff7d8c';
+    ctx.beginPath();
+    ctx.ellipse(fx, my + 24, 15, 8, 0, 0, 7);
+    ctx.fill();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
   return t;
 }
