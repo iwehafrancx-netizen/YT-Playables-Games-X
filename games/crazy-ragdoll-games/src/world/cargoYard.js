@@ -25,21 +25,23 @@ function seeded(seed) {
  *
  * `run` stretches the dressing along a course: { axis: 'x' | 'z', to } lines
  * the far side of a sideways course, or both sides of one heading away.
+ * `flip` puts the back wall at +z, for games filmed looking that way.
  */
-export function cargoYard(world, { y = 0, extent = 34, run = null, seed = 7 } = {}) {
+export function cargoYard(world, { y = 0, extent = 34, run = null, seed = 7, flip = false } = {}) {
   const rand = seeded(seed);
   const pick = (list) => list[Math.floor(rand() * list.length)];
   const reach = run ? run.to + 60 : 0;
   world.ground({ y, size: Math.max(240, reach * 2.2), tile: 6 });
-  lines(world, y, extent);
+  const Z = flip ? -1 : 1;
+  lines(world, y, extent, Z);
 
   if (!run) {
     // A U of container stacks round the back and sides, with the crane behind.
-    for (let x = -extent; x <= extent; x += BOX_L + 0.6) stack(world, [x, y, -extent], 90, 1 + Math.floor(rand() * 3), pick);
-    for (const s of [-1, 1]) for (let z = -extent + 8; z <= extent * 0.35; z += BOX_W + 0.5) stack(world, [s * extent, y, z], 0, 1 + Math.floor(rand() * 3), pick);
-    crane(world, [extent * 0.25, y, -extent - 6], 0);
-    for (const [x, z] of [[-0.55, -0.6], [0.6, -0.55], [-0.75, -0.1], [0.72, 0.05], [-0.35, -0.75], [0.3, -0.72]]) pile(world, [x * extent, y, z * extent], rand);
-    for (const s of [-1, 1]) world.lamp({ pos: [s * extent * 0.8, y, -extent * 0.8], yaw: s * -40 });
+    for (let x = -extent; x <= extent; x += BOX_L + 0.6) stack(world, [x, y, -extent * Z], 90, 1 + Math.floor(rand() * 3), pick);
+    for (const s of [-1, 1]) for (let z = -extent + 8; z <= extent * 0.35; z += BOX_W + 0.5) stack(world, [s * extent, y, z * Z], 0, 1 + Math.floor(rand() * 3), pick);
+    crane(world, [extent * 0.25, y, (-extent - 6) * Z], 0);
+    for (const [x, z] of [[-0.55, -0.6], [0.6, -0.55], [-0.75, -0.1], [0.72, 0.05], [-0.35, -0.75], [0.3, -0.72]]) pile(world, [x * extent, y, z * extent * Z], rand);
+    for (const s of [-1, 1]) world.lamp({ pos: [s * extent * 0.8, y, -extent * 0.8 * Z], yaw: s * -40 + (flip ? 180 : 0) });
   } else if (run.axis === 'x') {
     // Side-on course: one long wall of containers behind it, with piles in front.
     const back = -16;
@@ -58,11 +60,11 @@ export function cargoYard(world, { y = 0, extent = 34, run = null, seed = 7 } = 
 }
 
 /** Yellow bay markings and a hazard stripe, so the concrete isn't one flat grey. */
-function lines(world, y, extent) {
+function lines(world, y, extent, Z) {
   const yellow = 0xf2c230;
-  for (const x of [-extent * 0.5, extent * 0.5]) world.paint({ pos: [x, y, -extent * 0.2], size: [0.25, extent * 1.4], color: yellow, opacity: 0.8 });
-  world.paint({ pos: [0, y, -extent * 0.55], size: [extent * 1.5, 0.25], color: yellow, opacity: 0.8 });
-  for (let i = -6; i <= 6; i++) world.paint({ pos: [i * 1.6, y, -extent * 0.9], size: [0.7, 1.4], yaw: 35, color: yellow, opacity: 0.6 });
+  for (const x of [-extent * 0.5, extent * 0.5]) world.paint({ pos: [x, y, -extent * 0.2 * Z], size: [0.25, extent * 1.4], color: yellow, opacity: 0.8 });
+  world.paint({ pos: [0, y, -extent * 0.55 * Z], size: [extent * 1.5, 0.25], color: yellow, opacity: 0.8 });
+  for (let i = -6; i <= 6; i++) world.paint({ pos: [i * 1.6, y, -extent * 0.9 * Z], size: [0.7, 1.4], yaw: 35, color: yellow, opacity: 0.6 });
 }
 
 function stack(world, [x, y, z], yaw, high, pick) {

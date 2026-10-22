@@ -35,14 +35,14 @@ export class HammerSpinLevel extends Level {
     this.phase = 'ready';
     this.targets = [];
 
-    this.scenery();
+    this.scenery({ flip: true });
     // Crate stacks between the targets: a wild throw still smashes something.
     const spots = [];
     for (let a = 0; a < 12; a++) {
       for (const r of [7, 11, 15]) {
         const x = Math.sin(a * 0.52 + r) * r;
-        const z = -Math.cos(a * 0.52 + r) * r;
-        if (z > 3 || def.targets.some((t) => Math.hypot(x - t.pos[0], z - t.pos[1]) < (t.radius ?? 2.4) + 1.8)) continue;
+        const z = Math.cos(a * 0.52 + r) * r;
+        if (z < 3 || def.targets.some((t) => Math.hypot(x - t.pos[0], z - t.pos[1]) < (t.radius ?? 2.4) + 1.8)) continue;
         spots.push([x, z]);
       }
     }
