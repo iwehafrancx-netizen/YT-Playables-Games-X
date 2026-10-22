@@ -155,9 +155,11 @@ export class StackAttackLevel extends Level {
     const v = d.velocity(_a);
     d.ragdoll.addVelocity({ x: -v.x * 0.75, y: 0, z: -v.z * 0.75 });
     // Curled up they make chunky building blocks; spread out they make a rug.
+    // Legs held tight too: loose, kicking legs make him roll off the pile.
     d.setPose('tuck');
     d.setMuscle(0.8);
-    d.lively = 0.5;
+    d.lively = 0.2;
+    d.ragdoll.legLife = 0;
     d.dropped = this.time;
     this.carried = null;
     this.left--;
