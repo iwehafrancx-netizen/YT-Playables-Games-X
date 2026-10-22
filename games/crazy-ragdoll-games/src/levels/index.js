@@ -61,8 +61,8 @@ export const DEPARTMENTS = [
     intro: { icon: 'heart', goal: 'Bounce from pad to pad all the way up to the flag.', how: [['back', 'Hold the left side to steer left'], ['next', 'Hold the right side to steer right'], ['clock', 'Beat the clock — purple pads move']] },
   },
   {
-    id: 'slide', name: "Slip 'n' Slide", theme: 'morning', Mode: SlideLevel, levels: SLIDE,
-    intro: { icon: 'next', goal: 'Slide all the way down and splash into the pool.', how: [['back', 'Hold left or right to steer'], ['skull', 'Dodge the blocks — too many bonks ends the ride'], ['bolt', 'Hit the yellow ramps for big air']] },
+    id: 'slide', name: 'Tube Rush', theme: 'morning', Mode: SlideLevel, levels: SLIDE,
+    intro: { icon: 'next', goal: 'Ride the rubber ring down the water slide and splash into the pool.', how: [['back', 'Hold left or right to steer'], ['bolt', 'Ride over the blue arrows for a burst of speed'], ['skull', 'Dodge the blocks — too many bonks ends the ride']] },
   },
   {
     id: 'sling', name: 'Sling Smash', theme: 'noon', Mode: SlingSmashLevel, levels: SLING,

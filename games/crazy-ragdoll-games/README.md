@@ -16,7 +16,7 @@ eyes and a goofy grin.
 | **Ragdoll Pinball** | He curls into a ball on a real pinball table: flippers, bumpers, star rollovers. Hit the target score before your three balls drain. | Tap left / right to flip |
 | **Plinko Party** | Aim the dropper and let him tumble down through the pegs into the scoring buckets. Bumpers kick, ×2 buckets double the lot. | Drag to aim · let go to drop |
 | **Bounce Up** | A tower of trampolines. Steer him in the air from pad to pad up to the flag before the clock runs out; purple pads slide. | Hold left / right to steer |
-| **Slip 'n' Slide** | Belly-first down a soapy slide: dodge the blocks and sweepers, hit the ramps, grab the stars, splash into the pool. | Hold left / right to steer |
+| **Tube Rush** | Sat in a rubber ring, racing down a water slide that keeps getting faster: dodge the blocks and sweepers, hit the boost pads and ramps, grab the stars, splash into the pool. | Hold left / right to steer |
 | **Sling Smash** | Fire him from a giant slingshot into crate forts and blow up every TNT crate. Blasts set off the TNT next door. | Drag back to aim · let go to fire |
 | **Ragdoll Bowling** | He curls up into the ball. Time the swinging aim arrow, power up, and bowl at giant pins and barrels. | Hold to power up · let go to bowl |
 | **Crane Swing** | Dangle from a dock crane's rope, pump the swing higher and let go to land on the pad on top of the containers. | Hold to swing higher · let go to fly |

@@ -6,6 +6,9 @@ const W = 7; // slide width
 const TILT = THREE.MathUtils.degToRad(13);
 const STEER = 6; // m/s across the slide
 const BLOCKS = ['toyRed', 'toyBlue', 'toyPurple', 'toyOrange', 'toyGreen'];
+const SEAT = 0.22; // height of his hips above the slide when sitting
+const BOOST_KICK = 6; // m/s added by a boost pad
+const BOOST_TOP = 6; // extra top speed while boosted
 const BODY = new Set(['head', 'chest', 'pelvis', 'thighL', 'thighR']);
 const X = new THREE.Vector3(1, 0, 0);
 const _a = new THREE.Vector3();
@@ -13,10 +16,10 @@ const _b = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 
 /**
- * Slip 'n' Slide: a long, soapy slide down through the yard. He goes head first on
- * his belly; you steer him round the toy blocks, over the ramps and through
- * the stars, and splash down in the pool at the bottom. Too many bonks and
- * the ride's over.
+ * Tube Rush: a long water slide down through the yard. He rides it sat in a
+ * rubber ring, picking up speed all the way; you steer him round the toy
+ * blocks, over the ramps, across the boost pads and through the stars, and
+ * splash down in the pool at the bottom. Too many bonks and the ride's over.
  */
 export class SlideLevel extends Level {
   setup() {
@@ -31,6 +34,7 @@ export class SlideLevel extends Level {
     this.lastBonk = -9;
     this.pickups = [];
     this.sliders = [];
+    this.boosts = [];
     this.q = new THREE.Quaternion().setFromAxisAngle(X, TILT);
     this.origin = new THREE.Vector3(0, this.length * Math.sin(TILT) + 1.4, 0);
 
@@ -40,11 +44,16 @@ export class SlideLevel extends Level {
     this.pool();
     this.clutter([[-8.5, this.poolAt.z - 2], [8.5, this.poolAt.z + 1], [-8, this.poolAt.z + 6]]);
 
-    // Belly down, head first, arms out in front.
-    const start = [...this.toWorld(0, 0.3, -0.5)];
-    this.dummy = this.spawnDummy({ position: start, pose: 'hang', muscle: 0.7 });
-    this.dummy.ragdoll.teleport(start, 0, 'hang', this.q.clone().multiply(new THREE.Quaternion().setFromAxisAngle(X, Math.PI / 2)));
-    this.dummy.ragdoll.addVelocity(this.toWorldDir(0, 0, 3, _b));
+    // Sat upright on a rubber ring, feet first, facing down the slide.
+    const start = [...this.toWorld(0, SEAT - 0.93, 0.5)];
+    const d = this.spawnDummy({ position: start, pose: 'sled', muscle: 0.8 });
+    d.ragdoll.teleport(start, 0, 'sled', this.q);
+    d.balance = 0.6;
+    d.ragdoll.legLife = 0;
+    d.ragdoll.addVelocity(this.toWorldDir(0, 0, 3, _b));
+    this.dummy = d;
+    this.ring();
+    this.boostT = 0;
     this.physics.snapAll();
 
     this.hud = this.game.ui.hud({
@@ -55,7 +64,7 @@ export class SlideLevel extends Level {
       ],
     });
     this.hud.meter('Distance', 0);
-    this.hud.hint(def.hint ?? 'Hold left or right to steer · dodge the blocks · grab the stars');
+    this.hud.hint(def.hint ?? 'Hold left or right to steer · ride the blue arrows to boost');
     this.cameraFor(true);
   }
 
@@ -105,7 +114,13 @@ export class SlideLevel extends Level {
 
   chute() {
     const L = this.length;
-    this.box({ y: -0.15, z: L / 2, w: W, h: 0.3, d: L + 4, mat: 'white', info: { kind: 'ground', material: 'rubber' } });
+    // The deck looks thin, but its collider runs deep so a big landing can't punch through it.
+    this.box({ y: -1, z: L / 2, w: W, h: 2, d: L + 4, visible: false, info: { kind: 'ground', material: 'rubber' } });
+    const deck = this.world.mesh(new THREE.BoxGeometry(W, 0.3, L + 4), 'white');
+    this.toWorld(0, -0.15, L / 2, deck.position);
+    deck.quaternion.copy(this.q);
+    this.world.add(deck);
+    for (const s of [-1, 1]) this.box({ x: s * (W / 2 + 0.15), y: 2.55, z: L / 2, w: 0.3, h: 3, d: L + 4, visible: false, bounce: 0.3, info: { kind: 'static', material: 'rubber' } });
     for (const s of [-1, 1]) this.box({ x: s * (W / 2 + 0.15), y: 0.45, z: L / 2, w: 0.3, h: 1.2, d: L + 4, mat: s < 0 ? 'toyBlue' : 'toyPink', bounce: 0.4, info: { kind: 'static', material: 'rubber' } });
     // Painted lane stripes, so speed reads.
     for (let z = 4; z < L; z += 8) {
@@ -142,12 +157,56 @@ export class SlideLevel extends Level {
       const rise = p.rise ?? 1;
       const ang = Math.atan2(rise, len);
       this.box({ x: p.x ?? 0, y: rise / 2 - 0.1, z: p.z, w: p.w ?? 3, h: 0.25, d: Math.hypot(len, rise), rotX: -ang, mat: 'toyYellow', info: { kind: 'static', material: 'rubber' }, bounce: 0 });
+    } else if (p.t === 'boost') {
+      // Glowing chevrons painted on the slide: ride over them for a burst of speed.
+      const g = new THREE.Group();
+      const shape = new THREE.Shape();
+      shape.moveTo(-0.8, 0);
+      shape.lineTo(0, 0.6);
+      shape.lineTo(0.8, 0);
+      shape.lineTo(0.8, -0.35);
+      shape.lineTo(0, 0.25);
+      shape.lineTo(-0.8, -0.35);
+      shape.closePath();
+      const geo = new THREE.ShapeGeometry(shape).rotateX(-Math.PI / 2).rotateY(Math.PI);
+      const base = new THREE.PlaneGeometry(2.2, 3).rotateX(-Math.PI / 2);
+      this.world.disposables.push(geo);
+      const pad = this.world.mesh(base, 'toyBlue', { cast: false });
+      pad.position.y = 0.015;
+      g.add(pad);
+      for (let i = 0; i < 3; i++) {
+        const m = new THREE.Mesh(geo, this.boostMaterial());
+        m.position.set(0, 0.03, -0.8 + i * 0.8);
+        g.add(m);
+      }
+      this.toWorld(p.x ?? 0, 0, p.z, g.position);
+      g.quaternion.copy(this.q);
+      this.world.add(g);
+      this.boosts.push({ x: p.x ?? 0, z: p.z, used: false, g });
     } else if (p.t === 'star') {
       const m = this.world.mesh(new THREE.OctahedronGeometry(0.35), 'gold', { cast: false });
       this.toWorld(p.x, p.y ?? 0.7, p.z, m.position);
       this.world.add(m);
       this.pickups.push({ m, x: p.x, y: p.y ?? 0.7, z: p.z, got: false });
     }
+  }
+
+  boostMaterial() {
+    if (!this.boostMat) {
+      this.boostMat = new THREE.MeshBasicMaterial({ color: 0x9ff8ff, side: THREE.DoubleSide });
+      this.world.disposables.push(this.boostMat);
+    }
+    return this.boostMat;
+  }
+
+  /** The rubber ring he rides on, carried along with his hips. */
+  ring() {
+    const g = new THREE.Group();
+    const tube = this.world.mesh(new THREE.TorusGeometry(0.32, 0.13, 14, 28).rotateX(Math.PI / 2), 'toyOrange');
+    tube.position.y = -0.1;
+    g.add(tube);
+    this.world.add(g);
+    this.physics.link(this.dummy.parts.pelvis.body, g);
   }
 
   pool() {
@@ -200,20 +259,33 @@ export class SlideLevel extends Level {
       // A flailing hand brushing past doesn't count; his body hitting it does.
       if (!BODY.has(y.part)) continue;
       if (this.time - this.lastBonk < 0.8) continue;
-      this.lastBonk = this.time;
-      this.bonks++;
-      this.hud.set('bonks', `${this.bonks}/${this.maxBonks}`);
-      this.hud.bump('bonks');
-      this.audio.impact(1, 'body');
-      this.rig.shake(0.45);
-      this.fx.text(this.dummy.com(_a).add(_b.set(0, 1.2, 0)), 'BONK!', { color: '#ff7a6b', size: 30 });
-      if (this.bonks >= this.maxBonks) {
-        this.phase = 'end';
-        this.passed = false;
-        this.endT = 1.2;
-        this.game.ui.banner('WIPED OUT!', 'Too many bonks');
-      }
+      this.bonk('BONK!');
     }
+  }
+
+  bonk(label) {
+    this.lastBonk = this.time;
+    this.bonks++;
+    this.hud.set('bonks', `${this.bonks}/${this.maxBonks}`);
+    this.hud.bump('bonks');
+    this.audio.impact(1, 'body');
+    this.rig.shake(0.45);
+    this.fx.text(this.dummy.com(_a).add(_b.set(0, 1.2, 0)), label, { color: '#ff7a6b', size: 30 });
+    if (this.bonks >= this.maxBonks) {
+      this.phase = 'end';
+      this.passed = false;
+      this.endT = 1.2;
+      this.game.ui.banner('WIPED OUT!', 'Too many bonks');
+    }
+  }
+
+  /** Flew clean off the slide: costs a bonk, and he's dropped back on a little way up. */
+  backOn(z) {
+    const at = [...this.toWorld(0, SEAT - 0.93 + 0.3, Math.max(0.5, z - 4))];
+    this.dummy.ragdoll.teleport(at, 0, 'sled', this.q);
+    this.dummy.ragdoll.addVelocity(this.toWorldDir(0, 0, 8, _a));
+    this.physics.snapAll();
+    this.bonk('WHOOPS!');
   }
 
   fixedUpdate(dt) {
@@ -225,21 +297,38 @@ export class SlideLevel extends Level {
     const R = d.ragdoll;
     const c = this.toSlide(d.com(_a), _b);
     const v = this.toSlideDir(d.velocity(_a), new THREE.Vector3());
-    // Steer across the slide; cap the downhill speed so it stays readable.
+    // Steer across the slide. The camera looks down it, so screen-right is the slide's -x.
     const dir = this.phase === 'play' ? THREE.MathUtils.clamp(this.steer + (this.keys.right ? 1 : 0) - (this.keys.left ? 1 : 0), -1, 1) : 0;
-    const dvx = (dir * STEER - v.x) * (dir ? 0.12 : 0.04);
-    const max = this.def.maxSpeed ?? 13;
+    const dvx = (-dir * STEER - v.x) * (dir ? 0.12 : 0.04);
+    // Top speed builds all the way down, with a burst on every boost.
+    this.boostT = Math.max(0, this.boostT - dt);
+    const progress = THREE.MathUtils.clamp(c.z / this.length, 0, 1);
+    const max = (this.def.maxSpeed ?? 13) * (0.75 + 0.45 * progress) + (this.boostT > 0 ? BOOST_TOP : 0);
     const dvz = v.z > max ? (max - v.z) * 0.1 : 0;
     const dv = this.toWorldDir(dvx, 0, dvz, _a);
     R.addVelocity({ x: dv.x, y: dv.y, z: dv.z });
 
     if (this.phase !== 'play') return;
+    if (c.z < this.length && (c.y < -0.8 || Math.abs(c.x) > W / 2 + 0.5)) {
+      this.backOn(c.z);
+      return;
+    }
     // Pinned against a block: slide him off whichever side has more room.
     this.stuckT = v.z < 1 ? (this.stuckT ?? 0) + dt : 0;
     if (this.stuckT > 1.2) {
       this.stuckT = 0;
       const out = this.toWorldDir((c.x > 0 ? -1 : 1) * 4, 1, 2, _a);
       R.addVelocity({ x: out.x, y: out.y, z: out.z });
+    }
+    for (const b of this.boosts) {
+      if (b.used || Math.abs(c.z - b.z) > 1 || Math.abs(c.x - b.x) > 1.2 || c.y > 1.2) continue;
+      b.used = true;
+      this.boostT = 2.2;
+      const kick = this.toWorldDir(0, 0, BOOST_KICK, _a);
+      R.addVelocity({ x: kick.x, y: kick.y, z: kick.z });
+      this.rig.kick(10);
+      this.audio.whoosh(1.6);
+      this.fx.text(this.dummy.com(_a).add(_b.set(0, 1.4, 0)), 'BOOST!', { color: '#57f2ff', size: 32 });
     }
     for (const p of this.pickups) {
       if (p.got || Math.hypot(c.x - p.x, c.z - p.z) > 1 || c.y > p.y + 1.5) continue;
@@ -265,6 +354,7 @@ export class SlideLevel extends Level {
   tick(dt) {
     this.cameraFor();
     for (const p of this.pickups) p.m.rotation.y += dt * 3;
+    this.boostMat?.color.setHSL(0.52, 1, 0.65 + 0.25 * Math.sin(this.time * 9));
     this.audio.loop('wind', this.phase === 'play' ? Math.min(1, this.dummy.speed() / 14) : 0, 'wind');
     if (this.phase === 'splash') {
       this.splashT += dt;
