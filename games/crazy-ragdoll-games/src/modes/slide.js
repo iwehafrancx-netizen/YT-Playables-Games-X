@@ -12,7 +12,7 @@ const _b = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 
 /**
- * Slip 'n' Slide: a long, soapy slide down the studio. He goes head first on
+ * Slip 'n' Slide: a long, soapy slide down through the yard. He goes head first on
  * his belly; you steer him round the toy blocks, over the ramps and through
  * the stars, and splash down in the pool at the bottom. Too many bonks and
  * the ride's over.
@@ -33,10 +33,11 @@ export class SlideLevel extends Level {
     this.q = new THREE.Quaternion().setFromAxisAngle(X, TILT);
     this.origin = new THREE.Vector3(0, this.length * Math.sin(TILT) + 1.4, 0);
 
-    this.studio({ extent: 40 });
+    this.scenery({ run: { axis: 'z', to: this.length * Math.cos(TILT) + 20, side: 12 } });
     this.chute();
     for (const p of def.course) this.piece(p);
     this.pool();
+    this.clutter([[-8.5, this.poolAt.z - 2], [8.5, this.poolAt.z + 1], [-8, this.poolAt.z + 6]]);
 
     // Belly down, head first, arms out in front.
     const start = [...this.toWorld(0, 0.3, -0.5)];

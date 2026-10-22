@@ -50,7 +50,8 @@ export class PlinkoLevel extends Level {
     this.pickups = [];
     this.movers = [];
 
-    this.studio();
+    this.scenery();
+    this.clutter([[-8, 1.5], [8, 1], [-9.5, -3]]);
     this.board();
     this.pegs();
     for (const b of def.bumpers ?? []) this.bumper(b);

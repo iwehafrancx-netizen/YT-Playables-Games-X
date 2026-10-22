@@ -28,7 +28,8 @@ export class BounceUpLevel extends Level {
     this.pickups = [];
     this.movers = [];
 
-    this.studio({ extent: 30 });
+    this.scenery({ extent: 30 });
+    this.clutter([[-9, 1.5], [9, 1], [10.5, -3]]);
     this.pad({ x: 0, y: 0.6, w: LANE * 2, power: 8.8, mat: 'toyRed' });
     for (const [i, p] of def.pads.entries()) this.pad({ ...p, mat: p.amp ? 'toyPurple' : PAD_COLORS[i % PAD_COLORS.length] });
     for (const p of def.pickups ?? []) this.pickup(p);

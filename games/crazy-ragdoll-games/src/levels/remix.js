@@ -1,4 +1,4 @@
-// Every course comes back once as "After Hours": warm studio light and a
+// Every course comes back once as "After Hours": evening light and a
 // tougher ask.
 const HARDER = {
   stack: (l) => ({ goal: +(l.goal + 0.2).toFixed(1), dummies: l.dummies + 1, speed: (l.speed ?? 1) * 1.2 }),
@@ -14,5 +14,5 @@ const HARDER = {
 export function remixes(dept, levels) {
   const harder = HARDER[dept];
   if (!harder) return [];
-  return levels.map((l) => ({ ...l, ...harder(l), name: `${l.name}: After Hours`, theme: 'studioWarm', hint: undefined }));
+  return levels.map((l) => ({ ...l, ...harder(l), name: `${l.name}: After Hours`, theme: 'sunset', hint: undefined }));
 }

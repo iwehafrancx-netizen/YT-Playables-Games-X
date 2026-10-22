@@ -34,7 +34,6 @@ export const Mat = {
   crashMat: () => once('crashMat', () => std({ map: tex.foam(52, 0xc4483a, '#7a2219'), roughness: 1 })),
   trampoline: () => once('trampoline', () => std({ color: 0x1e2a44, roughness: 0.7 })),
   white: () => once('white', () => std({ color: 0xf2f2ee, roughness: 0.6 })),
-  studio: () => once('studio', () => std({ map: tex.studioFloor(), roughness: 0.85 })),
   toyRed: () => once('toyRed', () => std({ color: 0xef4b3c, roughness: 0.35 })),
   toyBlue: () => once('toyBlue', () => std({ color: 0x3c86e8, roughness: 0.35 })),
   toyYellow: () => once('toyYellow', () => std({ color: 0xffc928, roughness: 0.35 })),
@@ -50,7 +49,6 @@ export const Mat = {
   glass: () => once('glass', () => std({ color: 0xbfe6ff, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.35 })),
   lane: () => once('lane', () => std({ map: tex.laneWood(), roughness: 0.22, metalness: 0.05 })),
   pin: () => once('pin', () => std({ map: tex.pinSkin(), roughness: 0.18, metalness: 0 })),
-  marker: () => once('marker', () => std({ map: tex.marker(), roughness: 0.5, transparent: true })),
 };
 
 /** Scales a material's texture repeat to match world size, for tiling surfaces. */

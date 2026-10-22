@@ -1,4 +1,4 @@
-// Stack Attack: podium size, goal height (from the studio floor), ragdolls to
+// Stack Attack: podium size, goal height (from the ground), ragdolls to
 // spend, crane speed, plus wind and turntables on the later ones.
 export const STACK = [
   { name: 'First Floor', goal: 2.1, dummies: 5, base: [3, 1.8], speed: 0.9, hint: 'Tap to drop · each ragdoll sets solid where it lands · build up past the red line' },

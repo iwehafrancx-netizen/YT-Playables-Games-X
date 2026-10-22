@@ -1,19 +1,7 @@
 import * as THREE from 'three';
 import { Sky } from 'three/addons/objects/Sky.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 export const THEMES = {
-  // The house look: a white photo studio. No sky, soft even light, long fog to white.
-  studio: {
-    studio: true, bg: 0xf4f5f7, elevation: 62, azimuth: 150,
-    sun: 0xffffff, sunIntensity: 1.9, hemiSky: 0xffffff, hemiGround: 0xc9ccd4, hemi: 1.1,
-    fog: 0xf4f5f7, fogNear: 38, fogFar: 120, exposure: 0.95,
-  },
-  studioWarm: {
-    studio: true, bg: 0xfaf6ef, elevation: 48, azimuth: 210,
-    sun: 0xfff3e0, sunIntensity: 2, hemiSky: 0xfff8ee, hemiGround: 0xd6cbbb, hemi: 1.05,
-    fog: 0xfaf6ef, fogNear: 34, fogFar: 110, exposure: 0.95,
-  },
   morning: {
     elevation: 22, azimuth: 135, turbidity: 6, rayleigh: 1.6, mie: 0.005,
     sun: 0xfff1dc, sunIntensity: 2.6, hemiSky: 0xcfe3ff, hemiGround: 0x6d6457, hemi: 0.55,
@@ -84,7 +72,6 @@ export class Stage {
     if (this.themeName === name) return;
     this.themeName = name;
     const t = THEMES[name] ?? THEMES.noon;
-    if (t.studio) return this.setStudio(t);
     this.sky.visible = true;
     this.scene.background = null;
     const u = this.sky.material.uniforms;
@@ -119,29 +106,6 @@ export class Stage {
     this.scene.environmentIntensity = 0.55;
     envSky.geometry.dispose();
     envSky.material.dispose();
-  }
-
-  setStudio(t) {
-    this.sky.visible = false;
-    this.scene.background = new THREE.Color(t.bg);
-    const phi = THREE.MathUtils.degToRad(90 - t.elevation);
-    const theta = THREE.MathUtils.degToRad(t.azimuth);
-    this.sunDir.setFromSphericalCoords(1, phi, theta);
-    this.sun.color.set(t.sun);
-    this.sun.intensity = t.sunIntensity;
-    this.hemi.color.set(t.hemiSky);
-    this.hemi.groundColor.set(t.hemiGround);
-    this.hemi.intensity = t.hemi;
-    this.scene.fog.color.set(t.fog);
-    this.scene.fog.near = t.fogNear;
-    this.scene.fog.far = t.fogFar;
-    this.renderer.toneMappingExposure = t.exposure;
-    this.envTarget?.dispose();
-    const room = new RoomEnvironment();
-    this.envTarget = this.pmrem.fromScene(room, 0.04);
-    room.dispose?.();
-    this.scene.environment = this.envTarget.texture;
-    this.scene.environmentIntensity = 0.45;
   }
 
   /** Keep the shadow frustum centred on whatever the camera is looking at. */

@@ -86,7 +86,7 @@ export class Game {
     platform.gameplayStop();
     this.ui.clearHud();
     this.ui.closeModal();
-    if (!(this.scene instanceof Showcase)) this.setScene(new Showcase(this, { theme: 'studio' }, { theme: 'studio' }));
+    if (!(this.scene instanceof Showcase)) this.setScene(new Showcase(this, { theme: 'noon' }, { theme: 'noon' }));
     this.input.handler = null;
     this.ui.title({
       level: this.save.data.level,

@@ -30,7 +30,8 @@ export class StackAttackLevel extends Level {
     this.waitT = 0.4;
     this.spin = 0;
 
-    this.studio();
+    this.scenery();
+    this.clutter([[-4.6, 1.2], [4.8, 0.8], [-3.6, -3.4], [3.9, -3.2], [0.4, -5]]);
     this.podium();
     this.crane();
     def.build?.(this.world, this);

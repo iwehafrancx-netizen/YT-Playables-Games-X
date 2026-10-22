@@ -1,23 +1,17 @@
 import * as THREE from 'three';
 import { Level } from './level.js';
 import { SUITS } from '../dummy/dummyView.js';
-import { Mat } from '../render/materials.js';
 
 const SUIT_IDS = Object.keys(SUITS);
 
-/** Title-screen backdrop: ragdolls raining onto a trampoline and a toy-block pile. */
+/** Title-screen backdrop: ragdolls raining onto a trampoline and a crate pile. */
 export class Showcase extends Level {
   setup() {
-    this.studio();
+    this.scenery();
     const w = this.world;
     w.trampoline({ pos: [-2.2, 0.5, 2], size: [3, 3], power: 9 });
-    const blocks = ['toyRed', 'toyBlue', 'toyYellow', 'toyGreen', 'toyPurple'];
-    for (let r = 0; r < 3; r++) {
-      for (let i = 0; i < 3 - r; i++) {
-        const block = w.crate({ pos: [3 + i * 0.92 + r * 0.46, 0.45 + r * 0.9, 1.5], size: 0.9 });
-        block.mesh.material = Mat[blocks[(r * 3 + i) % blocks.length]]();
-      }
-    }
+    for (let r = 0; r < 3; r++) for (let i = 0; i < 3 - r; i++) w.crate({ pos: [3 + i * 0.92 + r * 0.46, 0.45 + r * 0.9, 1.5], size: 0.9 });
+    this.clutter([[6.5, -1], [-6, -2]]);
     this.next = 0.5;
     this.n = 0;
     this.orbit = 0;

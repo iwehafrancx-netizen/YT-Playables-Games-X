@@ -39,7 +39,9 @@ export class WipeoutLevel extends Level {
     this.starT = 2.5;
     this.star = null;
 
-    this.studio();
+    this.scenery();
+    const out = this.radius + 2.6;
+    this.clutter([0.4, 1.5, 2.4, 3.3, 4.3, 5.4].map((a) => [Math.cos(a) * out, -Math.abs(Math.sin(a)) * out]));
     this.stage3d();
     this.arms = (def.arms ?? [{ kind: 'low', speed: 1.4 }]).map((a) => this.makeArm(a));
     this.spawn();

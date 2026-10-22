@@ -35,7 +35,7 @@ const SOUND_FOR = {
   concrete: 'concrete', concreteDark: 'concrete', asphalt: 'concrete', wall: 'concrete', grass: 'concrete',
   crate: 'wood', cardboard: 'cardboard', hazard: 'metal', steel: 'metal', darkSteel: 'metal',
   steelBlue: 'metal', steelRed: 'metal', steelGreen: 'metal', steelOrange: 'metal', steelGrey: 'metal',
-  studio: 'concrete', toyRed: 'rubber', toyBlue: 'rubber', toyYellow: 'rubber', toyGreen: 'rubber', toyPurple: 'rubber', toyOrange: 'rubber', toyPink: 'rubber', toyDark: 'rubber',
+  toyRed: 'rubber', toyBlue: 'rubber', toyYellow: 'rubber', toyGreen: 'rubber', toyPurple: 'rubber', toyOrange: 'rubber', toyPink: 'rubber', toyDark: 'rubber',
   rubber: 'rubber', foam: 'rubber', crashMat: 'rubber', trampoline: 'rubber', glass: 'glass', white: 'wood', bullseye: 'wood',
 };
 

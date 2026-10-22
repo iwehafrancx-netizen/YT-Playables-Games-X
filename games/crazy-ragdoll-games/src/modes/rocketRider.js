@@ -38,7 +38,8 @@ export class RocketRiderLevel extends Level {
     this.safeT = 0;
     this.finishX = def.length;
 
-    this.studio({ extent: 30 });
+    this.scenery({ run: { axis: 'x', to: def.length + 20 } });
+    this.clutter([[def.length + 11, -1.5], [def.length + 14, 1.5], [def.length + 2, 2.5]]);
     for (const piece of def.course) this.addPiece(piece);
     this.pad();
     this.makeRocket();

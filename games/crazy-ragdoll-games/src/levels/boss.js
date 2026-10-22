@@ -9,7 +9,7 @@ const ROSTER = [
 
 export const BOSS_EVERY = 6;
 
-export const BOSS_DEPT = { id: 'boss', name: 'Boss Fight', theme: 'studio' };
+export const BOSS_DEPT = { id: 'boss', name: 'Boss Fight', theme: 'dusk' };
 
 /** The boss met after level `n` (a multiple of BOSS_EVERY). */
 export function bossFor(n) {
@@ -22,7 +22,7 @@ export function bossFor(n) {
     name: look.name,
     paint: look.paint,
     eye: look.eye,
-    theme: 'studio',
+    theme: 'dusk',
     hp: 3 + Math.min(3, mk - 1),
     speed: 12 + step * 1.4,
     stun: Math.max(2.2, 3.2 - step * 0.25),

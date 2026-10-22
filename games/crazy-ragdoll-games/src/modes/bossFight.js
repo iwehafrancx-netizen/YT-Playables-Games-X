@@ -74,7 +74,7 @@ export class BossFightLevel extends Level {
 
   arena() {
     const w = this.world;
-    this.studio({ y: -32, extent: 30 });
+    this.scenery({ y: -32, extent: 30 });
     const top = w.mesh(new THREE.CylinderGeometry(ARENA_R, ARENA_R, 0.6, 64), 'toyBlue');
     top.position.y = -0.3;
     const band = w.mesh(new THREE.CylinderGeometry(ARENA_R + 0.03, ARENA_R + 0.03, 0.32, 64, 1, true), 'hazard', { cast: false });

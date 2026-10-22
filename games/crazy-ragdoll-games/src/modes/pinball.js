@@ -35,7 +35,8 @@ export class PinballLevel extends Level {
     this.flippers = [];
     this.lastKick = new Map();
 
-    this.studio();
+    this.scenery();
+    this.clutter([[-7.5, 2], [7.5, 1], [-6.5, -6]]);
     this.table();
     for (const b of def.bumpers ?? []) this.bumper(b);
     for (const r of def.rollovers ?? []) this.rollover(r);

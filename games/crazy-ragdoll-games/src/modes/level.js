@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Physics } from '../physics/physics.js';
 import { World } from '../world/world.js';
+import { cargoYard, clutter } from '../world/cargoYard.js';
 import { Dummy } from '../dummy/dummy.js';
 
 const _a = new THREE.Vector3();
@@ -39,47 +40,14 @@ export class Level {
     this.physics.snapAll();
   }
 
-  /** Builds the environment shared by most levels: yard floor plus background dressing. */
-  yard({ mat = 'concrete', fences = true, extent = 40 } = {}) {
-    const w = this.world;
-    w.ground({ mat, tile: 6 });
-    if (!fences) return;
-    const e = extent;
-    w.fence({ from: [-e, 0, -e], to: [e, 0, -e] });
-    w.fence({ from: [-e, 0, -e], to: [-e, 0, e] });
-    w.fence({ from: [e, 0, -e], to: [e, 0, e] });
-    w.lamp({ pos: [-e + 2, 0, -e + 2], yaw: 45 });
-    w.lamp({ pos: [e - 2, 0, -e + 2], yaw: -45 });
-    w.container({ pos: [-e + 4, 0, -e + 10], yaw: 90, color: 'steelBlue', collide: false });
-    w.container({ pos: [-e + 4, 2.6, -e + 10], yaw: 92, color: 'steelRed', collide: false });
-    w.container({ pos: [e - 4, 0, -e + 12], yaw: 0, color: 'steelGreen', collide: false });
-    w.container({ pos: [e - 7, 0, -e + 5], yaw: 90, color: 'steelOrange', collide: false });
+  /** The set every game is played on: the shipping yard (see world/cargoYard.js). */
+  scenery(opts) {
+    cargoYard(this.world, opts);
   }
 
-  /**
-   * The house set: a white studio floor with a few giant toy shapes standing
-   * far off, so there's depth and scale without clutter.
-   */
-  studio({ y = 0, extent = 34, dressing = true } = {}) {
-    const w = this.world;
-    w.ground({ mat: 'studio', tile: 4, y });
-    if (!dressing) return;
-    const e = extent;
-    const toy = (geo, mat, x, z, rotY = 0) => {
-      const m = w.mesh(geo, mat);
-      geo.computeBoundingBox();
-      m.position.set(x, y - geo.boundingBox.min.y, z);
-      m.rotation.y = rotY;
-      w.add(m);
-    };
-    toy(new THREE.BoxGeometry(5, 5, 5), 'toyRed', -e * 0.8, -e, 0.4);
-    toy(new THREE.SphereGeometry(3.2, 32, 20), 'toyBlue', -e * 0.35, -e * 1.1);
-    toy(new THREE.CylinderGeometry(2.4, 2.4, 7, 32), 'toyYellow', e * 0.3, -e * 1.05);
-    toy(new THREE.ConeGeometry(3, 6, 32), 'toyGreen', e * 0.75, -e * 0.9);
-    toy(new THREE.TorusGeometry(2.6, 1, 16, 40).rotateX(Math.PI / 2), 'toyPurple', e * 1.05, -e * 0.3);
-    toy(new THREE.BoxGeometry(4, 8, 4), 'toyPink', -e * 1.1, -e * 0.25, 0.7);
-    toy(new THREE.SphereGeometry(2, 24, 16), 'toyOrange', -e * 0.95, e * 0.45);
-    toy(new THREE.BoxGeometry(3, 3, 3), 'toyGreen', e * 0.95, e * 0.5, 0.3);
+  /** Crates, barrels and boxes for him to crash into, at these [x, z] spots. */
+  clutter(spots, y = 0) {
+    clutter(this.world, spots, y);
   }
 
   /** HUD heading: the running level number, never the course name or how many are left. */
