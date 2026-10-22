@@ -178,9 +178,20 @@ export class BossStompLevel extends BossLevel {
   }
 
   cameraFor(snap = false) {
-    const dist = Math.min(40, this.fitDistance(HALF + 1.5, 4.5));
-    const look = new THREE.Vector3(0, 4, 0);
-    const pos = look.clone().add(_a.set(0, 1.5, dist));
+    // On a tall screen the whole trampoline won't fit up close, so frame
+    // just the stretch between him and the robot.
+    const portrait = this.stage.width < this.stage.height;
+    let x0 = -HALF - 0.5;
+    let x1 = HALF + 0.5;
+    if (portrait) {
+      const c = this.dummy.com(_a).x;
+      x0 = Math.max(x0, Math.min(c, this.botX) - 3);
+      x1 = Math.min(x1, Math.max(c, this.botX) + 3);
+      const grow = Math.max(0, 9 - (x1 - x0)) / 2;
+      x0 -= grow;
+      x1 += grow;
+    }
+    const { pos, look } = this.frameBox(_a.set(x0, 0, -PAD_D / 2), new THREE.Vector3(x1, 8.5, PAD_D / 2), { pitch: portrait ? 16 : 12 });
     if (snap) this.rig.set(pos, look);
     else this.rig.aim(pos, look, 2.5, 3);
     this.stage.focusShadows(look, 18);

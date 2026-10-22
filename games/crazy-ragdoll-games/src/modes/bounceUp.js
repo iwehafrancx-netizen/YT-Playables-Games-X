@@ -244,9 +244,8 @@ export class BounceUpLevel extends Level {
   cameraFor(snap = false) {
     const portrait = this.stage.width < this.stage.height;
     const c = this.dummy.com(_a);
-    const y = Math.max(portrait ? 5 : 3.5, c.y + 1);
-    const look = new THREE.Vector3(0, y, 0);
-    const pos = new THREE.Vector3(0, y + 1, portrait ? 21 : 15);
+    const y = Math.max(4, c.y + 1);
+    const { pos, look } = this.frameBox(_a.set(-LANE, y - 4, -1), new THREE.Vector3(LANE, y + (portrait ? 5 : 8), 1), { pitch: 14 });
     if (snap) this.rig.set(pos, look);
     else this.rig.aim(pos, look, 3, 4);
     this.stage.focusShadows(look, 12);

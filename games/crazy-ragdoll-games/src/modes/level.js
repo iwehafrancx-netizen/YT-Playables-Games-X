@@ -5,6 +5,7 @@ import { cargoYard, clutter } from '../world/cargoYard.js';
 import { Dummy } from '../dummy/dummy.js';
 
 const _a = new THREE.Vector3();
+const _corner = new THREE.Vector3();
 
 /**
  * Base class for every playable level: owns the physics world, the props and
@@ -51,14 +52,41 @@ export class Level {
   }
 
   /**
-   * Camera distance that fits a side-on box `halfW` wide and `halfH` high
-   * (both half-sizes, metres) into the current screen.
+   * Camera that fits the box `min`–`max` on screen, looking at its centre from
+   * `yaw` degrees round from straight-on (+z) and `pitch` degrees above it.
+   * Seeing a course at an angle lets the camera sit much closer than straight
+   * side-on, which matters most on a tall phone screen.
    */
-  fitDistance(halfW, halfH) {
-    const tan = Math.tan(THREE.MathUtils.degToRad(this.stage.baseFov) / 2);
-    const aspect = this.stage.width / this.stage.height;
-    return Math.max(halfW / (tan * aspect), halfH / tan);
+  frameBox(min, max, { yaw = 0, pitch = 12, margin = 0.88, out = (this._view ??= { pos: new THREE.Vector3(), look: new THREE.Vector3() }) } = {}) {
+    const cam = (this._frameCam ??= new THREE.PerspectiveCamera());
+    cam.fov = this.stage.baseFov;
+    cam.aspect = this.stage.width / this.stage.height;
+    cam.updateProjectionMatrix();
+    const look = out.look.copy(min).add(max).multiplyScalar(0.5);
+    const y = THREE.MathUtils.degToRad(yaw);
+    const p = THREE.MathUtils.degToRad(pitch);
+    const dir = _a.set(Math.sin(y) * Math.cos(p), Math.sin(p), Math.cos(y) * Math.cos(p));
+    const fits = (d) => {
+      cam.position.copy(look).addScaledVector(dir, d);
+      cam.lookAt(look);
+      cam.updateMatrixWorld();
+      for (let i = 0; i < 8; i++) {
+        _corner.set(i & 1 ? max.x : min.x, i & 2 ? max.y : min.y, i & 4 ? max.z : min.z).project(cam);
+        if (_corner.z > 1 || Math.abs(_corner.x) > margin || Math.abs(_corner.y) > margin) return false;
+      }
+      return true;
+    };
+    let lo = 1;
+    let hi = 120;
+    for (let i = 0; i < 24; i++) {
+      const mid = (lo + hi) / 2;
+      if (fits(mid)) hi = mid;
+      else lo = mid;
+    }
+    out.pos.copy(look).addScaledVector(dir, hi);
+    return out;
   }
+
 
   /** HUD heading: the running level number, never the course name or how many are left. */
   hudTitle() {

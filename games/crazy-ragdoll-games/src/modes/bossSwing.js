@@ -205,12 +205,10 @@ export class BossSwingLevel extends BossLevel {
   }
 
   cameraFor(snap = false) {
+    const portrait = this.stage.width < this.stage.height;
     const x0 = PIVOT.x - ROPE - 1;
     const x1 = 12 + this.def.roam + 3;
-    const top = PIVOT.y + 1.5;
-    const dist = Math.min(50, this.fitDistance((x1 - x0) / 2, top / 2 + 0.5));
-    const look = new THREE.Vector3((x0 + x1) / 2, top / 2, 0);
-    const pos = look.clone().add(_a.set(0, 1.5, dist));
+    const { pos, look } = this.frameBox(_a.set(x0, 0, -1.5), _b.set(x1, PIVOT.y + 1.5, 1.5), { yaw: portrait ? -60 : -12, pitch: portrait ? 24 : 10, margin: portrait ? 0.95 : 0.88 });
     if (snap) this.rig.set(pos, look);
     else this.rig.aim(pos, look, 2.5, 3);
     this.stage.focusShadows(look, 22);

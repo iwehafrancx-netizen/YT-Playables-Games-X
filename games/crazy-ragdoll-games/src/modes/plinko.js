@@ -373,9 +373,10 @@ export class PlinkoLevel extends Level {
   }
 
   cameraFor(snap = false) {
+    // The whole board, dropper to buckets, whatever the screen shape. The box
+    // runs below the floor so the buckets sit clear of the HUD at the bottom.
     const portrait = this.stage.width < this.stage.height;
-    const look = new THREE.Vector3(0, TOP / 2 + 0.3, 0);
-    const pos = new THREE.Vector3(0, TOP / 2 + 1.2, portrait ? 20 : 16);
+    const { pos, look } = this.frameBox(_a.set(-W / 2 - 0.3, portrait ? -1.5 : -2.8, -0.5), new THREE.Vector3(W / 2 + 0.3, TOP + 1, 0.5), { pitch: 4, margin: 0.92 });
     if (snap) this.rig.set(pos, look);
     else this.rig.aim(pos, look, 2, 2);
     this.stage.focusShadows(look, 12);

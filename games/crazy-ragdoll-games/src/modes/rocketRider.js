@@ -356,10 +356,10 @@ export class RocketRiderLevel extends Level {
   cameraFor(snap = false) {
     const portrait = this.stage.width < this.stage.height;
     const x = this.phase === 'landing' || this.phase === 'done' ? this.rider.com(_a).x : this.x;
-    // Follow the climb part of the way, so the rocket never leaves the frame.
+    // Follow the climb part of the way, so the rocket never leaves the frame,
+    // and look ahead along the course from just behind it.
     const y = THREE.MathUtils.lerp(portrait ? 6 : 5.5, this.y - 1.2, 0.55);
-    const look = new THREE.Vector3(x + (portrait ? 2 : 4), y, 0);
-    const pos = new THREE.Vector3(x + (portrait ? 2 : 4), y + 0.7, portrait ? 26 : 17);
+    const { pos, look } = this.frameBox(_a.set(x - 3, y - 5.5, -1), new THREE.Vector3(x + (portrait ? 11 : 14), y + 5.5, 1), { yaw: portrait ? -30 : -10, pitch: 8 });
     if (snap) this.rig.set(pos, look);
     else this.rig.aim(pos, look, 5, 6);
     this.stage.focusShadows(look, 18);

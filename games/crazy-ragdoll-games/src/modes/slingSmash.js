@@ -366,15 +366,19 @@ export class SlingSmashLevel extends Level {
   }
 
   cameraFor(snap = false) {
-    // Slingshot and fort both in shot, side on, whatever the screen shape.
+    // Slingshot and fort both in shot, seen from in front and behind the
+    // slingshot, looking out towards the fort.
+    const portrait = this.stage.width < this.stage.height;
     const far = this.def.view ?? 18;
     const x0 = -2.5;
     const x1 = far + 2.5;
-    const dist = Math.min(52, this.fitDistance((x1 - x0) / 2, 4.5));
-    let x = (x0 + x1) / 2;
-    if (this.phase !== 'aim') x = THREE.MathUtils.clamp(this.ball.com(_a).x, x, x + 12);
-    const look = new THREE.Vector3(x, 3.2, 0);
-    const pos = look.clone().add(_a.set(0, 1.2, dist));
+    const { pos, look } = this.frameBox(_a.set(portrait ? -1.5 : x0, 0, -1), _b.set(x1, portrait ? 5 : 6.5, 1), { yaw: portrait ? -64 : -12, pitch: portrait ? 28 : 10, margin: portrait ? 0.95 : 0.88 });
+    if (this.phase !== 'aim') {
+      const mid = (x0 + x1) / 2;
+      const shift = THREE.MathUtils.clamp(this.ball.com(_a).x, mid, mid + 12) - mid;
+      pos.x += shift;
+      look.x += shift;
+    }
     if (snap) this.rig.set(pos, look);
     else this.rig.aim(pos, look, 2.5, 3);
     this.stage.focusShadows(look, 20);

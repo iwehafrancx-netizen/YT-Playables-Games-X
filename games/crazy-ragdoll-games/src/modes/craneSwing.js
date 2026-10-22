@@ -305,16 +305,19 @@ export class CraneSwingLevel extends Level {
   }
 
   cameraFor(snap = false) {
-    // Crane and pad both in shot, side on, whatever the screen shape.
+    // Crane and pad both in shot, seen from in front and a little behind the
+    // crane, so the swing plays out across the screen and away from you.
+    const portrait = this.stage.width < this.stage.height;
     const pad = this.padAt;
     const x0 = this.pivot.x - this.ropeLen - 1.5;
     const x1 = pad.x + pad.r + 1.5;
-    const top = this.pivot.y + 1.5;
-    const dist = Math.min(50, this.fitDistance((x1 - x0) / 2, top / 2 + 0.5));
-    let x = (x0 + x1) / 2;
-    if (this.phase !== 'swing') x = THREE.MathUtils.clamp(this.dummy.com(_a).x, x - 3, x + 6);
-    const look = new THREE.Vector3(x, top / 2, 0);
-    const pos = look.clone().add(_a.set(0, 1.5, dist));
+    const { pos, look } = this.frameBox(_a.set(x0, 0, -1.5), _b.set(x1, this.pivot.y + 1.5, 1.5), { yaw: portrait ? -60 : -12, pitch: portrait ? 24 : 10, margin: portrait ? 0.95 : 0.88 });
+    if (this.phase !== 'swing') {
+      const mid = (x0 + x1) / 2;
+      const shift = THREE.MathUtils.clamp(this.dummy.com(_a).x, mid - 3, mid + 6) - mid;
+      pos.x += shift;
+      look.x += shift;
+    }
     if (snap) this.rig.set(pos, look);
     else this.rig.aim(pos, look, 2.5, 3);
     this.stage.focusShadows(look, 20);

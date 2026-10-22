@@ -77,10 +77,10 @@ export class BallisticsLevel extends Level {
     const fwd = _v.set(Math.sin(yaw), 0, Math.cos(yaw));
     const base = this.cannon.base;
     const portrait = this.stage.width < this.stage.height;
-    const back = portrait ? 9 : 6.2;
+    const back = portrait ? 9 : 7;
     const side = new THREE.Vector3(-fwd.z, 0, fwd.x);
     // Over-the-shoulder so the barrel never hides the range.
-    const pos = base.clone().addScaledVector(fwd, -back).addScaledVector(side, portrait ? 1.6 : 2.4).add(new THREE.Vector3(0, portrait ? 6.5 : 4.2, 0));
+    const pos = base.clone().addScaledVector(fwd, -back).addScaledVector(side, portrait ? 1.6 : 2.4).add(new THREE.Vector3(0, portrait ? 6.5 : 5.4, 0));
     const look = base.clone().addScaledVector(fwd, this.def.lookAhead ?? 14).add(new THREE.Vector3(0, 1.2, 0));
     if (snap) this.rig.set(pos, look);
     else this.rig.aim(pos, look, 3, 4);

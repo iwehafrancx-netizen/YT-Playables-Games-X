@@ -359,11 +359,11 @@ export class HammerSpinLevel extends Level {
     if (this.phase === 'flying' || this.phase === 'between') {
       const c = this.hammer.com(_a);
       look = new THREE.Vector3(c.x * 0.8, 1, c.z * 0.8 + 2);
-      pos = look.clone().add(new THREE.Vector3(0, portrait ? 12 : 8, portrait ? -13 : -10));
+      pos = look.clone().add(new THREE.Vector3(0, portrait ? 12 : 10, portrait ? -13 : -10));
     } else {
       const far = this.def.view ?? 9;
       look = new THREE.Vector3(0, 1.2, far * 0.55);
-      pos = new THREE.Vector3(0, portrait ? 10 : 6.5, portrait ? -11 : -8);
+      pos = new THREE.Vector3(0, portrait ? 10 : 8.5, portrait ? -11 : -8.5);
     }
     if (snap) this.rig.set(pos, look);
     else this.rig.aim(pos, look, 2.5, 3);

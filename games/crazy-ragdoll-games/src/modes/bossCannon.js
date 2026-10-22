@@ -174,7 +174,7 @@ export class BossCannonLevel extends BossLevel {
   cameraFor(snap = false) {
     const portrait = this.stage.width < this.stage.height;
     const look = new THREE.Vector3(this.x * 0.3, 3, Math.min(this.z * 0.55, 14));
-    const pos = new THREE.Vector3(0, portrait ? 6.5 : 4.5, portrait ? -9 : -6);
+    const pos = new THREE.Vector3(0, portrait ? 6.5 : 6, portrait ? -9 : -7.5);
     if (snap) this.rig.set(pos, look);
     else this.rig.aim(pos, look, 2.5, 3);
     this.stage.focusShadows(look, 22);
