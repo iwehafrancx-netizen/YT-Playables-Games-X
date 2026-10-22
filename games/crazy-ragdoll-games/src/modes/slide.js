@@ -227,7 +227,8 @@ export class SlideLevel extends Level {
     const v = this.toSlideDir(d.velocity(_a), new THREE.Vector3());
     // Steer across the slide; cap the downhill speed so it stays readable.
     const dir = this.phase === 'play' ? THREE.MathUtils.clamp(this.steer + (this.keys.right ? 1 : 0) - (this.keys.left ? 1 : 0), -1, 1) : 0;
-    const dvx = (dir * STEER - v.x) * (dir ? 0.12 : 0.04);
+    // The camera looks down the slide, so screen-right is the slide's -x.
+    const dvx = (-dir * STEER - v.x) * (dir ? 0.12 : 0.04);
     const max = this.def.maxSpeed ?? 13;
     const dvz = v.z > max ? (max - v.z) * 0.1 : 0;
     const dv = this.toWorldDir(dvx, 0, dvz, _a);
