@@ -15,15 +15,6 @@ function stars(n, max = 3, cls = '') {
   return out;
 }
 
-const pick = (list) => list[Math.floor(Math.random() * list.length)];
-const CHEERS = ['BRILLIANT!', 'NAILED IT!', 'SUPERB!', 'WOOHOO!', 'SMASHING!'];
-const GROANS = ['SPLAT!', 'OUCH!', 'WHOOPS!', 'BONK!'];
-
-/** Title letters, each tipped at its own angle like stickers slapped on. */
-function stickerWord(word, cls) {
-  return `<span class="word ${cls}">${[...word].map((c, i) => `<i style="--r:${((i * 37) % 11) - 5}deg">${c}</i>`).join('')}</span>`;
-}
-
 export const SUIT_UNLOCKS = { red: 0, yellow: 6, green: 15, blue: 27, purple: 40, pink: 55 };
 
 /** DOM layer: menus, HUD and modals drawn over the 3D canvas. */
@@ -80,15 +71,17 @@ export class UI {
     const el = h(`
       <div class="screen title-screen">
         <div class="logo">
-          <h1>${stickerWord('CRAZY', 'w1')}${stickerWord('RAGDOLL', 'w2')}${stickerWord('GAMES', 'w3')}</h1>
+          <div class="logo-stripe"></div>
+          <h1><span class="l1">CRAZY</span><span class="l2">RAGDOLL</span><span class="l3">GAMES</span></h1>
           <p class="tagline">Fifteen ways to fling a ragdoll. Zero ways to be careful.</p>
         </div>
         <div class="title-actions">
-          <button class="btn go huge" data-act="play">${icon('play')}<span>${level > 1 ? `Level ${level}` : 'Play'}</span></button>
-          <div class="dock">
-            ${canReplay ? `<button class="dock-btn" data-act="replay"><span class="disc blue">${icon('grid')}</span><small>Replay</small></button>` : ''}
-            <button class="dock-btn" data-act="wardrobe"><span class="disc pink">${icon('shirt')}</span><small>Colours</small></button>
-            <button class="dock-btn" data-act="settings"><span class="disc sun">${icon('gear')}</span><small>Settings</small></button>
+          <button class="btn primary big" data-act="play">${icon('play')}<span>Play</span></button>
+          ${level > 1 ? `<span class="resume-note">Continue from level ${level}</span>` : ''}
+          <div class="row">
+            ${canReplay ? `<button class="btn ghost" data-act="replay">${icon('grid')}<span>Replay</span></button>` : ''}
+            <button class="btn ghost" data-act="wardrobe">${icon('shirt')}<span>Wardrobe</span></button>
+            <button class="btn ghost" data-act="settings">${icon('gear')}<span>Settings</span></button>
           </div>
         </div>
       </div>`);
@@ -110,14 +103,14 @@ export class UI {
           </button>`,
           )
           .join('');
-        return `<section class="replay-group"><h3><span>${esc(dept.name)}</span></h3><div class="tile-grid">${tiles}</div></section>`;
+        return `<section class="replay-group"><h3>${esc(dept.name)}</h3><div class="tile-grid">${tiles}</div></section>`;
       })
       .join('');
     const el = h(`
       <div class="screen menu-screen">
         <header class="menu-head">
-          <button class="disc-btn" data-act="back" aria-label="Back">${icon('back')}</button>
-          <h2>Play it again</h2>
+          <button class="icon-btn" data-act="back" aria-label="Back">${icon('back')}</button>
+          <h2>Replay</h2>
         </header>
         ${sections}
       </div>`);
@@ -130,10 +123,10 @@ export class UI {
     const el = h(`
       <div class="hud">
         <div class="hud-top">
-          <button class="disc-btn pause-btn" data-act="pause" aria-label="Pause">${icon('pause')}</button>
+          <button class="icon-btn pause-btn" data-act="pause" aria-label="Pause">${icon('pause')}</button>
           <div class="hud-title">${esc(title)}</div>
           <div class="hud-stats">
-            ${stats.map((s) => `<div class="stat" data-stat="${s.id}"><span class="stat-icon">${icon(s.icon)}</span><b>${esc(s.value)}</b></div>`).join('')}
+            ${stats.map((s) => `<div class="stat" data-stat="${s.id}">${icon(s.icon)}<b>${esc(s.value)}</b></div>`).join('')}
           </div>
         </div>
         <div class="hud-meter hidden"><span class="meter-label"></span><div class="meter"><i></i></div></div>
@@ -209,22 +202,23 @@ export class UI {
   }
 
   pause({ save, onResume, onRestart, onHome }) {
-    return this.modal(
-      `<div class="ribbon sky">Time out</div>
-      <div class="dock big">
-        <button class="dock-btn" data-act="resume"><span class="disc grass">${icon('play')}</span><small>Resume</small></button>
-        <button class="dock-btn" data-act="restart"><span class="disc sun">${icon('retry')}</span><small>Restart</small></button>
-        <button class="dock-btn" data-act="home"><span class="disc tomato">${icon('home')}</span><small>Menu</small></button>
+    const el = this.modal(
+      `<h2>Paused</h2>
+      <div class="col">
+        <button class="btn primary" data-act="resume">${icon('play')}<span>Resume</span></button>
+        <button class="btn" data-act="restart">${icon('retry')}<span>Restart</span></button>
+        <button class="btn" data-act="home">${icon('home')}<span>Main menu</span></button>
       </div>
       ${this.toggles(save)}`,
       { resume: onResume, restart: onRestart, home: onHome, toggle: (k, b) => this.flip(save, k, b) },
     );
+    return el;
   }
 
   toggles(save) {
     return `<div class="toggles">
-      <button class="toggle ${save.data.sfx ? 'on' : ''}" data-act="toggle" data-arg="sfx">${icon('sound')}<span>Sound</span><i class="knob"></i></button>
-      <button class="toggle ${save.data.music ? 'on' : ''}" data-act="toggle" data-arg="music">${icon('music')}<span>Music</span><i class="knob"></i></button>
+      <button class="toggle ${save.data.sfx ? 'on' : ''}" data-act="toggle" data-arg="sfx">${icon('sound')}<span>Sound</span></button>
+      <button class="toggle ${save.data.music ? 'on' : ''}" data-act="toggle" data-arg="music">${icon('music')}<span>Music</span></button>
     </div>`;
   }
 
@@ -236,10 +230,10 @@ export class UI {
 
   settings({ save, onClose }) {
     this.modal(
-      `<div class="ribbon sun">Settings</div>
+      `<h2>Settings</h2>
       ${this.toggles(save)}
-      <p class="small">Crazy Ragdoll Games v1.0 · no ragdolls were careful in the making of this game.</p>
-      <button class="btn go" data-act="close">Done</button>`,
+      <p class="small">Crazy Ragdoll Games v1.0 — no ragdolls were careful in the making of this game.</p>
+      <button class="btn primary" data-act="close">Done</button>`,
       { close: onClose, toggle: (k, b) => this.flip(save, k, b) },
     );
   }
@@ -251,17 +245,17 @@ export class UI {
         const open = totalStars >= need;
         const sel = save.data.suit === id;
         return `<button class="suit ${open ? '' : 'locked'} ${sel ? 'sel' : ''}" data-act="${open ? 'pick' : 'nope'}" data-arg="${id}">
-          <span class="swatch" style="--c:${s.body};--t:${s.trim}">${icon('dummy')}</span>
+          <span class="swatch" style="--c:${s.body};--t:${s.trim}"></span>
           <span class="suit-name">${esc(s.label)}</span>
           ${open ? '' : `<span class="suit-need">${icon('star')} ${need}</span>`}
         </button>`;
       })
       .join('');
     this.modal(
-      `<div class="ribbon pink">Colours</div>
-      <p class="small">Stars unlock new colours. You have <b class="star-count">${icon('star')} ${totalStars}</b></p>
+      `<h2>Wardrobe</h2>
+      <p class="small">Earn stars to unlock new colours. You have ${icon('star')} ${totalStars}.</p>
       <div class="suits">${items}</div>
-      <button class="btn go" data-act="close">Done</button>`,
+      <button class="btn primary" data-act="close">Done</button>`,
       {
         pick: (id) => {
           onPick(id);
@@ -276,24 +270,25 @@ export class UI {
   results({ passed, stars: n, score, total, isBest, title, subtitle, reason, stats = [], unlock, upNext, canRevive, reviveIsPaid, canSkip, canContinue, ads, onRevive, onRetry, onNext, onSkip, onHome }) {
     const adTag = '<span class="ad-tag">AD</span>';
     const el = this.modal(
-      `<div class="result ${passed ? 'win' : 'lose'}">
-        <div class="ribbon ${passed ? 'grass' : 'tomato'}">${passed ? pick(CHEERS) : pick(GROANS)}</div>
-        <p class="level-tag"><b>${esc(title)}</b> · ${esc(subtitle)}</p>
-        ${passed ? `<div class="big-stars">${stars(0, 3, 'pop')}</div>` : `<div class="splat">${icon('skull')}</div><p class="reason">${esc(reason ?? 'Have another go!')}</p>`}
-        <div class="score-tag ${!passed && !score ? 'hidden' : ''}"><small>Score</small><span class="score-val" data-score="${Math.round(score)}">0</span>${isBest ? '<em class="new-best">Best ever!</em>' : ''}</div>
-        ${stats.length ? `<div class="chips">${stats.map(([k, v]) => `<span class="chip"><small>${esc(k)}</small><b>${esc(v)}</b></span>`).join('')}</div>` : ''}
+      `<div class="result ${passed ? 'pass' : 'fail'}">
+        <div class="stamp">${passed ? 'Test passed' : 'Test failed'}</div>
+        <h2>${esc(title)}</h2>
+        <p class="result-sub">${esc(subtitle)}</p>
+        ${passed ? `<div class="big-stars">${stars(0, 3, 'pop')}</div>` : `<p class="reason">${esc(reason ?? 'Try again!')}</p>`}
+        <div class="score-line ${!passed && !score ? 'hidden' : ''}"><span class="score-val" data-score="${Math.round(score)}">0</span>${isBest ? '<span class="new-best">New best!</span>' : ''}</div>
         ${passed ? `<p class="total">Total score <b>${Math.round(total).toLocaleString()}</b></p>` : ''}
-        ${passed && unlock ? `<div class="unlock"><span class="swatch mini" style="--c:${unlock.color}">${icon('dummy')}</span><span><b>${unlock.need - unlock.have}</b> more ${icon('star')} unlocks <b>${esc(unlock.label)}</b></span><i><em style="width:${Math.round((100 * unlock.have) / unlock.need)}%"></em></i></div>` : ''}
-        ${passed && upNext ? `<p class="up-next">Next up: <b>${esc(upNext)}</b></p>` : ''}
-        <div class="actions">
-          ${passed ? `<button class="btn go big next-btn" data-act="next"><span>Next</span>${icon('next')}</button>` : ''}
-          ${canRevive ? `<button class="btn sun big revive-btn" data-act="revive">${icon('heart')}<span>Keep going</span>${reviveIsPaid ? adTag : ''}<i class="countdown">5</i></button>` : ''}
-          ${passed ? '' : `<button class="btn ${canRevive ? 'sky' : 'go big'}" data-act="retry">${icon('retry')}<span>Try again</span></button>`}
-          <div class="dock">
-            <button class="dock-btn" data-act="home" aria-label="Main menu"><span class="disc tomato">${icon('home')}</span></button>
-            ${passed ? `<button class="dock-btn" data-act="retry" aria-label="Replay"><span class="disc sky">${icon('retry')}</span></button>` : ''}
-            ${canSkip ? `<button class="btn ghost" data-act="skip"><span>Skip level</span>${ads ? adTag : icon('next')}</button>` : ''}
-            ${canContinue ? `<button class="btn ghost" data-act="next"><span>Carry on</span>${icon('next')}</button>` : ''}
+        ${stats.length ? `<ul class="stats">${stats.map(([k, v]) => `<li><span>${esc(k)}</span><b>${esc(v)}</b></li>`).join('')}</ul>` : ''}
+        ${passed && unlock ? `<div class="unlock">${icon('shirt')}<span><b>${unlock.need - unlock.have}</b> more ${icon('star')} unlocks <b style="color:${unlock.color}">${esc(unlock.label)}</b></span><i><em style="width:${Math.round((100 * unlock.have) / unlock.need)}%"></em></i></div>` : ''}
+        ${passed && upNext ? `<p class="up-next">Up next · <b>${esc(upNext)}</b></p>` : ''}
+        <div class="col">
+          ${passed ? `<button class="btn primary big next-btn" data-act="next"><span>Next level</span>${icon('next')}</button>` : ''}
+          ${canRevive ? `<button class="btn primary big revive-btn" data-act="revive">${icon('play')}<span>Revive</span>${reviveIsPaid ? adTag : ''}<i class="countdown">5</i></button>` : ''}
+          ${passed ? '' : `<button class="btn ${canRevive ? '' : 'primary big'}" data-act="retry">${icon('retry')}<span>Try again</span></button>`}
+          <div class="row">
+            <button class="btn small" data-act="home" aria-label="Main menu">${icon('home')}</button>
+            ${passed ? `<button class="btn small" data-act="retry">${icon('retry')}<span>Replay</span></button>` : ''}
+            ${canSkip ? `<button class="btn small" data-act="skip"><span>Skip level</span>${ads ? adTag : icon('next')}</button>` : ''}
+            ${canContinue ? `<button class="btn small" data-act="next"><span>Continue</span>${icon('next')}</button>` : ''}
           </div>
         </div>
       </div>`,
@@ -336,37 +331,34 @@ export class UI {
     }
   }
 
-  /** First time a game comes up: what it is and how to play it, in three numbered steps. */
+  /** First time a game comes up: what it is and how to play it. */
   intro({ name, icon: ic, goal, how, onGo }) {
     this.modal(
       `<div class="result intro">
-        <div class="ribbon sky">New game!</div>
-        <div class="badge">${icon(ic)}</div>
+        <div class="stamp">New game</div>
+        <div class="intro-face">${icon(ic)}</div>
         <h2>${esc(name)}</h2>
-        <p class="goal">${esc(goal)}</p>
-        <ol class="steps">${how.map(([i, text]) => `<li><span class="step-icon">${icon(i)}</span><span>${esc(text)}</span></li>`).join('')}</ol>
-        <button class="btn go big" data-act="go">${icon('play')}<span>Let's go!</span></button>
+        <p class="result-sub">${esc(goal)}</p>
+        <ul class="how">${how.map(([i, text]) => `<li>${icon(i)}<span>${esc(text)}</span></li>`).join('')}</ul>
+        <button class="btn primary big" data-act="go">${icon('play')}<span>Let's go!</span></button>
       </div>`,
       { go: onGo },
     );
     this.audio.ding?.(3);
   }
 
-  /**
-   * Between levels a boss turns up. The card shows a little picture of the
-   * fight and what to do, then Fight (rewarded ad) or skip it for free.
-   */
-  bossOffer({ name, mk, kind, preview, how, ads, onFight, onSkip }) {
+  /** Between levels: a boss wants a word. Fight it (rewarded ad) or carry on. */
+  bossOffer({ name, mk, ads, onFight, onSkip }) {
     this.modal(
       `<div class="result boss-offer">
-        <div class="ribbon tomato">Boss battle!</div>
-        <div class="boss-preview">${preview}</div>
+        <div class="stamp">Boss incoming</div>
+        <div class="boss-face">${icon('skull')}</div>
         <h2>${esc(name)}</h2>
-        <p class="level-tag"><b>${esc(kind)}</b> · Mk ${mk}</p>
-        <p class="goal">${esc(how)}</p>
-        <div class="actions">
-          <button class="btn tomato big boss-btn" data-act="fight">${icon('bolt')}<span>Fight!</span>${ads ? '<span class="ad-tag">AD</span>' : ''}</button>
-          <button class="btn ghost" data-act="skip"><span>Not now</span>${icon('next')}</button>
+        <p class="result-sub">Mk ${mk} · bonus round</p>
+        <p class="small">Lure it into a pylon, then dive into it while it's stunned. Knock it out for a big score bonus.</p>
+        <div class="col">
+          <button class="btn primary big boss-btn" data-act="fight">${icon('bolt')}<span>Fight boss</span>${ads ? '<span class="ad-tag">AD</span>' : ''}</button>
+          <button class="btn small" data-act="skip"><span>Skip boss</span>${icon('next')}</button>
         </div>
       </div>`,
       { fight: onFight, skip: onSkip },

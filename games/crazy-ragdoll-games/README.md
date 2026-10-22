@@ -42,16 +42,10 @@ Sling Smash aims with the arrow keys.
 ### Boss fights
 
 After every sixth level a boss steps in between levels — a bonus round you can
-take or skip. The boss card shows a picture of the fight and how to win it.
-There are four, each played a different way, and they take turns so two in a
-row never repeat. Each lap round they get tougher.
-
-| Boss | Fight | Controls |
-|---|---|---|
-| **Goliath** | A giant robot stomps towards your cannon. Fire the ragdoll at the glowing core on its chest before it reaches you. | Drag to aim · let go to fire |
-| **Crab King** | A mechanical crab scuttles across a bowling lane, guarding its belly with its claws. Bowl the ragdoll in while the claws are up. | Hold to power up · let go to bowl |
-| **Wrecker** | Swing from a crane rope and fly head first into the glass dome on the robot's head. | Hold to swing higher · let go to fly |
-| **Stomper** | The floor is one giant trampoline. Bounce onto the robot's head; touch its body and it swats you. | Hold left / right to steer |
+take or skip. A sumo ring on top of a tower: walk your ragdoll around while a
+toy robot (Big Bouncer, Mega Mixer, Sir Smashalot, Turbo Toaster…) charges at
+you. Lure it into a pylon to stun it, then dive into it. Drag to walk · tap to
+dive.
 
 ## Building for upload
 
@@ -98,13 +92,11 @@ src/
   core/      game flow, ads, input, audio, save
   dummy/     the ragdoll: physics and looks
   render/    renderer, sky and lighting, materials, textures, effects, camera
-  world/     props, the cargo yard, vehicles (car, cart, cannon), the boss robots and
-             level building blocks
+  world/     props, the cargo yard, vehicles (car, cart, cannon) and level building blocks
   modes/     one class per game (stackAttack, hammerSpin, rocketRider, wipeout, pinball,
              plinko, bounceUp, slide, slingSmash, bowling, craneSwing, ballistics,
-             crashCourse, cartHill, dropTest; bossCannon, bossBowl, bossSwing and
-             bossStomp share bossLevel; attemptLevel is the shared base for
-             games played as best-of-three attempts)
+             crashCourse, cartHill, dropTest, bossFight; attemptLevel is the
+             shared base for games played as best-of-three attempts)
   levels/    level data for each game, remixes and the endless sequence
   platform/  Playgama, CrazyGames and YouTube SDK adapters
   ui/        menus, HUD and cards

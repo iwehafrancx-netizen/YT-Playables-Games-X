@@ -2,6 +2,7 @@ import { STEP } from '../physics/physics.js';
 import { platform } from '../platform/index.js';
 import { DEPARTMENTS, levelAt, numberOf } from '../levels/index.js';
 import { Showcase } from '../modes/showcase.js';
+import { BossFightLevel } from '../modes/bossFight.js';
 import { BOSS_EVERY, BOSS_DEPT, bossFor } from '../levels/boss.js';
 import { SUIT_UNLOCKS } from '../ui/ui.js';
 import { SUITS } from '../dummy/dummyView.js';
@@ -210,9 +211,6 @@ export class Game {
     this.ui.bossOffer({
       name: boss.name,
       mk: boss.mk,
-      kind: boss.kind,
-      preview: boss.preview,
-      how: boss.how,
       ads: platform.ads,
       onFight: async () => {
         if (await this.earn('fight the boss')) this.startBoss(n);
@@ -228,8 +226,8 @@ export class Game {
     this.ui.clearHud();
     this.paused = false;
     this.current = { n, boss: def };
-    this.setScene(new def.Mode(this, def, BOSS_DEPT));
-    this.ui.banner(def.name, def.kind);
+    this.setScene(new BossFightLevel(this, def, BOSS_DEPT));
+    this.ui.banner(def.name, `Boss fight · Mk ${def.mk}`);
     platform.levelEvent('level_started');
     platform.gameplayStart();
   }
@@ -295,7 +293,7 @@ export class Game {
         reviveIsPaid: platform.ads && (this.revives + 1) % 2 === 0,
         canSkip: !result.passed && !replay,
         unlock: this.nextUnlock(),
-        upNext: replay ? null : n % BOSS_EVERY === 0 ? 'Boss battle!' : levelAt(n + 1).dept.name,
+        upNext: replay ? null : n % BOSS_EVERY === 0 ? 'Boss fight!' : levelAt(n + 1).dept.name,
         onRevive: () => this.revive(),
         onRetry: () => this.startLevel(n, { replay }),
         // A replay hands back to the run where the player left it.
@@ -329,8 +327,8 @@ export class Game {
       if (result.passed) this.ui.clearHud();
       this.ui.results({
         ...result,
-        title: 'Boss battle',
-        subtitle: `${boss.name} · ${boss.kind}`,
+        title: 'Boss fight',
+        subtitle: `${boss.name} · Mk ${boss.mk}`,
         total: this.save.data.score,
         ads: platform.ads,
         canRevive: !result.passed && level.canRevive(),

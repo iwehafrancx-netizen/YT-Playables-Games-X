@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { RAPIER, Group, groups } from '../physics/physics.js';
+import { Mat } from '../render/materials.js';
 
 const D2R = Math.PI / 180;
 

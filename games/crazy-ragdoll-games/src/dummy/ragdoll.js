@@ -135,6 +135,7 @@ function rotationError(to, from, out) {
 
 const _mq1 = new Quaternion();
 const _mq2 = new Quaternion();
+const _mq3 = new Quaternion();
 const _mv1 = new Vector3();
 const _mv2 = new Vector3();
 const _mv3 = new Vector3();

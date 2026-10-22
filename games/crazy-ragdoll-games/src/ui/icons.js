@@ -1,27 +1,26 @@
-// Chunky, rounded icon set. Everything is drawn in currentColor so buttons
-// and chips tint their icons.
-const svg = (body) => `<svg viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
-const line = (d, w = 3.4) => `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+const svg = (body, vb = '0 0 24 24') => `<svg viewBox="${vb}" aria-hidden="true">${body}</svg>`;
 
 export const ICONS = {
-  pause: svg('<rect x="5" y="4" width="5.5" height="16" rx="2.75"/><rect x="13.5" y="4" width="5.5" height="16" rx="2.75"/>'),
-  play: svg('<path d="M8 4.2c-1-.6-2.2.1-2.2 1.3v13c0 1.2 1.2 1.9 2.2 1.3l10.6-6.5c1-.6 1-2 0-2.6z"/>'),
-  retry: svg(line('M5 12a7 7 0 1 0 2.2-5.1') + line('M4.5 3.5v4.5h4.5')),
-  next: svg(line('M5 12h13') + line('M13 6.5 18.5 12 13 17.5')),
-  back: svg(line('M19 12H6') + line('M11 6.5 5.5 12l5.5 5.5')),
-  grid: svg('<circle cx="7" cy="7" r="3.6"/><circle cx="17" cy="7" r="3.6"/><circle cx="7" cy="17" r="3.6"/><circle cx="17" cy="17" r="3.6"/>'),
-  home: svg('<path d="M12 3.2c.4 0 .8.1 1.1.4l7 6.2c.9.8.3 2.2-.9 2.2H19v7a2 2 0 0 1-2 2h-2.5v-5.5h-5V21H7a2 2 0 0 1-2-2v-7h-.2c-1.2 0-1.8-1.4-.9-2.2l7-6.2c.3-.3.7-.4 1.1-.4z"/>'),
-  gear: svg('<path d="M10.3 2.5h3.4l.6 2.6 1.7.9 2.4-1.2 2.4 2.4-1.2 2.4.9 1.7 2.6.6v3.4l-2.6.6-.9 1.7 1.2 2.4-2.4 2.4-2.4-1.2-1.7.9-.6 2.6h-3.4l-.6-2.6-1.7-.9-2.4 1.2-2.4-2.4 1.2-2.4-.9-1.7-2.6-.6v-3.4l2.6-.6.9-1.7-1.2-2.4 2.4-2.4 2.4 1.2 1.7-.9z"/><circle cx="12" cy="12" r="3.3" fill="#fff8e8"/>'),
-  star: svg('<path d="M12 2.6c.5 0 .9.3 1.1.7l2.3 4.8 5.2.7c1 .1 1.4 1.4.7 2.1l-3.8 3.7.9 5.2c.2 1-.8 1.7-1.7 1.3L12 18.6l-4.7 2.5c-.9.4-1.9-.3-1.7-1.3l.9-5.2-3.8-3.7c-.7-.7-.3-2 .7-2.1l5.2-.7 2.3-4.8c.2-.4.6-.7 1.1-.7z"/>'),
-  target: svg('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6.6" fill="#fff8e8"/><circle cx="12" cy="12" r="3.4"/>'),
-  dummy: svg('<circle cx="12" cy="6" r="4.4"/><path d="M8.6 11.2h6.8c1 0 1.6 1 1.3 1.9l-1.4 4.2v3.6a1.6 1.6 0 0 1-3.2 0V18h-.2v2.9a1.6 1.6 0 0 1-3.2 0v-3.6L7.3 13.1c-.3-.9.3-1.9 1.3-1.9z"/>'),
-  clock: svg('<circle cx="12" cy="12" r="10"/>' + line('M12 7v5l3 2', 2.8).replace('currentColor', '#fff8e8')),
-  skull: svg('<path d="M12 2.5a8.5 8.5 0 0 0-8.5 8.5c0 2.8 1.4 4.8 3.2 6v2.4c0 1 .8 1.8 1.8 1.8h7c1 0 1.8-.8 1.8-1.8V17c1.8-1.2 3.2-3.2 3.2-6A8.5 8.5 0 0 0 12 2.5z"/><circle cx="8.7" cy="11.3" r="2.3" fill="#fff8e8"/><circle cx="15.3" cy="11.3" r="2.3" fill="#fff8e8"/>'),
-  heart: svg('<path d="M12 21c-.3 0-.6-.1-.9-.3C8 18.6 2.5 14.6 2.5 9.2 2.5 6 5 3.5 8 3.5c1.6 0 3 .8 4 2 1-1.2 2.4-2 4-2 3 0 5.5 2.5 5.5 5.7 0 5.4-5.5 9.4-8.6 11.5-.3.2-.6.3-.9.3z"/>'),
-  bolt: svg('<path d="M14.2 2.3c.8-.6 1.9.1 1.6 1.1L14.4 9.5h4.3c.9 0 1.4 1 .8 1.7l-8.8 10.4c-.7.8-2 .1-1.7-.9l1.5-6.1H6.2c-.9 0-1.4-1-.8-1.7z"/>'),
-  shirt: svg('<path d="M12 2.5C6.8 2.5 2.5 6.3 2.5 11c0 4.5 3.9 8.5 8.6 8.5 1.4 0 1.9-.8 1.9-1.7 0-1.2-1-1.6-1-2.6 0-1 .8-1.6 1.9-1.6h2.6c2.8 0 5-2 5-4.9 0-3.6-4.2-6.2-9.5-6.2z"/><circle cx="7.5" cy="10.5" r="1.7" fill="#fff8e8"/><circle cx="11" cy="6.8" r="1.7" fill="#fff8e8"/><circle cx="15.8" cy="7.5" r="1.7" fill="#fff8e8"/>'),
-  sound: svg('<path d="M3.5 9.5c0-.8.7-1.5 1.5-1.5h2.8l4.4-3.6c.7-.6 1.8-.1 1.8.8v13.6c0 .9-1.1 1.4-1.8.8L7.8 16H5c-.8 0-1.5-.7-1.5-1.5z"/>' + line('M17 8.5a5 5 0 0 1 0 7', 2.6) + line('M19.6 6a8.6 8.6 0 0 1 0 12', 2.6)),
-  music: svg('<path d="M9 17.5V6.2c0-.7.5-1.3 1.2-1.5l8.5-2.1c.9-.2 1.8.5 1.8 1.4v11.5" fill="none" stroke="currentColor" stroke-width="2.8"/><circle cx="6.2" cy="17.8" r="3.4"/><circle cx="17.7" cy="15.6" r="3.4"/>'),
+  pause: svg('<rect x="6" y="4" width="4.5" height="16" rx="1.5"/><rect x="13.5" y="4" width="4.5" height="16" rx="1.5"/>'),
+  play: svg('<path d="M7 4.5v15a1 1 0 0 0 1.5.9l12-7.5a1 1 0 0 0 0-1.8l-12-7.5A1 1 0 0 0 7 4.5z"/>'),
+  retry: svg('<path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M20.5 3.5v5h-5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'),
+  next: svg('<path d="M8.5 4.5 16 12l-7.5 7.5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>'),
+  back: svg('<path d="M15.5 4.5 8 12l7.5 7.5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>'),
+  grid: svg('<rect x="4" y="4" width="7" height="7" rx="1.8"/><rect x="13" y="4" width="7" height="7" rx="1.8"/><rect x="4" y="13" width="7" height="7" rx="1.8"/><rect x="13" y="13" width="7" height="7" rx="1.8"/>'),
+  home: svg('<path d="M3.5 11.2 12 4l8.5 7.2V20a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/>'),
+  gear: svg('<path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm9 4.7v-2.4l-2.5-.6a7 7 0 0 0-.7-1.6l1.4-2.2-1.7-1.7-2.2 1.4a7 7 0 0 0-1.6-.7L13.2 3h-2.4l-.6 2.5a7 7 0 0 0-1.6.7L6.4 4.8 4.7 6.5l1.4 2.2a7 7 0 0 0-.7 1.6L3 10.8v2.4l2.5.6c.2.6.4 1.1.7 1.6l-1.4 2.2 1.7 1.7 2.2-1.4c.5.3 1 .5 1.6.7l.5 2.4h2.4l.6-2.5c.6-.2 1.1-.4 1.6-.7l2.2 1.4 1.7-1.7-1.4-2.2c.3-.5.5-1 .7-1.6z"/>'),
+  star: svg('<path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"/>'),
+  target: svg('<circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="1.8"/>'),
+  dummy: svg('<circle cx="12" cy="5.5" r="3.3"/><path d="M8 10h8l-.6 6h-2l-.4 6h-2l-.4-6h-2z"/><path d="M8.2 10.5 5 15M15.8 10.5 19 15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'),
+  clock: svg('<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M12 7v5.5l3.5 2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>'),
+  gearItem: svg('<path d="M12 1.8l1.6 2.6 3-.6.6 3 2.6 1.6-1.2 2.8 1.2 2.8-2.6 1.6-.6 3-3-.6L12 22.2l-1.6-2.6-3 .6-.6-3-2.6-1.6 1.2-2.8-1.2-2.8 2.6-1.6.6-3 3 .6z"/><circle cx="12" cy="12" r="3.4" fill="#15171c"/>'),
+  skull: svg('<path d="M12 3a8 8 0 0 0-8 8c0 2.6 1.3 4.5 3 5.6V20h3v-2h1v2h2v-2h1v2h3v-3.4c1.7-1.1 3-3 3-5.6a8 8 0 0 0-8-8z"/><circle cx="9" cy="11.5" r="2" fill="#15171c"/><circle cx="15" cy="11.5" r="2" fill="#15171c"/>'),
+  heart: svg('<path d="M12 20.5s-7.6-4.6-9.4-9.4C1.2 7.4 3.6 4 7 4c2 0 3.6 1.1 5 2.9C13.4 5.1 15 4 17 4c3.4 0 5.8 3.4 4.4 7.1-1.8 4.8-9.4 9.4-9.4 9.4z"/>'),
+  bolt: svg('<path d="M13.5 2 5 13.5h6L9.5 22 19 9.5h-6z"/>'),
+  shirt: svg('<path d="M8.5 3 4 5.5 2.5 10l3.5 1.2V21h12v-9.8l3.5-1.2L20 5.5 15.5 3a3.5 3.5 0 0 1-7 0z"/>'),
+  sound: svg('<path d="M4 9h4l5-4.5v15L8 15H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'),
+  music: svg('<path d="M9 18V5.5l11-2.5v12.5" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="6.5" cy="18" r="3"/><circle cx="17.5" cy="15.5" r="3"/>'),
+
 };
 
 export function icon(name) {
