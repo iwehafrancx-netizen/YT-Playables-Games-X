@@ -1,6 +1,12 @@
 // Every course comes back once as "After Hours": evening light and a
 // tougher ask.
+const scale = (stars, k) => stars.map((s, i) => Math.round((s * k[i]) / 10) * 10);
+
 const HARDER = {
+  cannon: (l) => ({ reveal: (l.reveal ?? 0.55) * 0.65 }),
+  crash: (l) => ({ stars: scale(l.stars, [1.1, 1.2, 1.25]) }),
+  cart: (l) => ({ stars: scale(l.stars, [1.1, 1.2, 1.25]) }),
+  drop: (l) => ({ stars: scale(l.stars, [1.1, 1.2, 1.25]) }),
   stack: (l) => ({ goal: +(l.goal + 0.2).toFixed(1), dummies: l.dummies + 1, speed: (l.speed ?? 1) * 1.2 }),
   hammer: (l) => ({ stars: l.stars.map((s) => Math.round((s * 1.2) / 50) * 50) }),
   rocket: (l) => ({ speed: (l.speed ?? 6.5) + 1 }),

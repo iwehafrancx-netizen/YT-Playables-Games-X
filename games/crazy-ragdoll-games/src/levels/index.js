@@ -20,6 +20,14 @@ import { BowlingLevel } from '../modes/bowling.js';
 import { BOWL } from './bowling.js';
 import { CraneSwingLevel } from '../modes/craneSwing.js';
 import { SWING } from './swing.js';
+import { BallisticsLevel } from '../modes/ballistics.js';
+import { BAY } from './bay.js';
+import { CrashCourseLevel } from '../modes/crashCourse.js';
+import { CRASH } from './crash.js';
+import { CartHillLevel } from '../modes/cartHill.js';
+import { CART } from './cart.js';
+import { DropTestLevel } from '../modes/dropTest.js';
+import { DROP } from './drop.js';
 import { remixes } from './remix.js';
 
 // `intro` is the how-to-play card shown the first time each game comes up.
@@ -67,6 +75,22 @@ export const DEPARTMENTS = [
   {
     id: 'swing', name: 'Crane Swing', theme: 'morning', Mode: CraneSwingLevel, levels: SWING,
     intro: { icon: 'heart', goal: 'Swing from the crane and land on the pad on top of the containers.', how: [['play', 'Hold to swing higher'], ['next', 'Let go to fly'], ['star', 'Grab the stars on the way']] },
+  },
+  {
+    id: 'cannon', name: 'Cannon Blast', theme: 'morning', Mode: BallisticsLevel, levels: BAY,
+    intro: { icon: 'target', goal: 'Fire him out of a cannon and knock down every target.', how: [['back', 'Drag to aim the cannon'], ['play', 'Let go to fire'], ['star', 'Fewer shots = more stars']] },
+  },
+  {
+    id: 'crash', name: 'Crash Course', theme: 'noon', Mode: CrashCourseLevel, levels: CRASH,
+    intro: { icon: 'bolt', goal: 'Drive at the wall and send him flying through the windscreen onto the target.', how: [['play', 'Hold for gas, let go to coast'], ['target', 'Hit the wall at the right speed'], ['star', 'Land on the bullseye for big points']] },
+  },
+  {
+    id: 'cart', name: 'Cart Hill', theme: 'sunset', Mode: CartHillLevel, levels: CART,
+    intro: { icon: 'next', goal: 'Ride a shopping cart down the hill and bail out onto the target.', how: [['play', 'Hold to wind up, let go to push off'], ['bolt', 'Tap again to bail out'], ['star', 'Air time and bullseyes pay extra']] },
+  },
+  {
+    id: 'drop', name: 'Drop Test', theme: 'overcast', Mode: DropTestLevel, levels: DROP,
+    intro: { icon: 'skull', goal: 'Shove him down the course and score every painful bump on the way.', how: [['back', 'Drag to aim the shove'], ['play', 'Let go to push him'], ['star', 'Bigger crashes, bigger score']] },
   },
 ];
 
