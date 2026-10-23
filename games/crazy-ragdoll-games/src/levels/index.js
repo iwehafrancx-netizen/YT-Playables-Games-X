@@ -56,7 +56,7 @@ export const DEPARTMENTS = [
   },
   {
     id: 'sling', name: 'Sling Smash', theme: 'noon', Mode: SlingSmashLevel, levels: SLING,
-    intro: { icon: 'bolt', goal: 'Fire him from a giant slingshot and blow up every TNT crate.', how: [['back', 'Drag back to aim and pull'], ['play', 'Let go to fire'], ['bolt', 'TNT explodes, so chain the blasts!']] },
+    intro: { icon: 'bolt', goal: 'Fire him from a giant slingshot and blow up every TNT crate.', how: [['back', 'Drag down to pull back, sideways to aim'], ['play', 'Let go to fire — blow up every TNT crate'], ['target', 'Hit the bullseyes for bonus points']] },
   },
   {
     id: 'bowl', name: 'Ragdoll Bowling', theme: 'sunset', Mode: BowlingLevel, levels: BOWL,

@@ -97,7 +97,8 @@ function seeded(seed) {
  * Everything here is solid but fixed; knockable props come from `clutter()`.
  *
  * `run` stretches the dressing along a course: { axis: 'x' | 'z', to } lines
- * the far side of a sideways course, or both sides of one heading away.
+ * the far side of a sideways course (both sides with `both`, for one filmed
+ * from behind), or both sides of one heading away.
  * `flip` puts the back wall at +z, for games filmed looking that way.
  */
 export function cargoYard(world, { y = 0, extent = 34, run = null, seed = 7, flip = false, mat = 'concrete' } = {}) {
@@ -133,6 +134,10 @@ export function cargoYard(world, { y = 0, extent = 34, run = null, seed = 7, fli
     for (let x = -24; x <= run.to + 30; x += 34) crane(world, solid, [x + 10, y, back - 7], 90);
     for (let x = -18; x <= run.to + 20; x += 9 + rand() * 6) pile([x, y, -8 - rand() * 3]);
     for (let x = -10; x <= run.to + 20; x += 30) world.lamp({ pos: [x, y, -10], yaw: 180 });
+    if (run.both) {
+      for (let x = -30; x <= run.to + 40; x += BOX_L + 0.4) stack([x, y, -back + rand() * 2], 90, 1 + Math.floor(rand() * 3));
+      for (let x = -14; x <= run.to + 20; x += 11 + rand() * 6) pile([x, y, 8 + rand() * 3]);
+    }
   } else {
     // Course heading away from the camera: containers down both sides.
     for (const s of [-1, 1]) {

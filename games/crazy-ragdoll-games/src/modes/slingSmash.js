@@ -8,15 +8,19 @@ const CHEST = { x: 0, y: 0.17, z: 0 };
 const MAX_PULL = 2.3; // m
 const POWER = 9.5; // launch speed per metre of pull
 const MIN_PULL = 0.45;
+const LIFT = 0.5; // the pouch dips this much per metre pulled back, which sets the launch angle
+const MAX_YAW = 0.45; // rad either side
 const BLAST_R = 3.4;
 const DOTS = 16;
 const _a = new THREE.Vector3();
 const _b = new THREE.Vector3();
+const UP = new THREE.Vector3(0, 1, 0);
 
 /**
- * Sling Smash: pull the ragdoll back in a giant slingshot, let go, and send
- * him into crate forts across the yard. Every TNT crate has to go up before
- * the ragdolls run out; knocking the rest of the fort over is a bonus.
+ * Sling Smash: seen from behind a giant slingshot, pull the ragdoll back,
+ * aim left or right, let go, and send him into crate forts across the yard.
+ * Every TNT crate has to go up before the ragdolls run out; bullseyes
+ * standing round the fort and knocking crates over score on top.
  */
 export class SlingSmashLevel extends Level {
   setup() {
@@ -28,12 +32,15 @@ export class SlingSmashLevel extends Level {
     this.phase = 'load';
     this.tnts = [];
     this.blown = 0;
-    this.bonus = 0;
+    this.points = 0;
+    this.yaw = 0;
+    this.back = 0;
+    this.dir = new THREE.Vector3(1, 0, 0);
 
-    this.scenery({ run: { axis: 'x', to: 40 } });
+    this.scenery({ run: { axis: 'x', to: 40, both: true } });
     this.slingshot();
     for (const p of def.fort) this.piece(p);
-    this.fortCount = this.world.props.length - this.tnts.length;
+    for (const [x, z, y = 2, points = 300] of def.targets ?? []) this.world.bullseye({ pos: [x, y, z], yaw: -90, radius: 0.8, points });
     this.dots = this.trail();
     this.load();
 
@@ -42,9 +49,10 @@ export class SlingSmashLevel extends Level {
       stats: [
         { id: 'shots', icon: 'dummy', value: this.shots },
         { id: 'tnt', icon: 'bolt', value: `0/${this.tnts.length}` },
+        { id: 'points', icon: 'target', value: 0 },
       ],
     });
-    this.hud.hint(def.hint ?? 'Drag back to aim · let go to fire · blow up every TNT crate');
+    this.hud.hint(def.hint ?? 'Drag down to pull back · left or right to aim · let go to fire');
     this.cameraFor(true);
   }
 
@@ -108,10 +116,12 @@ export class SlingSmashLevel extends Level {
     this.pouch.setTranslation({ x: REST.x, y: REST.y, z: REST.z }, true);
     this.pouch.setNextKinematicTranslation({ x: REST.x, y: REST.y, z: REST.z });
     const d = this.spawnDummy({ position: [REST.x, REST.y - 0.08 - 1.41, 0], yaw: Math.PI / 2, pose: 'tuck', muscle: 0.8 });
+    d.hits = 0;
     d.lively = 0.5;
     this.rope = this.physics.world.createImpulseJoint(RAPIER.JointData.rope(0.08, { x: 0, y: 0, z: 0 }, CHEST), this.pouch, d.parts.chest.body, true);
     this.ball = d;
     this.pull.set(0, 0, 0);
+    this.back = 0;
     this.phase = 'aim';
     this.physics.snapAll();
   }
@@ -128,10 +138,18 @@ export class SlingSmashLevel extends Level {
 
   onPointerMove(p, start) {
     if (!this.aiming) return;
-    // A drag across a third of the shorter screen side is a full pull.
+    // Dragging down a third of the shorter screen side is a full pull; like a
+    // real slingshot, pulling to one side sends him the other way.
     const k = MAX_PULL / (Math.min(p.w, p.h) * 0.33);
-    this.pull.set((p.px - start.px) * k, -(p.py - start.py) * k, 0);
-    if (this.pull.length() > MAX_PULL) this.pull.setLength(MAX_PULL);
+    this.back = THREE.MathUtils.clamp((p.py - start.py) * k, 0, MAX_PULL);
+    this.yaw = THREE.MathUtils.clamp(-(p.px - start.px) * k * 0.3, -MAX_YAW, MAX_YAW);
+    this.setPull();
+  }
+
+  /** The pouch position for the current pull and aim: back, down, and off to the side. */
+  setPull() {
+    const b = this.back;
+    this.pull.set(-b * Math.cos(this.yaw), -b * LIFT, -b * Math.sin(this.yaw));
   }
 
   onPointerUp() {
@@ -143,12 +161,11 @@ export class SlingSmashLevel extends Level {
   onKeyDown(code) {
     if (this.phase !== 'aim') return;
     // Keyboard aiming: arrows nudge the pull, Space fires.
-    const step = 0.15;
-    if (code === 'ArrowLeft') this.pull.x -= step;
-    if (code === 'ArrowRight') this.pull.x += step;
-    if (code === 'ArrowUp') this.pull.y += step;
-    if (code === 'ArrowDown') this.pull.y -= step;
-    if (this.pull.length() > MAX_PULL) this.pull.setLength(MAX_PULL);
+    if (code === 'ArrowLeft') this.yaw = Math.max(-MAX_YAW, this.yaw - 0.04);
+    if (code === 'ArrowRight') this.yaw = Math.min(MAX_YAW, this.yaw + 0.04);
+    if (code === 'ArrowDown') this.back = Math.min(MAX_PULL, this.back + 0.12);
+    if (code === 'ArrowUp') this.back = Math.max(0, this.back - 0.12);
+    this.setPull();
     if (code === 'Space' || code === 'Enter') this.fire();
     this.hud.clearHint();
   }
@@ -166,8 +183,9 @@ export class SlingSmashLevel extends Level {
     this.physics.world.removeImpulseJoint(this.rope, true);
     const v = this.launch(_a);
     const d = this.ball;
-    d.ragdoll.setVelocity({ x: v.x, y: v.y, z: 0 });
-    d.ragdoll.addSpin(_b.set(0, 0, -v.length() * 0.25));
+    d.ragdoll.setVelocity({ x: v.x, y: v.y, z: v.z });
+    this.dir.set(v.x, 0, v.z).normalize();
+    d.ragdoll.addSpin(_b.copy(this.dir).cross(UP).multiplyScalar(-v.length() * 0.25));
     d.setPose('starfish');
     d.setMuscle(0.5);
     d.lively = 1;
@@ -177,6 +195,7 @@ export class SlingSmashLevel extends Level {
     this.flyT = 0;
     this.restT = 0;
     this.pull.set(0, 0, 0);
+    this.back = 0;
     this.audio.whoosh(1.5);
     this.audio.spring();
     this.rig.kick(4);
@@ -190,7 +209,7 @@ export class SlingSmashLevel extends Level {
     const target = _a.copy(REST).add(this.phase === 'aim' ? this.pull : _b.set(0, 0, 0));
     const t = this.pouch.translation();
     const k = Math.min(1, dt * (this.phase === 'aim' ? 18 : 10));
-    this.pouch.setNextKinematicTranslation({ x: t.x + (target.x - t.x) * k, y: t.y + (target.y - t.y) * k, z: 0 });
+    this.pouch.setNextKinematicTranslation({ x: t.x + (target.x - t.x) * k, y: t.y + (target.y - t.y) * k, z: t.z + (target.z - t.z) * k });
 
     for (const n of this.tnts) {
       if (!n.alive) continue;
@@ -204,16 +223,26 @@ export class SlingSmashLevel extends Level {
       if (Math.abs(v - n.v) > 3.2) this.explode(n);
       else n.v = v;
     }
-    if (this.phase === 'flying') {
-      const c = this.ball.com(_a);
-      this.ball.ragdoll.addVelocity({ x: 0, y: 0, z: -c.z * 2 * dt });
-    }
+  }
+
+  onTargetHit(target, by) {
+    if (!this.world.hitTarget(target)) return;
+    const d = this.dummyFor(by);
+    const pts = target.points + (d && d.hits++ ? 200 : 0);
+    this.points += pts;
+    this.hud.set('points', this.points);
+    this.hud.bump('points');
+    const p = target.group.position;
+    this.fx.text(_b.set(p.x, p.y + 1.2, p.z), `+${pts}`, { color: '#ffd23a', size: 34 });
+    this.fx.chips(p, { count: 20, colors: [0xffd23a, 0xffffff, 0xd23a2c], size: 0.07, speed: 5, life: 0.9 });
+    this.audio.ding?.(2);
+    this.rig.shake(0.2);
   }
 
   /** He landed on it hard: that sets it off even if the crate couldn't move. */
   onImpact(a, b, force, strength) {
     const tnt = a.kind === 'dummy' ? b.prop : b.kind === 'dummy' ? a.prop : null;
-    if (!tnt || strength < 0.2) return;
+    if (!tnt || strength < 0.08) return;
     const n = this.tnts.find((t) => t.prop === tnt && t.alive);
     if (n) n.hit = true;
   }
@@ -280,7 +309,7 @@ export class SlingSmashLevel extends Level {
     const c = this.ball.com(_a);
     this.dots.forEach((dot, i) => {
       const t = (i + 1) * 0.09;
-      dot.position.set(c.x + v.x * t, c.y + v.y * t + 0.5 * this.gravity * t * t, 0);
+      dot.position.set(c.x + v.x * t, c.y + v.y * t + 0.5 * this.gravity * t * t, c.z + v.z * t);
       dot.visible = dot.position.y > 0;
       dot.scale.setScalar(1 - i / (DOTS * 1.4));
     });
@@ -329,38 +358,36 @@ export class SlingSmashLevel extends Level {
     this.finish({
       passed: this.passed,
       stars,
-      score: this.blown * 500 + smashed * 50 + (this.passed ? left * 400 : 0),
+      score: this.blown * 500 + smashed * 50 + this.points + (this.passed ? left * 400 : 0),
       reason: 'Blow up every TNT crate before you run out of ragdolls.',
       stats: [
         ['TNT', `${this.blown}/${this.tnts.length}`],
         ['Crates smashed', `${smashed}`],
+        ['Bullseyes', `${this.points}`],
         ['Ragdolls left', `${left}`],
       ],
     });
   }
 
   cameraFor(snap = false) {
-    // Over the slingshot's shoulder while aiming, looking out at the fort;
-    // then chase him through the air and stay on whatever he hit.
+    // From behind the slingshot like the cannon, looking out over the fort and
+    // the bullseyes; once he's let go, chase him from behind.
     const portrait = this.stage.width < this.stage.height;
     const far = this.def.view ?? 18;
     let look;
     let pos;
     let rate = 3;
     if (this.phase === 'load' || this.phase === 'aim') {
-      if (portrait) ({ pos, look } = this.frameBox(_a.set(-1, 0.4, -0.3), _b.set(far + 0.5, 3.2, 0.3), { yaw: -34, pitch: 13, margin: 1 }));
-      else {
-        look = _a.set(far * 0.5, 1.8, 0);
-        pos = _b.set(far * 0.25, 5.5, 13);
-      }
+      look = _a.set(far * 0.62, 1.4, 0);
+      pos = _b.set(portrait ? -6.5 : -5, portrait ? 5.2 : 4.3, 0);
     } else {
       const c = this.ball.com(_a);
-      look = c.set(Math.max(c.x, 1), Math.max(c.y, 0.8), 0);
-      pos = _b.copy(look).add(portrait ? new THREE.Vector3(-4, 3, 9) : new THREE.Vector3(-3, 2.5, 9));
-      rate = 6;
+      look = c.set(c.x, Math.max(c.y, 0.8), c.z).addScaledVector(this.dir, 3);
+      pos = _b.copy(look).addScaledVector(this.dir, portrait ? -9 : -8).add(new THREE.Vector3(0, portrait ? 3.8 : 3, 0));
+      rate = 5;
     }
     if (snap) this.rig.set(pos, look);
     else this.rig.aim(pos, look, rate, rate + 2);
-    this.stage.focusShadows(look, 20);
+    this.stage.focusShadows(look, 22);
   }
 }
