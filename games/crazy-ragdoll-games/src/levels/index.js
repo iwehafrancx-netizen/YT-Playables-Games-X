@@ -14,8 +14,6 @@ import { SlingSmashLevel } from '../modes/slingSmash.js';
 import { SLING } from './sling.js';
 import { BowlingLevel } from '../modes/bowling.js';
 import { BOWL } from './bowling.js';
-import { CraneSwingLevel } from '../modes/craneSwing.js';
-import { SWING } from './swing.js';
 import { BallisticsLevel } from '../modes/ballistics.js';
 import { BAY } from './bay.js';
 import { CrashCourseLevel } from '../modes/crashCourse.js';
@@ -61,10 +59,6 @@ export const DEPARTMENTS = [
   {
     id: 'bowl', name: 'Ragdoll Bowling', theme: 'sunset', Mode: BowlingLevel, levels: BOWL,
     intro: { icon: 'target', goal: 'He is the bowling ball. Knock down as many pins as you can.', how: [['next', 'The arrow swings across the lane'], ['play', 'Hold to power up, let go to bowl'], ['star', 'Strike or spare for big bonuses']] },
-  },
-  {
-    id: 'swing', name: 'Crane Swing', theme: 'morning', Mode: CraneSwingLevel, levels: SWING,
-    intro: { icon: 'heart', goal: 'Swing from the crane and land on the pad on top of the containers.', how: [['play', 'Hold to swing higher'], ['next', 'Let go to fly'], ['star', 'Grab the stars on the way']] },
   },
   {
     id: 'cannon', name: 'Cannon Blast', theme: 'morning', Mode: BallisticsLevel, levels: BAY,
@@ -116,10 +110,10 @@ function shuffle(list, rand) {
   return list;
 }
 
-// The run always opens with the hammer, the rocket, then Smash Yard. After that each pass
+// The run always opens with the cannon, the car crash, the cart and Smash Yard. After that each pass
 // deals the next-hardest course from every department in a shuffled order,
 // so the mix keeps changing while the difficulty still climbs.
-const OPENERS = ['hammer', 'rocket', 'smash'];
+const OPENERS = ['cannon', 'crash', 'cart', 'smash'];
 const FIRST_LAP = [];
 const deepest = Math.max(...DEPARTMENTS.map((d) => d.levels.length));
 const dealRand = rng(3);
