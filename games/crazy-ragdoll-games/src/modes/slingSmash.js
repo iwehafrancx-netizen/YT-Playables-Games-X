@@ -2,8 +2,11 @@ import * as THREE from 'three';
 import { Level } from './level.js';
 import { RAPIER } from '../physics/physics.js';
 
-const REST = new THREE.Vector3(0, 2.3, 0); // pouch at rest, between the fork tips
-const TIPS = [new THREE.Vector3(-0.32, 2.55, 0.12), new THREE.Vector3(0.32, 2.55, -0.12)];
+// The fork opens across the line of fire, so from behind it's a proper Y
+// with the ragdoll sat in the pouch between the prongs.
+const REST = new THREE.Vector3(-0.15, 2.55, 0); // pouch at rest, just behind the fork tips
+const FORK = new THREE.Vector3(0, 1.75, 0);
+const TIPS = [new THREE.Vector3(0, 2.75, -0.6), new THREE.Vector3(0, 2.75, 0.6)];
 const CHEST = { x: 0, y: 0.17, z: 0 };
 const MAX_PULL = 2.3; // m
 const POWER = 9.5; // launch speed per metre of pull
@@ -61,23 +64,29 @@ export class SlingSmashLevel extends Level {
   slingshot() {
     const w = this.world;
     const g = new THREE.Group();
-    const trunk = w.mesh(new THREE.CylinderGeometry(0.16, 0.22, 1.7, 12), 'crate');
-    trunk.position.y = 0.85;
-    g.add(trunk);
+    const base = w.mesh(new THREE.CylinderGeometry(0.42, 0.5, 0.25, 16), 'darkSteel');
+    base.position.y = 0.12;
+    const trunk = w.mesh(new THREE.CylinderGeometry(0.17, 0.24, FORK.y, 14), 'crate');
+    trunk.position.y = FORK.y / 2;
+    const knot = w.mesh(new THREE.SphereGeometry(0.2, 14, 10), 'crate');
+    knot.position.copy(FORK);
+    g.add(base, trunk, knot);
     for (const tip of TIPS) {
-      const from = new THREE.Vector3(0, 1.6, 0);
-      const len = from.distanceTo(tip);
-      const arm = w.mesh(new THREE.CylinderGeometry(0.1, 0.13, len, 10), 'crate');
-      arm.position.copy(from).add(tip).multiplyScalar(0.5);
-      arm.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), _a.copy(tip).sub(from).normalize());
-      g.add(arm);
+      const len = FORK.distanceTo(tip);
+      const arm = w.mesh(new THREE.CylinderGeometry(0.09, 0.14, len, 12), 'crate');
+      arm.position.copy(FORK).add(tip).multiplyScalar(0.5);
+      arm.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), _a.copy(tip).sub(FORK).normalize());
+      const cap = w.mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.12, 12), 'toyDark');
+      cap.position.copy(tip);
+      cap.quaternion.copy(arm.quaternion);
+      g.add(arm, cap);
     }
     w.add(g);
     this.pouch = this.physics.createBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(REST.x, REST.y, REST.z));
-    this.pouchMesh = w.mesh(new THREE.BoxGeometry(0.34, 0.12, 0.42), 'toyDark');
+    this.pouchMesh = w.mesh(new THREE.BoxGeometry(0.14, 0.34, 0.5), 'toyDark');
     w.add(this.pouchMesh);
     this.physics.link(this.pouch, this.pouchMesh);
-    const band = new THREE.CylinderGeometry(0.035, 0.035, 1, 6).translate(0, 0.5, 0);
+    const band = new THREE.CylinderGeometry(0.045, 0.045, 1, 8).translate(0, 0.5, 0);
     this.world.disposables.push(band);
     this.bands = TIPS.map(() => {
       const m = new THREE.Mesh(band, new THREE.MeshStandardMaterial({ color: 0x7a2a1c, roughness: 0.6 }));
