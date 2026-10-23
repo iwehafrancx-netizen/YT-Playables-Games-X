@@ -8,7 +8,7 @@ const PAD_D = 3;
 const POWER = 10.5; // every bounce goes this high
 const AIR_SPEED = 6;
 const SCALE = 1;
-const HEAD_TOP = 4.4 * SCALE;
+const HEAD_TOP = 4.6 * SCALE;
 const HEARTS = 3;
 const _a = new THREE.Vector3();
 

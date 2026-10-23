@@ -2,9 +2,11 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 /**
- * A giant cartoon robot for the boss fights: a chunky body with a glowing
- * core, a box head with big googly eyes, swinging arms and stompy legs.
- * Purely visual; each fight decides what on it can be hit.
+ * A giant walking robot for the boss fights, built like a person: hips,
+ * thighs, knees and shins down to big feet; a chest that tapers to the
+ * waist with a glowing core in the middle; armoured shoulders, elbows and
+ * fists; and a helmet with a glowing visor. It walks with bent knees and
+ * swinging arms. Purely visual; each fight decides what on it can be hit.
  *
  * Built at 1 unit ≈ 1 m with the feet at the origin, about 4.6 m tall
  * before `scale`.
@@ -14,68 +16,89 @@ export function buildRobot(world, { scale = 1, paint = 0x8f5de5, trim = 0xffc93c
     world.disposables.push(m);
     return m;
   };
-  const shell = own(new THREE.MeshStandardMaterial({ color: paint, roughness: 0.35, metalness: 0.1, emissive: 0xff2a1a, emissiveIntensity: 0 }));
-  const band = own(new THREE.MeshStandardMaterial({ color: trim, roughness: 0.4 }));
-  const dark = own(new THREE.MeshStandardMaterial({ color: 0x2a2f45, roughness: 0.6 }));
+  const shell = own(new THREE.MeshStandardMaterial({ color: paint, roughness: 0.35, metalness: 0.25, emissive: 0xff2a1a, emissiveIntensity: 0 }));
+  const band = own(new THREE.MeshStandardMaterial({ color: trim, roughness: 0.4, metalness: 0.2 }));
+  const dark = own(new THREE.MeshStandardMaterial({ color: 0x2a2f45, roughness: 0.55, metalness: 0.4 }));
+  const steel = own(new THREE.MeshStandardMaterial({ color: 0x9aa3b2, roughness: 0.3, metalness: 0.7 }));
   const glow = own(new THREE.MeshStandardMaterial({ color: core, emissive: core, emissiveIntensity: 1.2, roughness: 0.3 }));
-  const white = own(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 }));
-  const black = own(new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3 }));
-  const piece = (geo, mat, x, y, z) => {
+  const visorMat = own(new THREE.MeshStandardMaterial({ color: 0xff5040, emissive: 0xff3020, emissiveIntensity: 1.4, roughness: 0.2 }));
+  const piece = (geo, mat, x = 0, y = 0, z = 0) => {
     own(geo);
     const m = new THREE.Mesh(geo, mat);
     m.position.set(x, y, z);
     m.castShadow = m.receiveShadow = true;
     return m;
   };
+  const box = (w, h, d, r = 0.1) => new RoundedBoxGeometry(w, h, d, 3, r);
+  const joint = (r) => new THREE.SphereGeometry(r, 16, 12);
 
   const root = new THREE.Group();
   const rig = new THREE.Group();
   root.add(rig);
 
-  const legs = [-0.55, 0.55].map((x) => {
-    const leg = new THREE.Group();
-    leg.position.set(x, 1.45, 0);
-    leg.add(piece(new RoundedBoxGeometry(0.62, 1.3, 0.62, 3, 0.12), dark, 0, -0.65, 0));
-    leg.add(piece(new RoundedBoxGeometry(0.85, 0.32, 1.05, 3, 0.12), band, 0, -1.3, 0.12));
-    rig.add(leg);
-    return leg;
+  // Legs: hip → thigh → knee → shin → foot, each pivot a group so the walk can bend them.
+  const legs = [-1, 1].map((s) => {
+    const hip = new THREE.Group();
+    hip.position.set(s * 0.48, 1.85, 0);
+    hip.add(piece(joint(0.3), dark));
+    hip.add(piece(box(0.55, 0.85, 0.6, 0.14), shell, 0, -0.5, 0));
+    const knee = new THREE.Group();
+    knee.position.y = -0.95;
+    knee.add(piece(joint(0.26), steel));
+    knee.add(piece(box(0.5, 0.7, 0.55, 0.12), dark, 0, -0.42, 0));
+    knee.add(piece(box(0.56, 0.32, 0.2, 0.08), band, 0, -0.3, 0.28));
+    const ankle = new THREE.Group();
+    ankle.position.y = -0.82;
+    ankle.add(piece(box(0.72, 0.26, 1.05, 0.1), shell, 0, -0.03, 0.14));
+    ankle.add(piece(box(0.74, 0.08, 1.08, 0.03), dark, 0, -0.15, 0.14));
+    knee.add(ankle);
+    hip.add(knee);
+    rig.add(hip);
+    return { hip, knee, ankle };
   });
 
-  const body = piece(new RoundedBoxGeometry(2.2, 1.8, 1.4, 4, 0.3), shell, 0, 2.35, 0);
-  const belt = piece(new RoundedBoxGeometry(2.3, 0.28, 1.5, 3, 0.1), band, 0, 1.55, 0);
-  const coreMesh = piece(new THREE.CylinderGeometry(0.42, 0.42, 0.14, 28).rotateX(Math.PI / 2), glow, 0, 2.45, 0.72);
-  const ring = piece(new THREE.TorusGeometry(0.47, 0.07, 10, 28), band, 0, 2.45, 0.74);
-  rig.add(body, belt, coreMesh, ring);
+  const torso = new THREE.Group();
+  torso.position.y = 1.95;
+  rig.add(torso);
+  torso.add(piece(box(1.3, 0.45, 0.85, 0.15), dark, 0, 0, 0));
+  torso.add(piece(box(1.05, 0.5, 0.75, 0.12), steel, 0, 0.42, 0));
+  const chest = piece(box(2.1, 1.25, 1.25, 0.28), shell, 0, 1.15, 0);
+  chest.scale.set(1, 1, 1);
+  torso.add(chest);
+  torso.add(piece(box(1.6, 0.18, 1.3, 0.06), band, 0, 0.55, 0));
+  const coreMesh = piece(new THREE.CylinderGeometry(0.36, 0.36, 0.14, 28).rotateX(Math.PI / 2), glow, 0, 1.2, 0.64);
+  torso.add(coreMesh, piece(new THREE.TorusGeometry(0.42, 0.07, 10, 28), band, 0, 1.2, 0.66));
+  for (const s of [-1, 1]) torso.add(piece(box(0.5, 0.14, 0.08, 0.04), dark, s * 0.7, 1.45, 0.64));
 
   const arms = [-1, 1].map((s) => {
-    const arm = new THREE.Group();
-    arm.position.set(s * 1.25, 3.0, 0);
-    arm.add(piece(new THREE.SphereGeometry(0.32, 16, 12), band, 0, 0, 0));
-    arm.add(piece(new RoundedBoxGeometry(0.42, 1.3, 0.42, 3, 0.15), shell, 0, -0.75, 0));
-    arm.add(piece(new THREE.SphereGeometry(0.36, 16, 12), dark, 0, -1.5, 0));
-    rig.add(arm);
-    return arm;
+    const shoulder = new THREE.Group();
+    shoulder.position.set(s * 1.25, 1.55, 0);
+    shoulder.add(piece(box(0.75, 0.55, 0.85, 0.2), band, s * 0.08, 0.15, 0));
+    shoulder.add(piece(joint(0.24), dark));
+    shoulder.add(piece(box(0.38, 0.75, 0.42, 0.12), shell, 0, -0.5, 0));
+    const elbow = new THREE.Group();
+    elbow.position.y = -0.95;
+    elbow.add(piece(joint(0.22), steel));
+    elbow.add(piece(box(0.44, 0.75, 0.48, 0.14), dark, 0, -0.42, 0));
+    elbow.add(piece(box(0.52, 0.42, 0.5, 0.16), shell, 0, -0.95, 0.03));
+    shoulder.add(elbow);
+    torso.add(shoulder);
+    return { shoulder, elbow, side: s };
   });
 
   const head = new THREE.Group();
-  head.position.set(0, 3.75, 0);
-  head.add(piece(new RoundedBoxGeometry(1.6, 1.15, 1.25, 4, 0.28), shell, 0, 0, 0));
-  head.add(piece(new THREE.CylinderGeometry(0.05, 0.05, 0.5, 8), dark, 0.35, 0.8, 0));
-  const bulb = piece(new THREE.SphereGeometry(0.14, 12, 10), glow, 0.35, 1.08, 0);
-  head.add(bulb);
-  const pupils = [-1, 1].map((s) => {
-    head.add(piece(new THREE.SphereGeometry(0.3, 20, 16), white, s * 0.4, 0.08, 0.5));
-    const pupil = piece(new THREE.SphereGeometry(0.13, 14, 10), black, s * 0.4, 0.06, 0.78);
-    head.add(pupil);
-    return pupil;
-  });
-  head.add(piece(new RoundedBoxGeometry(0.8, 0.16, 0.1, 2, 0.05), dark, 0, -0.32, 0.62));
+  head.position.set(0, 2.05, 0);
+  torso.add(head);
+  head.add(piece(new THREE.CylinderGeometry(0.22, 0.28, 0.3, 14), dark, 0, -0.25, 0));
+  head.add(piece(box(0.95, 0.85, 0.9, 0.28), shell, 0, 0.25, 0));
+  head.add(piece(box(0.8, 0.22, 0.12, 0.06), visorMat, 0, 0.3, 0.44));
+  head.add(piece(box(1.05, 0.12, 0.95, 0.05), band, 0, 0.05, 0));
+  for (const s of [-1, 1]) head.add(piece(new THREE.CylinderGeometry(0.12, 0.12, 0.1, 12).rotateZ(Math.PI / 2), dark, s * 0.5, 0.25, 0));
   let glass = null;
   if (dome) {
-    glass = piece(new THREE.SphereGeometry(0.95, 28, 20, 0, Math.PI * 2, 0, Math.PI / 2), own(new THREE.MeshStandardMaterial({ color: 0xbfe6ff, transparent: true, opacity: 0.45, roughness: 0.05 })), 0, 0.5, 0);
-    head.add(glass);
+    glass = piece(new THREE.SphereGeometry(0.62, 28, 20, 0, Math.PI * 2, 0, Math.PI / 2), own(new THREE.MeshStandardMaterial({ color: 0xbfe6ff, transparent: true, opacity: 0.45, roughness: 0.05 })), 0, 0.62, 0);
+    head.add(glass, piece(joint(0.22), glow, 0, 0.82, 0));
   }
-  rig.add(head);
 
   root.scale.setScalar(scale);
   world.add(root);
@@ -83,6 +106,7 @@ export function buildRobot(world, { scale = 1, paint = 0x8f5de5, trim = 0xffc93c
   let flash = 0;
   let walk = 0;
   let fall = 0;
+  let stride = 0;
   return {
     root,
     rig,
@@ -111,22 +135,33 @@ export function buildRobot(world, { scale = 1, paint = 0x8f5de5, trim = 0xffc93c
     tick(dt, t, speed = 0) {
       flash = Math.max(0, flash - dt * 3);
       shell.emissiveIntensity = flash * 0.9;
+      visorMat.emissiveIntensity = 1.2 + Math.sin(t * 5) * 0.3 + flash * 2;
+      stride += ((speed > 0.05 ? 1 : 0) - stride) * Math.min(1, dt * 4);
       walk += dt * (2 + speed * 2.5);
-      const step = speed > 0.05 ? Math.sin(walk) : 0;
-      legs[0].rotation.x = step * 0.45;
-      legs[1].rotation.x = -step * 0.45;
-      arms[0].rotation.x = -step * 0.5 + Math.sin(t * 1.3) * 0.08;
-      arms[1].rotation.x = step * 0.5 - Math.sin(t * 1.3) * 0.08;
-      rig.position.y = Math.abs(step) * 0.08;
-      head.rotation.z = Math.sin(t * 1.7) * 0.05 + flash * 0.25;
-      bulb.material.emissiveIntensity = 0.8 + Math.sin(t * 6) * 0.4;
-      for (const [i, p] of pupils.entries()) {
-        p.position.x = (i ? 0.4 : -0.4) + Math.sin(t * 2.3 + i) * 0.06 + (Math.random() - 0.5) * flash * 0.2;
-        p.position.y = 0.06 + Math.cos(t * 1.9 + i) * 0.05;
-      }
+      const sw = Math.sin(walk);
+      // Each leg swings from the hip and bends its knee as it comes forward.
+      legs.forEach(({ hip, knee, ankle }, i) => {
+        const ph = i ? -sw : sw;
+        hip.rotation.x = -ph * 0.42 * stride;
+        knee.rotation.x = Math.max(0, Math.sin(walk + (i ? Math.PI : 0) + 0.8)) * 0.65 * stride;
+        ankle.rotation.x = -hip.rotation.x * 0.4 - knee.rotation.x * 0.3;
+      });
+      arms.forEach(({ shoulder, elbow, side }, i) => {
+        const ph = i ? sw : -sw;
+        shoulder.rotation.x = -ph * 0.38 * stride + Math.sin(t * 1.3 + i) * 0.04;
+        shoulder.rotation.z = side * (0.12 + flash * 0.3);
+        elbow.rotation.x = -0.35 - Math.max(0, ph) * 0.35 * stride;
+      });
+      // Body bobs twice a stride and sways side to side; the head looks about.
+      rig.position.y = -Math.abs(Math.cos(walk)) * 0.1 * stride;
+      torso.rotation.z = Math.sin(walk) * 0.05 * stride;
+      torso.rotation.y = Math.sin(walk) * 0.06 * stride;
+      head.rotation.y = Math.sin(t * 0.7) * 0.25 * (1 - stride * 0.6);
+      head.rotation.z = flash * 0.25;
       if (fall > 0) {
         fall = Math.min(1, fall + dt * 1.4);
         rig.rotation.x = -(Math.PI / 2) * fall * fall;
+        stride = 0;
       }
     },
   };
