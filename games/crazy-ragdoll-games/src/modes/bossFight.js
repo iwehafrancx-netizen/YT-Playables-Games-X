@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Level } from './level.js';
 import { RAPIER, Group, groups } from '../physics/physics.js';
+import { marker } from '../world/marker.js';
 
 const ARENA_R = 9;
 const BOSS_R = 1.35;
@@ -53,6 +54,8 @@ export class BossFightLevel extends Level {
     this.scatterProps();
     this.makeBoss();
     this.spawnPlayer([0, 0.05, 4.2]);
+    this.arrow = marker(this.world);
+    this.pylonArrow = marker(this.world, 0x8ff0ff);
 
     this.hud = this.game.ui.hud({
       title: this.hudTitle(),
@@ -62,7 +65,7 @@ export class BossFightLevel extends Level {
       ],
     });
     this.hud.meter(def.name, 1);
-    this.hud.hint(def.hint ?? 'Drag to walk · tap to dive · lure it into a pylon, then dive into it!');
+    this.hud.hint(def.hint ?? 'Drag to walk · tap to dive');
     this.cameraFor(true);
   }
 
@@ -453,7 +456,7 @@ export class BossFightLevel extends Level {
           this.setBoss('recover', 0.8);
           break;
         }
-        const pylon = this.pylons.find((y) => Math.hypot(y.x - b.x, y.z - b.z) < BOSS_R + PYLON_R + 0.1);
+        const pylon = this.pylons.find((y) => Math.hypot(y.x - b.x, y.z - b.z) < BOSS_R + PYLON_R + 0.35);
         if (pylon) this.stun(pylon);
         else if (this.invulnT <= 0 && this.pstate !== 'out' && p.y < 2.2 && Math.hypot(p.x - b.x, p.z - b.z) < BOSS_R + 0.6) {
           const away = _c.set(p.x - b.x, 0, p.z - b.z).normalize().add(_b.set(fwdX, 0, fwdZ)).normalize();
@@ -798,8 +801,33 @@ export class BossFightLevel extends Level {
       if (this.endT <= 0) this.complete();
     }
     if (this.pstate !== 'out') this.cameraFor();
+    this.coach();
     this.animateBoss(dt);
     this.audio.loop('rumble', this.boss.state === 'charge' ? Math.min(1, this.boss.speed / 12) : this.boss.state === 'track' ? 0.25 : 0, 'rumble');
+  }
+
+  /** Spells out the next move: where to stand, and when to dive. */
+  coach() {
+    const b = this.boss;
+    const t = this.time;
+    if (this.phase !== 'fight') {
+      this.hud.goal('');
+      this.arrow.show(null);
+      this.pylonArrow.show(null);
+      return;
+    }
+    if (b.state === 'stunned') {
+      this.hud.goal('STUNNED! Tap to DIVE into it now!', true);
+      this.arrow.show(_b.set(b.x, 2.7, b.z), t, 1.2);
+      this.pylonArrow.show(null);
+      return;
+    }
+    this.arrow.show(null);
+    const p = this.player.com(_a);
+    const near = this.pylons.reduce((m, y) => (Math.hypot(y.x - p.x, y.z - p.z) < Math.hypot(m.x - p.x, m.z - p.z) ? y : m));
+    this.pylonArrow.show(_b.set(near.x, 2.8, near.z), t, 0.8);
+    const charging = b.state === 'windup' || b.state === 'charge';
+    this.hud.goal(charging ? 'It\'s charging! Stand by a pylon and jump aside' : `Stand by a pylon so it crashes into it · ${this.hp} hit${this.hp > 1 ? 's' : ''} to win`);
   }
 
   animateBoss(dt) {

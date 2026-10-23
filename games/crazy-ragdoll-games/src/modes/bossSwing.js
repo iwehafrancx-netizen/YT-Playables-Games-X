@@ -158,6 +158,8 @@ export class BossSwingLevel extends BossLevel {
   tick(dt) {
     this.bossTick(dt, this.phase === 'fight' ? 0.6 : 0);
     this.cameraFor();
+    const dome = this.robot.headPosition(_a).add(_b.set(0, 1.2 * SCALE, 0));
+    this.coach(this.turn === 'swing' ? `Swing, then let go to fly into its glass dome · ${this.hitsLeft()}` : this.hitsLeft(), dome);
     if (this.turn === 'swing') {
       const c = this.dummy.parts.chest.body.translation();
       _a.set(c.x - PIVOT.x, c.y - PIVOT.y, c.z - PIVOT.z);

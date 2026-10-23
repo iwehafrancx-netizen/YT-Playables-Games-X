@@ -211,7 +211,6 @@ export class Game {
       name: boss.name,
       mk: boss.mk,
       kind: boss.kind,
-      preview: boss.preview,
       how: boss.how,
       ads: platform.ads,
       onFight: async () => {

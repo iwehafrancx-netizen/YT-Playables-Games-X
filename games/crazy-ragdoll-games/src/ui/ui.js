@@ -129,12 +129,14 @@ export class UI {
             ${stats.map((s) => `<div class="stat" data-stat="${s.id}">${icon(s.icon)}<b>${esc(s.value)}</b></div>`).join('')}
           </div>
         </div>
+        <div class="hud-goal hidden"></div>
         <div class="hud-meter hidden"><span class="meter-label"></span><div class="meter"><i></i></div></div>
         <div class="hud-hint hidden"></div>
         <div class="hud-actions"></div>
       </div>`);
     this.hudEl.appendChild(this.bind(el, { pause: () => this.onPause?.() }));
     const hint = el.querySelector('.hud-hint');
+    const goal = el.querySelector('.hud-goal');
     const meter = el.querySelector('.hud-meter');
     const actions = el.querySelector('.hud-actions');
     return {
@@ -155,6 +157,12 @@ export class UI {
       },
       clearHint() {
         hint.classList.add('hidden');
+      },
+      /** A standing instruction under the top bar; `now` makes it flash for "do it now". */
+      goal(text, now = false) {
+        if (goal.textContent !== text) goal.textContent = text;
+        goal.classList.toggle('hidden', !text);
+        goal.classList.toggle('now', now);
       },
       meter(label, value, hot = false) {
         meter.classList.remove('hidden');
@@ -348,13 +356,13 @@ export class UI {
   }
 
   /** Between levels: a boss wants a word. Fight it (rewarded ad) or carry on. */
-  bossOffer({ name, mk, kind, preview, how, ads, onFight, onSkip }) {
+  bossOffer({ name, mk, kind, how, ads, onFight, onSkip }) {
     this.modal(
       `<div class="result boss-offer">
         <div class="stamp">Boss incoming</div>
+        <div class="boss-face">${icon('skull')}</div>
         <h2>${esc(name)}</h2>
         <p class="result-sub">${esc(kind)} · boss ${mk} · bonus round</p>
-        <div class="boss-preview">${preview}</div>
         <p class="small">${esc(how)} Knock it out for a big score bonus.</p>
         <div class="col">
           <button class="btn primary big boss-btn" data-act="fight">${icon('bolt')}<span>Fight boss</span>${ads ? '<span class="ad-tag">AD</span>' : ''}</button>

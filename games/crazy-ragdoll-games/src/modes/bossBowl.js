@@ -173,6 +173,10 @@ export class BossBowlLevel extends BossLevel {
   tick(dt) {
     this.bossTick(dt, this.phase === 'fight' ? 1 : 0);
     this.cameraFor();
+    const open = this.open > 0.6;
+    const belly = this.robot.corePosition(_a).add(_b.set(0, 0.6, 0.6));
+    if (open) this.coach(this.turn === 'aim' ? 'Claws UP! Bowl NOW!' : `Claws up · ${this.hitsLeft()}`, belly, this.turn === 'aim');
+    else this.coach(`Claws down: wait for them to go up · ${this.hitsLeft()}`);
     if (this.turn === 'aim') {
       this.arrow.visible = this.phase === 'fight';
       this.arrow.rotation.y = -this.aim();

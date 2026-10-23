@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Level } from './level.js';
 import { buildRobot } from '../world/robot.js';
+import { marker } from '../world/marker.js';
 
 const _a = new THREE.Vector3();
 
@@ -22,6 +23,21 @@ export class BossLevel extends Level {
     this.hud = this.game.ui.hud({ title: this.hudTitle(), stats });
     this.hud.meter(this.def.name, 1);
     this.hud.hint(this.def.hint);
+    this.marker = marker(this.world);
+  }
+
+  /**
+   * Tells the player what to do right now, with an arrow over the spot to hit
+   * (`at`, or null for none). `now` flashes it for a do-it-this-second moment.
+   */
+  coach(text, at = null, now = false) {
+    const fighting = this.phase === 'fight';
+    this.hud.goal(fighting ? text : '', now);
+    this.marker.show(fighting ? at : null, this.time, 1.3);
+  }
+
+  hitsLeft() {
+    return `${this.hp} hit${this.hp === 1 ? '' : 's'} to win`;
   }
 
   /** A landed blow: knock a bar off the health meter, and finish it on the last one. */

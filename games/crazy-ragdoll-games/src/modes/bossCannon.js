@@ -138,6 +138,8 @@ export class BossCannonLevel extends BossLevel {
     this.bossTick(dt, this.phase === 'fight' ? 1 : 0);
     this.cameraFor();
     this.drawTrail();
+    const core = this.robot.corePosition(_a).add(_b.set(0, 0.5, -1.6));
+    this.coach(`Fire him at the glowing core on its chest · ${this.hitsLeft()}`, core);
   }
 
   drawTrail() {

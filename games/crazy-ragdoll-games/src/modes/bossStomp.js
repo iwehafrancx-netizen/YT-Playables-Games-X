@@ -150,6 +150,7 @@ export class BossStompLevel extends BossLevel {
   tick(dt) {
     this.bossTick(dt, this.phase === 'fight' ? 1 : 0);
     this.cameraFor();
+    this.coach(`Land on its HEAD · touching its body hurts · ${this.hitsLeft()}`, this.robot.headPosition(_a).add(new THREE.Vector3(0, 0.9, 0)));
     if (this.phase === 'fight') {
       this.left -= dt;
       this.hud.set('time', Math.max(0, Math.ceil(this.left)));
