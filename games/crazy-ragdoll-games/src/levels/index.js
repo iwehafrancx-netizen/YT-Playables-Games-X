@@ -1,5 +1,3 @@
-import { StackAttackLevel } from '../modes/stackAttack.js';
-import { STACK } from './stack.js';
 import { HammerSpinLevel } from '../modes/hammerSpin.js';
 import { HAMMER } from './hammer.js';
 import { RocketRiderLevel } from '../modes/rocketRider.js';
@@ -12,8 +10,6 @@ import { PlinkoLevel } from '../modes/plinko.js';
 import { PLINKO } from './plinko.js';
 import { BounceUpLevel } from '../modes/bounceUp.js';
 import { BOUNCE } from './bounce.js';
-import { SlideLevel } from '../modes/slide.js';
-import { SLIDE } from './slide.js';
 import { SlingSmashLevel } from '../modes/slingSmash.js';
 import { SLING } from './sling.js';
 import { BowlingLevel } from '../modes/bowling.js';
@@ -32,10 +28,6 @@ import { remixes } from './remix.js';
 
 // `intro` is the how-to-play card shown the first time each game comes up.
 export const DEPARTMENTS = [
-  {
-    id: 'stack', name: 'Stack Attack', theme: 'noon', Mode: StackAttackLevel, levels: STACK,
-    intro: { icon: 'dummy', goal: 'Pile ragdolls on the podium until the tower passes the red line.', how: [['play', 'Tap to drop the ragdoll off the crane'], ['target', 'Wait till he swings over the podium'], ['star', 'Fewer drops = more stars']] },
-  },
   {
     id: 'hammer', name: 'Hammer Spin', theme: 'morning', Mode: HammerSpinLevel, levels: HAMMER,
     intro: { icon: 'retry', goal: 'Spin the ragdoll round like a hammer and fling him onto the targets.', how: [['play', 'Hold to spin him faster'], ['target', 'Let go when the red ring is on a target'], ['star', 'Bullseyes score the most']] },
@@ -59,10 +51,6 @@ export const DEPARTMENTS = [
   {
     id: 'bounce', name: 'Bounce Up', theme: 'noon', Mode: BounceUpLevel, levels: BOUNCE,
     intro: { icon: 'heart', goal: 'Bounce from pad to pad all the way up to the flag.', how: [['back', 'Hold the left side to steer left'], ['next', 'Hold the right side to steer right'], ['clock', 'Beat the clock — purple pads move']] },
-  },
-  {
-    id: 'slide', name: "Slip 'n' Slide", theme: 'morning', Mode: SlideLevel, levels: SLIDE,
-    intro: { icon: 'next', goal: 'Slide all the way down and splash into the pool.', how: [['back', 'Hold left or right to steer'], ['skull', 'Dodge the blocks — too many bonks ends the ride'], ['bolt', 'Hit the yellow ramps for big air']] },
   },
   {
     id: 'sling', name: 'Sling Smash', theme: 'noon', Mode: SlingSmashLevel, levels: SLING,

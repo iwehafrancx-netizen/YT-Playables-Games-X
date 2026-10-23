@@ -33,7 +33,7 @@ export const BAY = [
     },
   },
   {
-    name: 'Stack Attack',
+    name: 'Crate Stack',
     theme: 'morning',
     speed: 16,
     shots: 4,

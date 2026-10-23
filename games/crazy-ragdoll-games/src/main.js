@@ -34,7 +34,7 @@ async function boot() {
   await Promise.all([loadPhysics(), save.load(), document.fonts?.ready]);
   // Saves from before the colours were renamed start back on red.
   if (!SUITS[save.data.suit]) save.data.suit = 'red';
-  ui.loading(0.7, 'Stacking crates…');
+  ui.loading(0.7, 'Loading the yard…');
 
   const rig = new CameraRig(stage.camera);
   const fx = new Fx(stage.scene, stage.camera, document.getElementById('fx-layer'));
