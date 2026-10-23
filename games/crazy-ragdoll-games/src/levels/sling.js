@@ -42,7 +42,7 @@ export const SLING = [
       { t: 'container', x: 17, color: 'steelGreen' }, { t: 'tnt', x: 14.6, y: ROOF }, { t: 'crate', x: 15.8, y: ROOF }, { t: 'tnt', x: 17, y: ROOF }, { t: 'crate', x: 18.2, y: ROOF }, { t: 'tnt', x: 19.4, y: ROOF },
       ...tower(22.5, 3),
     ],
-    shots: 4,
+    shots: 5,
     hint: 'One blast sets off the next: line them up',
   },
 ];
