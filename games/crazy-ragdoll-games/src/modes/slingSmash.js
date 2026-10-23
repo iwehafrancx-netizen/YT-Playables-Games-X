@@ -366,21 +366,27 @@ export class SlingSmashLevel extends Level {
   }
 
   cameraFor(snap = false) {
-    // Slingshot and fort both in shot, seen from in front and behind the
-    // slingshot, looking out towards the fort.
+    // Over the slingshot's shoulder while aiming, looking out at the fort;
+    // then chase him through the air and stay on whatever he hit.
     const portrait = this.stage.width < this.stage.height;
     const far = this.def.view ?? 18;
-    const x0 = -2.5;
-    const x1 = far + 2.5;
-    const { pos, look } = this.frameBox(_a.set(portrait ? -1.5 : x0, 0, -1), _b.set(x1, portrait ? 5 : 6.5, 1), { yaw: portrait ? -64 : -12, pitch: portrait ? 28 : 10, margin: portrait ? 0.95 : 0.88 });
-    if (this.phase !== 'aim') {
-      const mid = (x0 + x1) / 2;
-      const shift = THREE.MathUtils.clamp(this.ball.com(_a).x, mid, mid + 12) - mid;
-      pos.x += shift;
-      look.x += shift;
+    let look;
+    let pos;
+    let rate = 3;
+    if (this.phase === 'load' || this.phase === 'aim') {
+      if (portrait) ({ pos, look } = this.frameBox(_a.set(-1, 0.4, -0.3), _b.set(far + 0.5, 3.2, 0.3), { yaw: -34, pitch: 13, margin: 1 }));
+      else {
+        look = _a.set(far * 0.5, 1.8, 0);
+        pos = _b.set(far * 0.25, 5.5, 13);
+      }
+    } else {
+      const c = this.ball.com(_a);
+      look = c.set(Math.max(c.x, 1), Math.max(c.y, 0.8), 0);
+      pos = _b.copy(look).add(portrait ? new THREE.Vector3(-4, 3, 9) : new THREE.Vector3(-3, 2.5, 9));
+      rate = 6;
     }
     if (snap) this.rig.set(pos, look);
-    else this.rig.aim(pos, look, 2.5, 3);
+    else this.rig.aim(pos, look, rate, rate + 2);
     this.stage.focusShadows(look, 20);
   }
 }

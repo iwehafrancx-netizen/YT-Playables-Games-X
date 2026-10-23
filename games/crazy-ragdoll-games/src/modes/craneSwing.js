@@ -305,21 +305,24 @@ export class CraneSwingLevel extends Level {
   }
 
   cameraFor(snap = false) {
-    // Crane and pad both in shot, seen from in front and a little behind the
-    // crane, so the swing plays out across the screen and away from you.
+    // From behind and above the crane while he swings, looking out at the
+    // pad; then chase him through the air to the landing.
     const portrait = this.stage.width < this.stage.height;
     const pad = this.padAt;
-    const x0 = this.pivot.x - this.ropeLen - 1.5;
-    const x1 = pad.x + pad.r + 1.5;
-    const { pos, look } = this.frameBox(_a.set(x0, 0, -1.5), _b.set(x1, this.pivot.y + 1.5, 1.5), { yaw: portrait ? -60 : -12, pitch: portrait ? 24 : 10, margin: portrait ? 0.95 : 0.88 });
-    if (this.phase !== 'swing') {
-      const mid = (x0 + x1) / 2;
-      const shift = THREE.MathUtils.clamp(this.dummy.com(_a).x, mid - 3, mid + 6) - mid;
-      pos.x += shift;
-      look.x += shift;
+    const p = this.pivot;
+    let look;
+    let pos;
+    if (this.phase === 'swing') {
+      look = _a.set(pad.x * (portrait ? 0.62 : 0.5), (p.y + pad.y) * 0.45, 0);
+      pos = portrait ? _b.set(p.x - 6.5, p.y + 1.5, 7.5) : _b.set(pad.x * 0.4, p.y * 0.75, p.y + 9);
+    } else {
+      const c = this.dummy.com(_a);
+      look = c.set(c.x, Math.max(c.y, 0.8), 0);
+      pos = _b.copy(look).add(portrait ? new THREE.Vector3(-4, 3, 9) : new THREE.Vector3(-3, 2.5, 10));
     }
+    const rate = this.phase === 'swing' ? 3 : 6;
     if (snap) this.rig.set(pos, look);
-    else this.rig.aim(pos, look, 2.5, 3);
+    else this.rig.aim(pos, look, rate, rate + 2);
     this.stage.focusShadows(look, 20);
   }
 }
