@@ -23,16 +23,16 @@ export const FOOT = { half: [0.05, 0.035, 0.1], offset: [0, -0.215, 0.04] };
 
 // parent, child, world anchor at rest, joint type, bend and twist limits in degrees (spherical only)
 export const JOINTS = [
-  { name: 'waist', parent: 'pelvis', child: 'chest', at: [0, 1.035, 0], type: 'ball', limit: 70, twist: 55 },
-  { name: 'neck', parent: 'chest', child: 'head', at: [0, 1.46, 0], type: 'ball', limit: 70, twist: 80 },
-  { name: 'shoulderL', parent: 'chest', child: 'upperArmL', at: [0.24, 1.37, 0], type: 'ball', limit: 170, twist: 80 },
-  { name: 'shoulderR', parent: 'chest', child: 'upperArmR', at: [-0.24, 1.37, 0], type: 'ball', limit: 170, twist: 80 },
-  { name: 'elbowL', parent: 'upperArmL', child: 'lowerArmL', at: [0.24, 1.105, 0], type: 'hinge', min: -2.5, max: 0 },
-  { name: 'elbowR', parent: 'upperArmR', child: 'lowerArmR', at: [-0.24, 1.105, 0], type: 'hinge', min: -2.5, max: 0 },
-  { name: 'hipL', parent: 'pelvis', child: 'thighL', at: [0.09, 0.83, 0], type: 'ball', limit: 135, twist: 45 },
-  { name: 'hipR', parent: 'pelvis', child: 'thighR', at: [-0.09, 0.83, 0], type: 'ball', limit: 135, twist: 45 },
-  { name: 'kneeL', parent: 'thighL', child: 'shinL', at: [0.09, 0.445, 0], type: 'hinge', min: 0, max: 2.5 },
-  { name: 'kneeR', parent: 'thighR', child: 'shinR', at: [-0.09, 0.445, 0], type: 'hinge', min: 0, max: 2.5 },
+  { name: 'waist', parent: 'pelvis', child: 'chest', at: [0, 1.035, 0], type: 'ball', limit: 42, twist: 30 },
+  { name: 'neck', parent: 'chest', child: 'head', at: [0, 1.46, 0], type: 'ball', limit: 45, twist: 50 },
+  { name: 'shoulderL', parent: 'chest', child: 'upperArmL', at: [0.24, 1.37, 0], type: 'ball', limit: 165, twist: 45 },
+  { name: 'shoulderR', parent: 'chest', child: 'upperArmR', at: [-0.24, 1.37, 0], type: 'ball', limit: 165, twist: 45 },
+  { name: 'elbowL', parent: 'upperArmL', child: 'lowerArmL', at: [0.24, 1.105, 0], type: 'hinge', min: -2.4, max: 0 },
+  { name: 'elbowR', parent: 'upperArmR', child: 'lowerArmR', at: [-0.24, 1.105, 0], type: 'hinge', min: -2.4, max: 0 },
+  { name: 'hipL', parent: 'pelvis', child: 'thighL', at: [0.09, 0.83, 0], type: 'ball', limit: 120, twist: 25 },
+  { name: 'hipR', parent: 'pelvis', child: 'thighR', at: [-0.09, 0.83, 0], type: 'ball', limit: 120, twist: 25 },
+  { name: 'kneeL', parent: 'thighL', child: 'shinL', at: [0.09, 0.445, 0], type: 'hinge', min: 0, max: 2.45 },
+  { name: 'kneeR', parent: 'thighR', child: 'shinR', at: [-0.09, 0.445, 0], type: 'hinge', min: 0, max: 2.45 },
 ];
 
 const ORDER = ['pelvis', 'chest', 'head', 'upperArmL', 'upperArmR', 'lowerArmL', 'lowerArmR', 'thighL', 'thighR', 'shinL', 'shinR'];
@@ -92,15 +92,15 @@ const POSE_CACHE = {};
 // Joint motor gains (force based: N·m/rad and N·m·s/rad).
 // Arms and neck are underdamped on purpose: they overshoot and wobble.
 const MOTOR_STIFFNESS = {
-  waist: 1000, neck: 75, shoulderL: 60, shoulderR: 60, elbowL: 25, elbowR: 25,
+  waist: 1300, neck: 140, shoulderL: 110, shoulderR: 110, elbowL: 45, elbowR: 45,
   hipL: 2600, hipR: 2600, kneeL: 2600, kneeR: 2600,
 };
 const MOTOR_DAMPING = {
-  waist: 32, neck: 2.5, shoulderL: 2.2, shoulderR: 2.2, elbowL: 1, elbowR: 1,
+  waist: 40, neck: 5, shoulderL: 4.5, shoulderR: 4.5, elbowL: 2, elbowR: 2,
   hipL: 80, hipR: 80, kneeL: 80, kneeR: 80,
 };
 // Legs only need full strength to stand on; otherwise they go this loose.
-const LOOSE_LEGS = 0.18;
+const LOOSE_LEGS = 0.35;
 const LEGS = new Set(['hipL', 'hipR', 'kneeL', 'kneeR']);
 function getPose(name) {
   return (POSE_CACHE[name] ??= poseQuats(POSES[name]));
@@ -155,6 +155,9 @@ const MAX_SPEED = 45;
 const MAX_LIMB_SPEED = 24;
 // Joint gap (m) beyond which the child is pulled straight back onto its socket.
 const MAX_GAP = 0.02;
+// Degrees a ball joint may go past its limit before it's turned straight back.
+const LIMIT_SLACK = 8;
+const IDENTITY = new Quaternion();
 
 function mulSdp(m, v, out) {
   const e = m.elements;
@@ -289,7 +292,7 @@ export class Ragdoll {
   limit(pb, cb, axis, over) {
     const wrel = vec(cb.angvel(), _mv2).sub(vec(pb.angvel(), _v3));
     const closing = wrel.dot(axis);
-    const target = Math.min(over * 40, 14);
+    const target = Math.min(over * 60, 20);
     if (closing >= target) return;
     solveAngular(cb.effectiveWorldInvInertia(), pb.effectiveWorldInvInertia(), _mv3.copy(axis).multiplyScalar(target - closing), _imp);
     cb.applyTorqueImpulse(_imp, true);
@@ -324,6 +327,26 @@ export class Ragdoll {
       const settling = Math.hypot(v.x, v.y, v.z) < 0.35 && spin < 4 ? 0.8 : 1;
       const k = Math.min(settling, MAX_SPIN / Math.max(spin, 1e-6));
       if (k < 1) b.setAngvel({ x: w.x * k, y: w.y * k, z: w.z * k }, true);
+    }
+    // A hard hit can carry a ball joint well past its soft limit in one step:
+    // turn the child straight back inside it, and make it spin with its parent.
+    for (const j of this.joints) {
+      if (j.type !== 'ball') continue;
+      const pb = j.parentPart.body;
+      const cb = j.childPart.body;
+      rot(pb, _mq1);
+      rot(cb, _mq2);
+      _q.copy(_mq1).invert().multiply(_mq2);
+      if (_q.w < 0) _q.set(-_q.x, -_q.y, -_q.z, -_q.w);
+      const angle = 2 * Math.acos(Math.min(1, _q.w));
+      const max = (j.limit + LIMIT_SLACK) * D2R;
+      if (angle <= max) continue;
+      _q.slerp(IDENTITY, 1 - max / angle);
+      _mq2.copy(_mq1).multiply(_q);
+      cb.setRotation({ x: _mq2.x, y: _mq2.y, z: _mq2.z, w: _mq2.w }, true);
+      const wp = pb.angvel();
+      const wc = cb.angvel();
+      cb.setAngvel({ x: (wp.x + wc.x) / 2, y: (wp.y + wc.y) / 2, z: (wp.z + wc.z) / 2 }, true);
     }
     for (const j of this.joints) {
       const pb = j.parentPart.body;
@@ -476,23 +499,23 @@ export class Ragdoll {
     const p = this.phase;
     const o = this.offsets;
     const S = Math.sin;
-    const swing = 16 * i + 50 * a;
-    const spread = 9 * i + 22 * a;
-    const bend = 22 * i + 50 * a;
+    const swing = 10 * i + 32 * a;
+    const spread = 6 * i + 16 * a;
+    const bend = 15 * i + 35 * a;
     o.shoulderL[0] = S(p) * swing;
     o.shoulderL[2] = S(p * 0.7 + 1) * spread;
     o.shoulderR[0] = S(p + Math.PI) * swing;
     o.shoulderR[2] = -S(p * 0.7 + 2.5) * spread;
     o.elbowL[0] = -(0.5 + 0.5 * S(p * 1.3 + 0.5)) * bend;
     o.elbowR[0] = -(0.5 + 0.5 * S(p * 1.3 + 2.5)) * bend;
-    o.neck[0] = S(p * 0.9) * (8 * i + 16 * a);
-    o.neck[1] = S(p * 0.6 + 1) * (10 * i + 6 * a);
-    o.waist[0] = S(p * 0.5) * (6 * i + 14 * a);
-    o.waist[2] = S(p * 0.4 + 2) * (5 * i + 8 * a);
+    o.neck[0] = S(p * 0.9) * (5 * i + 8 * a);
+    o.neck[1] = S(p * 0.6 + 1) * (6 * i + 4 * a);
+    o.waist[0] = S(p * 0.5) * (3 * i + 6 * a);
+    o.waist[2] = S(p * 0.4 + 2) * (2 * i + 4 * a);
     // Standing legs belong to the balance controller.
     const legs = this.balance < 0.05 ? this.legLife : 0;
-    const kick = (10 * i + 42 * a) * legs;
-    const knee = (14 * i + 55 * a) * legs;
+    const kick = (8 * i + 28 * a) * legs;
+    const knee = (10 * i + 36 * a) * legs;
     o.hipL[0] = S(p + Math.PI / 2) * kick;
     o.hipR[0] = S(p - Math.PI / 2) * kick;
     o.kneeL[0] = (0.5 + 0.5 * S(p + Math.PI)) * knee;
