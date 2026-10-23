@@ -16,15 +16,14 @@ export const SUITS = {
 const HEAD_R = 0.128;
 // A satin finish, like a stunt suit, so the muscle shapes read.
 const BODY_ROUGH = 0.45;
-const HAIR = '#3a281d';
 
 // Hands and feet: how far they flop (radians) and how springy the flop is.
 const HAND_FLOP = 0.9;
 const FOOT_FLOP = 0.35;
 const FLOP_K = 160;
 const FLOP_C = 11;
-// Pupils: how far they roll and how loosely they're held.
-const PUPIL_RANGE = 0.4;
+// Googly pupils: how far they roll and how loosely they're held.
+const PUPIL_RANGE = 0.55;
 const PUPIL_K = 70;
 const PUPIL_C = 3.5;
 
@@ -184,32 +183,28 @@ export class DummyView {
   }
 
   buildHead(g, body) {
-    // An egg-shaped head with a jaw, short hair, ears, a nose and real eyes.
+    // An egg-shaped head with a jaw, ears, a nose and big googly eyes.
     this.headMesh = part(geo('head', () => new THREE.SphereGeometry(HEAD_R, 36, 28).scale(0.9, 1.08, 1)), this.faces.smile);
     g.add(this.headMesh);
     g.add(part(geo('jaw', () => new THREE.SphereGeometry(0.085, 20, 14).scale(1, 0.8, 0.95)), body, 0, -0.07, 0.03));
-    // Short hair hugging the scalp: back from the forehead, down to the nape.
-    const hair = geo('hair', () => new THREE.SphereGeometry(HEAD_R + 0.004, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.56).rotateX(-0.62).scale(0.91, 1.09, 1.01));
-    g.add(part(hair, mat(HAIR, 0.85), 0, 0.004, -0.004));
     const ear = geo('ear', () => new THREE.SphereGeometry(0.03, 12, 10).scale(0.4, 1, 0.7));
     g.add(part(ear, body, HEAD_R * 0.9, -0.005, -0.01), part(ear, body, -HEAD_R * 0.9, -0.005, -0.01));
     const nose = part(geo('nose', () => new THREE.ConeGeometry(0.02, 0.05, 12)), body, 0, -0.005, HEAD_R + 0.008);
     nose.rotation.x = Math.PI / 2 - 0.2;
     g.add(nose);
-    const white = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25 });
-    const iris = mat('#5a3a22', 0.3);
+    // Big googly eyes, one a bit bigger than the other; the pupils roll loose.
+    const white = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2, emissive: 0xffffff, emissiveIntensity: 0.08 });
     const black = mat('#141414', 0.3);
     for (const s of [-1, 1]) {
-      const r = 0.026;
-      const dir = new THREE.Vector3(s * 0.34, 0.2, 0.92).normalize();
-      const eye = part(geo(`eye:${r}`, () => new THREE.SphereGeometry(r, 18, 14)), white);
-      eye.position.copy(dir).multiplyScalar(HEAD_R - 0.012);
+      const r = s < 0 ? 0.054 : 0.064;
+      const dir = new THREE.Vector3(s * 0.33, 0.3, 0.89).normalize();
+      const eye = part(geo(`eye:${r}`, () => new THREE.SphereGeometry(r, 22, 18)), white);
+      eye.position.copy(dir).multiplyScalar(HEAD_R - 0.004);
       const pivot = new THREE.Group();
       pivot.position.copy(eye.position);
       pivot.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir);
-      const ring = part(geo('iris', () => new THREE.SphereGeometry(r * 0.55, 14, 10).scale(1, 1, 0.4)), iris, 0, 0, r * 0.82);
-      const pupil = part(geo('pupil', () => new THREE.SphereGeometry(r * 0.28, 10, 8).scale(1, 1, 0.4)), black, 0, 0, r * 0.9);
-      pivot.add(ring, pupil);
+      const pupil = part(geo(`pupil:${r}`, () => new THREE.SphereGeometry(r * 0.42, 14, 10).scale(1, 1, 0.45)), black, 0, 0, r * 0.9);
+      pivot.add(pupil);
       g.add(eye, pivot);
       this.eyes.push({ pivot, base: pivot.quaternion.clone(), ax: 0, ay: 0, vx: 0, vy: 0, side: s });
     }
