@@ -15,6 +15,7 @@ const HARDER = {
   bounce: (l) => ({ time: Math.round(l.time * 0.8) }),
   sling: (l) => ({ shots: Math.max(2, (l.shots ?? 3) - 1) }),
   bowl: (l) => ({ rolls: 1, goals: l.goals.map((g) => g - 1) }),
+  smash: (l) => ({ hp: Math.round(l.hp * 1.3), time: Math.round(l.time * 0.9) }),
   swing: (l) => ({ tries: Math.max(2, (l.tries ?? 3) - 1), pad: { ...l.pad, r: (l.pad.r ?? 2) * 0.8 } }),
 };
 

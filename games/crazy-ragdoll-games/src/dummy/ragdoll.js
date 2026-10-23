@@ -626,17 +626,26 @@ export class Ragdoll {
   }
 
   /**
-   * Turns him into a statue where he lies: every part becomes fixed (or
-   * kinematic, to be carried by something that moves) and the muscles stop.
+   * Tears him apart at every joint. The pieces burst out from his middle and
+   * tumble on their own from then on; the muscles and joint repair stop.
    */
-  freeze(kinematic = false) {
-    const type = kinematic ? RAPIER.RigidBodyType.KinematicPositionBased : RAPIER.RigidBodyType.Fixed;
-    for (const name of ORDER) this.parts[name].body.setBodyType(type, true);
+  breakApart(power = 6) {
+    for (const j of this.joints) this.physics.world.removeImpulseJoint(j.joint, true);
+    this.joints = [];
     for (const [list, fn] of [[this.physics.preStep, this._pre], [this.physics.postStep, this._post]]) {
       const i = list.indexOf(fn);
       if (i >= 0) list.splice(i, 1);
     }
-    this.frozen = true;
+    const c = this.centerOfMass(_com);
+    for (const name of ORDER) {
+      const b = this.parts[name].body;
+      const t = b.translation();
+      const lv = b.linvel();
+      _v.set(t.x - c.x, t.y - c.y + 0.25, t.z - c.z).normalize().multiplyScalar(power * (0.6 + Math.random() * 0.7));
+      b.setLinvel({ x: lv.x + _v.x, y: lv.y + _v.y, z: lv.z + _v.z }, true);
+      b.setAngvel({ x: (Math.random() - 0.5) * 16, y: (Math.random() - 0.5) * 16, z: (Math.random() - 0.5) * 16 }, true);
+    }
+    this.broken = true;
   }
 
   /** Puts every part back into `pose` at a new root position, at rest; `tilt` lays him over. */

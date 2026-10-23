@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RAPIER, Group, groups } from '../physics/physics.js';
 import { Mat, containerMat } from '../render/materials.js';
+import { tntCrate } from '../render/textures.js';
 
 const D2R = Math.PI / 180;
 export const BOX = [2.44, 2.6, 6.06]; // shipping container width, height, length
@@ -207,6 +208,13 @@ export class World {
       body,
       { kind: 'prop', prop, material: SOUND_FOR[matName] },
     );
+    return prop;
+  }
+
+  /** A crate of TNT: an ordinary crate with the warning paint on. */
+  tnt({ pos, size = 0.8, mass = 25 }) {
+    const prop = this.crate({ pos, size, mass });
+    prop.mesh.material = tntMaterial();
     return prop;
   }
 
@@ -696,4 +704,10 @@ export class World {
     this.ctx.scene.remove(this.group);
     for (const g of this.disposables) g.dispose();
   }
+}
+
+let tntMat = null;
+function tntMaterial() {
+  tntMat ??= new THREE.MeshStandardMaterial({ map: tntCrate(), roughness: 0.6 });
+  return tntMat;
 }

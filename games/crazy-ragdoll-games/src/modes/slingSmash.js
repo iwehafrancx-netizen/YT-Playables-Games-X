@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { Level } from './level.js';
 import { RAPIER } from '../physics/physics.js';
-import { tntCrate } from '../render/textures.js';
 
 const REST = new THREE.Vector3(0, 2.3, 0); // pouch at rest, between the fork tips
 const TIPS = [new THREE.Vector3(-0.32, 2.55, 0.12), new THREE.Vector3(0.32, 2.55, -0.12)];
@@ -89,9 +88,7 @@ export class SlingSmashLevel extends Level {
     else if (p.t === 'barrel') w.barrel({ pos: [p.x, y + 0.45, 0] });
     else if (p.t === 'container') w.container({ pos: [p.x, y, 0], yaw: 90, color: p.color ?? 'steelBlue' });
     else if (p.t === 'tnt') {
-      const prop = w.crate({ pos: [p.x, y + 0.4, 0], size: 0.8, mass: 25 });
-      prop.mesh.material = tntMaterial();
-      this.tnts.push({ prop, alive: true, v: 0 });
+      this.tnts.push({ prop: w.tnt({ pos: [p.x, y + 0.4, 0] }), alive: true, v: 0 });
     }
   }
 
@@ -228,30 +225,7 @@ export class SlingSmashLevel extends Level {
     this.physics.removeBody(n.prop.body);
     n.prop.mesh.visible = false;
     this.world.props = this.world.props.filter((x) => x !== n.prop);
-    for (const prop of this.world.props) {
-      const t = prop.body.translation();
-      _b.set(t.x - at.x, t.y - at.y, t.z - at.z);
-      const d = _b.length();
-      if (d > BLAST_R) continue;
-      const m = prop.body.mass();
-      const f = (1 - d / BLAST_R) * 9 * m;
-      _b.normalize();
-      prop.body.applyImpulse({ x: _b.x * f, y: (_b.y + 0.6) * f, z: _b.z * f * 0.3 }, true);
-    }
-    for (const dmy of this.dummies) {
-      const c = dmy.com(_b);
-      const d = c.distanceTo(at);
-      if (d > BLAST_R) continue;
-      const s = (1 - d / BLAST_R) * 11;
-      _b.sub(at).normalize();
-      dmy.ragdoll.addVelocity({ x: _b.x * s, y: (_b.y + 0.7) * s, z: 0 });
-    }
-    this.fx.puff(at, { count: 22, size: 1.6, speed: 4, color: 0xffb347, up: 1.4, life: 0.8 });
-    this.fx.puff(at, { count: 14, size: 2, speed: 2, color: 0x6b6b6b, up: 2, life: 1.6 });
-    this.fx.chips(at, { count: 30, colors: [0xd23a2c, 0xffd23a, 0x8a5a33], size: 0.09, speed: 8, life: 1.2 });
-    this.fx.text(at.clone().add(_b.set(0, 1.2, 0)), 'BOOM!', { color: '#ffb347', size: 40, life: 1.2 });
-    this.audio.boom();
-    this.rig.shake(0.8);
+    this.blast(at, BLAST_R);
     this.blown++;
     this.hud.set('tnt', `${this.blown}/${this.tnts.length}`);
     this.hud.bump('tnt');
@@ -389,10 +363,4 @@ export class SlingSmashLevel extends Level {
     else this.rig.aim(pos, look, rate, rate + 2);
     this.stage.focusShadows(look, 20);
   }
-}
-
-let tntMat = null;
-function tntMaterial() {
-  tntMat ??= new THREE.MeshStandardMaterial({ map: tntCrate(), roughness: 0.6 });
-  return tntMat;
 }

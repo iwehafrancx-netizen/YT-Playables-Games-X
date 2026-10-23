@@ -24,6 +24,8 @@ import { CartHillLevel } from '../modes/cartHill.js';
 import { CART } from './cart.js';
 import { DropTestLevel } from '../modes/dropTest.js';
 import { DROP } from './drop.js';
+import { SmashYardLevel } from '../modes/smashYard.js';
+import { SMASH } from './smash.js';
 import { remixes } from './remix.js';
 
 // `intro` is the how-to-play card shown the first time each game comes up.
@@ -77,6 +79,10 @@ export const DEPARTMENTS = [
     intro: { icon: 'next', goal: 'Ride a shopping cart down the hill and bail out onto the target.', how: [['play', 'Hold to wind up, let go to push off'], ['bolt', 'Tap again to bail out'], ['star', 'Air time and bullseyes pay extra']] },
   },
   {
+    id: 'smash', name: 'Smash Yard', theme: 'noon', Mode: SmashYardLevel, levels: SMASH,
+    intro: { icon: 'skull', goal: 'Smash the ragdoll to pieces before the clock runs out.', how: [['play', 'Drag anywhere to grab him'], ['next', 'Fling him into crates, spikes, saws and TNT'], ['skull', 'Empty his health bar and he breaks apart']] },
+  },
+  {
     id: 'drop', name: 'Drop Test', theme: 'overcast', Mode: DropTestLevel, levels: DROP,
     intro: { icon: 'skull', goal: 'Shove him down the course and score every painful bump on the way.', how: [['back', 'Drag to aim the shove'], ['play', 'Let go to push him'], ['star', 'Bigger crashes, bigger score']] },
   },
@@ -110,10 +116,10 @@ function shuffle(list, rand) {
   return list;
 }
 
-// The run always opens with the hammer, then the rocket. After that each pass
+// The run always opens with the hammer, the rocket, then Smash Yard. After that each pass
 // deals the next-hardest course from every department in a shuffled order,
 // so the mix keeps changing while the difficulty still climbs.
-const OPENERS = ['hammer', 'rocket'];
+const OPENERS = ['hammer', 'rocket', 'smash'];
 const FIRST_LAP = [];
 const deepest = Math.max(...DEPARTMENTS.map((d) => d.levels.length));
 const dealRand = rng(3);

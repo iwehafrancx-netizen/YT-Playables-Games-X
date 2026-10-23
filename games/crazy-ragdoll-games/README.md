@@ -1,6 +1,6 @@
 # Crazy Ragdoll Games
 
-Fifteen ways to fling a ragdoll. Zero ways to be careful.
+Fourteen ways to fling a ragdoll. Zero ways to be careful.
 
 A physics party game set in a busy shipping yard: stacked containers, dock
 cranes, and crates and barrels everywhere to crash into. Every game stars the
@@ -9,24 +9,23 @@ eyes and a goofy grin.
 
 | Game | Play | Controls |
 |---|---|---|
-| **Stack Attack** | A crane swings ragdolls over a podium. Drop them so they pile up past the red line before you run out. Turntables and wind on the later ones. | Tap to drop |
 | **Hammer Spin** | The ragdoll is the hammer. Spin him round by the ankles and fling him onto the targets; the red ring shows where he'd land. | Hold to spin · let go to throw |
 | **Rocket Rider** | He's hanging on to a rocket. Thread the gates, dodge the blocks, collect the rings, and he lets go over the landing pad. | Hold to fly up · let go to drop |
 | **Wipeout** | Sweeper arms come round a spinning stage. Hop the low bars, big-jump the tall ones, grab the stars, and stay on till the clock runs out. | Tap to hop · hold for a big jump |
 | **Ragdoll Pinball** | He curls into a ball on a real pinball table: flippers, bumpers, star rollovers. Hit the target score before your three balls drain. | Tap left / right to flip |
 | **Plinko Party** | Aim the dropper and let him tumble down through the pegs into the scoring buckets. Bumpers kick, ×2 buckets double the lot. | Drag to aim · let go to drop |
 | **Bounce Up** | A tower of trampolines. Steer him in the air from pad to pad up to the flag before the clock runs out; purple pads slide. | Hold left / right to steer |
-| **Slip 'n' Slide** | Belly-first down a soapy slide: dodge the blocks and sweepers, hit the ramps, grab the stars, splash into the pool. | Hold left / right to steer |
 | **Sling Smash** | Fire him from a giant slingshot into crate forts and blow up every TNT crate. Blasts set off the TNT next door. | Drag back to aim · let go to fire |
 | **Ragdoll Bowling** | He curls up into the ball. Time the swinging aim arrow, power up, and bowl at giant pins and barrels. | Hold to power up · let go to bowl |
 | **Crane Swing** | Dangle from a dock crane's rope, pump the swing higher and let go to land on the pad on top of the containers. | Hold to swing higher · let go to fly |
 | **Cannon Blast** | Aim a cannon and fire him at targets: lob over walls, thread windows, bounce off trampolines, hit moving ones. | Drag to aim · let go to fire |
 | **Crash Course** | Drive a test car at a wall and send him through the windscreen onto the landing target. Speed is everything. | Hold for gas · let go to coast |
 | **Cart Hill** | Push him off in a shopping cart down ramps and jumps, then bail out at the right moment to land on the target. | Hold to wind up · let go to push · tap to bail |
+| **Smash Yard** | A pen full of things that hurt: crates, containers, spikes, saws, a crusher, a wrecking ball, TNT and a gun turret. Grab him, fling him into them and empty his health bar until he breaks apart. | Drag to grab · let go to fling |
 | **Drop Test** | Shove him down stairs, scaffolds and rotor shafts and score every bump, smash and crate on the way down. | Drag to aim the shove · let go to push |
 
-Play drops you into an endless run: it opens with the hammer, then the rocket,
-and after that deals every game in a shuffled order with the difficulty
+Play drops you into an endless run: it opens with the hammer, the rocket and
+Smash Yard, and after that deals every game in a shuffled order with the difficulty
 climbing. The first time each game comes up, a short card explains the goal
 and the controls before the level starts. The results card shows what's up
 next and how many stars until the next colour unlocks. Each course comes back
@@ -36,13 +35,14 @@ unlock new colours in the Wardrobe (Red, Yellow, Green, Blue, Purple and
 Pink), and passed levels can be replayed.
 
 Keyboard: <kbd>Space</kbd> / <kbd>Enter</kbd> works wherever a tap does;
-pinball, Plinko, Bounce Up and the slide also take <kbd>←</kbd> / <kbd>→</kbd>, and
+pinball, Plinko and Bounce Up also take <kbd>←</kbd> / <kbd>→</kbd>, and
 Sling Smash aims with the arrow keys.
 
 ### Boss fights
 
 After every sixth level a boss steps in between levels — a bonus round you can
-take or skip. The boss card shows a picture of the fight and how to win it.
+take or skip. The boss card says how to win, and during the fight an
+instruction at the top and a bouncing arrow show exactly what to hit next.
 There are five, each fought a different way; they take turns, so two in a row
 never play the same, and each lap round they get tougher.
 
@@ -101,9 +101,9 @@ src/
   render/    renderer, sky and lighting, materials, textures, effects, camera
   world/     props, the cargo yard, vehicles (car, cart, cannon), the boss robots and
              level building blocks
-  modes/     one class per game (stackAttack, hammerSpin, rocketRider, wipeout, pinball,
-             plinko, bounceUp, slide, slingSmash, bowling, craneSwing, ballistics,
-             crashCourse, cartHill, dropTest; bossFight is the first boss, and
+  modes/     one class per game (hammerSpin, rocketRider, wipeout, pinball,
+             plinko, bounceUp, slingSmash, bowling, craneSwing, ballistics,
+             crashCourse, cartHill, dropTest, smashYard; bossFight is the first boss, and
              bossCannon, bossBowl, bossSwing and bossStomp share bossLevel; attemptLevel is the
              shared base for games played as best-of-three attempts)
   levels/    level data for each game, remixes and the endless sequence

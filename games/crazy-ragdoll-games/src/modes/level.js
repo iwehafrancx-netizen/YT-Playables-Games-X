@@ -6,6 +6,7 @@ import { Dummy } from '../dummy/dummy.js';
 
 const _a = new THREE.Vector3();
 const _corner = new THREE.Vector3();
+const UP_TEXT = new THREE.Vector3(0, 1.2, 0);
 
 /**
  * Base class for every playable level: owns the physics world, the props and
@@ -87,6 +88,32 @@ export class Level {
     return out;
   }
 
+
+  /** An explosion at `at`: throws props and ragdolls within `radius` clear, with fire and smoke. */
+  blast(at, radius) {
+    for (const prop of this.world.props) {
+      const t = prop.body.translation();
+      _a.set(t.x - at.x, t.y - at.y, t.z - at.z);
+      const d = _a.length();
+      if (d > radius) continue;
+      const f = (1 - d / radius) * 9 * prop.body.mass();
+      _a.normalize();
+      prop.body.applyImpulse({ x: _a.x * f, y: (_a.y + 0.6) * f, z: _a.z * f * 0.3 }, true);
+    }
+    for (const dmy of this.dummies) {
+      const d = dmy.com(_a).distanceTo(at);
+      if (d > radius) continue;
+      const s = (1 - d / radius) * 11;
+      _a.sub(at).normalize();
+      dmy.ragdoll.addVelocity({ x: _a.x * s, y: (_a.y + 0.7) * s, z: 0 });
+    }
+    this.fx.puff(at, { count: 22, size: 1.6, speed: 4, color: 0xffb347, up: 1.4, life: 0.8 });
+    this.fx.puff(at, { count: 14, size: 2, speed: 2, color: 0x6b6b6b, up: 2, life: 1.6 });
+    this.fx.chips(at, { count: 30, colors: [0xd23a2c, 0xffd23a, 0x8a5a33], size: 0.09, speed: 8, life: 1.2 });
+    this.fx.text(_a.copy(at).add(UP_TEXT), 'BOOM!', { color: '#ffb347', size: 40, life: 1.2 });
+    this.audio.boom();
+    this.rig.shake(0.8);
+  }
 
   /** HUD heading: the running level number, never the course name or how many are left. */
   hudTitle() {
