@@ -10,7 +10,7 @@ zipped and uploaded as-is.
 | Game | Pitch |
 |---|---|
 | [Flop Dummies](games/flop-dummies) | A 3D physics party of nine mini-games starring one very floppy crash-test dummy: cannons, carts, cars, backflips, a wrecking-ball crane, rope swings, pin puzzles and more, dealt out as an endless run. |
-| [Crazy Ragdoll Games](games/crazy-ragdoll-games) | Fourteen physics party games in a shipping yard — hammer throw, rocket riding, wipeout sweepers, human pinball, Plinko, a trampoline tower, slingshot TNT smashing, bowling, crane swinging, a human cannon, car crashes, shopping-cart jumps, stair falls and a smash-him-to-pieces pen — starring one very floppy ragdoll. Built for Playgama. |
+| [Crazy Ragdoll Games](games/crazy-ragdoll-games) | Thirteen physics party games in a shipping yard — hammer throw, rocket riding, wipeout sweepers, human pinball, Plinko, a trampoline tower, slingshot TNT smashing, bowling, a human cannon, car crashes, shopping-cart jumps, stair falls and a smash-him-to-pieces pen — starring one very floppy ragdoll. Built for Playgama. |
 
 ## Running a game locally
 

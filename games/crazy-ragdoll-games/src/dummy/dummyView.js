@@ -13,17 +13,18 @@ export const SUITS = {
   pink: { body: '#ff5ca8', trim: '#d8337f', label: 'Pink' },
 };
 
-const HEAD_R = 0.145;
-// Glossy like a rubber toy, so the curves read.
-const BODY_ROUGH = 0.32;
+const HEAD_R = 0.128;
+// A satin finish, like a stunt suit, so the muscle shapes read.
+const BODY_ROUGH = 0.45;
+const HAIR = '#3a281d';
 
 // Hands and feet: how far they flop (radians) and how springy the flop is.
 const HAND_FLOP = 0.9;
 const FOOT_FLOP = 0.35;
 const FLOP_K = 160;
 const FLOP_C = 11;
-// Googly pupils: how far they roll and how loosely they're held.
-const PUPIL_RANGE = 0.55;
+// Pupils: how far they roll and how loosely they're held.
+const PUPIL_RANGE = 0.4;
 const PUPIL_K = 70;
 const PUPIL_C = 3.5;
 
@@ -37,19 +38,28 @@ function geo(key, make) {
   return geoCache.get(key);
 }
 
-/** A tapered limb: round ends of radius `top` and `bottom`, `len` apart. */
-function limb(top, bottom, len) {
-  return geo(`limb:${top}:${bottom}:${len}`, () => {
+/**
+ * A limb with some muscle to it: round ends of radius `top` and `bottom`,
+ * `len` apart, swelling to `mid` at `at` (0 = bottom end, 1 = top end).
+ */
+function limb(top, bottom, len, mid = (top + bottom) / 2, at = 0.5) {
+  return geo(`limb:${top}:${bottom}:${len}:${mid}:${at}`, () => {
     const pts = [];
-    for (let i = 0; i <= 8; i++) {
-      const a = -Math.PI / 2 + (i / 8) * (Math.PI / 2);
+    for (let i = 0; i <= 6; i++) {
+      const a = -Math.PI / 2 + (i / 6) * (Math.PI / 2);
       pts.push(new THREE.Vector2(Math.max(1e-4, bottom * Math.cos(a)), -len / 2 + bottom * Math.sin(a)));
     }
-    for (let i = 0; i <= 8; i++) {
-      const a = (i / 8) * (Math.PI / 2);
+    // Smooth swell along the shaft: bottom → mid → top.
+    for (let i = 1; i < 12; i++) {
+      const k = i / 12;
+      const r = k < at ? bottom + (mid - bottom) * Math.sin((k / at) * (Math.PI / 2)) : top + (mid - top) * Math.sin(((1 - k) / (1 - at)) * (Math.PI / 2));
+      pts.push(new THREE.Vector2(r, -len / 2 + k * len));
+    }
+    for (let i = 0; i <= 6; i++) {
+      const a = (i / 6) * (Math.PI / 2);
       pts.push(new THREE.Vector2(Math.max(1e-4, top * Math.cos(a)), len / 2 + top * Math.sin(a)));
     }
-    return new THREE.LatheGeometry(pts, 20);
+    return new THREE.LatheGeometry(pts, 22);
   });
 }
 
@@ -90,7 +100,7 @@ function part(geometry, material, x = 0, y = 0, z = 0) {
   return m;
 }
 
-/** Cartoon person that follows a Ragdoll's bodies: smooth limbs, big googly eyes. */
+/** A person in a one-colour stunt suit that follows a Ragdoll's bodies. */
 export class DummyView {
   constructor(scene, physics, ragdoll, suit = 'red') {
     this.scene = scene;
@@ -113,25 +123,35 @@ export class DummyView {
       else if (name === 'pelvis') this.buildPelvis(g, body);
       else if (name === 'head') this.buildHead(g, body);
       else if (name.startsWith('upperArm')) {
-        g.add(part(limb(0.064, 0.054, 0.23), body));
-        g.add(part(ball(0.066), body, 0, hh));
+        // Shoulder to elbow, with a bicep.
+        g.add(part(limb(0.058, 0.046, 0.23, 0.064, 0.55), body));
+        g.add(part(ball(0.06), body, 0, hh));
       } else if (name.startsWith('lowerArm')) {
-        g.add(part(limb(0.056, 0.048, 0.21), body));
-        g.add(part(ball(0.057), body, 0, hh));
+        // Forearm thick below the elbow, narrow at the wrist.
+        g.add(part(limb(0.05, 0.036, 0.21, 0.054, 0.75), body));
+        g.add(part(ball(0.05), body, 0, hh));
+        const left = name.endsWith('L');
         const hand = new THREE.Group();
-        hand.add(part(geo('mitt', () => new THREE.SphereGeometry(0.066, 18, 14).scale(0.95, 1.15, 0.72)), body, 0, -0.055));
-        hand.add(part(geo('thumb', () => new THREE.SphereGeometry(0.024, 12, 10).scale(1, 1.4, 1)), body, 0, -0.03, 0.04));
+        const palm = part(geo('palm', () => new RoundedBoxGeometry(0.04, 0.085, 0.08, 3, 0.017)), body, 0, -0.06);
+        const fingers = part(geo('fingers', () => new RoundedBoxGeometry(0.034, 0.065, 0.074, 3, 0.015)), body, 0.006 * (left ? 1 : -1), -0.125, 0.004);
+        fingers.rotation.z = (left ? -1 : 1) * 0.35;
+        const thumb = part(geo('thumb', () => new THREE.CapsuleGeometry(0.014, 0.035, 4, 8)), body, left ? -0.012 : 0.012, -0.065, 0.048);
+        thumb.rotation.x = 0.7;
+        hand.add(palm, fingers, thumb);
         g.add(this.joint(name, -hh, hand, HAND_FLOP));
       } else if (name.startsWith('thigh')) {
-        g.add(part(limb(0.092, 0.072, 0.33), body));
-        g.add(part(ball(0.092), body, 0, hh));
+        // Thick at the hip, tapering to the knee.
+        g.add(part(limb(0.088, 0.062, 0.33, 0.094, 0.72), body));
+        g.add(part(ball(0.066), body, 0, -hh));
       } else if (name.startsWith('shin')) {
-        g.add(part(limb(0.072, 0.056, 0.3), body, 0, 0.02));
-        g.add(part(ball(0.073), body, 0, hh));
+        // Calf swelling just below the knee, slim ankle.
+        g.add(part(limb(0.058, 0.04, 0.31, 0.068, 0.72), body, 0, 0.01));
+        g.add(part(ball(0.062), body, 0, hh));
         const foot = new THREE.Group();
         const y = FOOT.offset[1] + hh;
-        foot.add(part(geo('foot', () => new RoundedBoxGeometry(0.13, 0.09, 0.27, 4, 0.045)), body, 0, y, FOOT.offset[2] + 0.02));
-        foot.add(part(ball(0.05), body, 0, y + 0.03, 0));
+        foot.add(part(geo('shoe', () => new RoundedBoxGeometry(0.11, 0.08, 0.26, 4, 0.038)), mat(s.trim, 0.55), 0, y + 0.005, FOOT.offset[2] + 0.025));
+        foot.add(part(geo('sole', () => new RoundedBoxGeometry(0.114, 0.025, 0.265, 2, 0.01)), mat('#2a2a2e', 0.8), 0, y - 0.035, FOOT.offset[2] + 0.025));
+        foot.add(part(ball(0.045), body, 0, y + 0.04, -0.01));
         g.add(this.joint(name, -hh, foot, FOOT_FLOP));
       }
       this.meshes[name] = g;
@@ -144,47 +164,52 @@ export class DummyView {
   }
 
   buildChest(g, body) {
-    g.add(part(trunk('chest', [[0, -0.21], [0.13, -0.2], [0.15, -0.12], [0.165, 0], [0.175, 0.09], [0.165, 0.15], [0.13, 0.195], [0.06, 0.215], [0, 0.22]], 0.7), body));
-    const cap = ball(0.07);
-    g.add(part(cap, body, 0.18, 0.13), part(cap, body, -0.18, 0.13));
-    g.add(part(geo('neck', () => new THREE.CylinderGeometry(0.05, 0.058, 0.13, 16)), body, 0, 0.245));
+    // Narrow waist widening to a broad chest and shoulders.
+    g.add(part(trunk('chest', [[0, -0.21], [0.122, -0.2], [0.132, -0.12], [0.155, -0.03], [0.178, 0.06], [0.19, 0.12], [0.165, 0.18], [0.09, 0.212], [0, 0.22]], 0.64), body));
+    const delt = geo('delt', () => new THREE.SphereGeometry(0.072, 18, 14).scale(1.05, 0.9, 1));
+    g.add(part(delt, body, 0.195, 0.12), part(delt, body, -0.195, 0.12));
+    const pec = geo('pec', () => new THREE.SphereGeometry(0.075, 16, 12).scale(1.2, 0.75, 0.5));
+    g.add(part(pec, body, 0.07, 0.07, 0.085), part(pec, body, -0.07, 0.07, 0.085));
+    g.add(part(geo('neck', () => new THREE.CylinderGeometry(0.048, 0.06, 0.14, 16)), body, 0, 0.245));
   }
 
   buildPelvis(g, body) {
-    g.add(part(trunk('pelvis', [[0, -0.11], [0.11, -0.11], [0.155, -0.04], [0.16, 0.04], [0.14, 0.1], [0.06, 0.12], [0, 0.12]], 0.74), body));
+    g.add(part(trunk('pelvis', [[0, -0.11], [0.11, -0.11], [0.15, -0.04], [0.152, 0.04], [0.13, 0.1], [0.06, 0.12], [0, 0.12]], 0.74), body));
     // Belly that bridges the gap to the chest when he folds in half.
-    g.add(part(geo('belly', () => new THREE.SphereGeometry(0.14, 22, 16).scale(1, 0.85, 0.75)), body, 0, 0.1));
-    const hip = ball(0.09);
-    g.add(part(hip, body, 0.09, -0.07), part(hip, body, -0.09, -0.07));
+    g.add(part(geo('belly', () => new THREE.SphereGeometry(0.13, 22, 16).scale(1, 0.85, 0.72)), body, 0, 0.1));
+    const hip = ball(0.088);
+    g.add(part(hip, body, 0.088, -0.07), part(hip, body, -0.088, -0.07));
+    const seat = geo('seat', () => new THREE.SphereGeometry(0.08, 16, 12).scale(1, 1, 0.8));
+    g.add(part(seat, body, 0.065, -0.05, -0.06), part(seat, body, -0.065, -0.05, -0.06));
   }
 
   buildHead(g, body) {
-    this.headMesh = part(geo('head', () => new THREE.SphereGeometry(HEAD_R, 36, 28)), this.faces.smile);
+    // An egg-shaped head with a jaw, short hair, ears, a nose and real eyes.
+    this.headMesh = part(geo('head', () => new THREE.SphereGeometry(HEAD_R, 36, 28).scale(0.9, 1.08, 1)), this.faces.smile);
     g.add(this.headMesh);
-    // A curl of hair on top, big ears that stick out, and a round clown nose.
-    const curl = part(geo('curl', () => new THREE.TorusGeometry(0.028, 0.012, 8, 16, Math.PI * 1.5)), body, 0.01, HEAD_R + 0.02, 0.01);
-    curl.rotation.set(0, Math.PI / 2, 0.6);
-    g.add(curl);
-    const ear = geo('ear', () => new THREE.SphereGeometry(0.045, 14, 12).scale(0.45, 1, 0.8));
-    const earL = part(ear, body, HEAD_R + 0.005, 0, -0.01);
-    const earR = part(ear, body, -HEAD_R - 0.005, 0, -0.01);
-    earL.rotation.z = -0.35;
-    earR.rotation.z = 0.35;
-    g.add(earL, earR);
-    g.add(part(geo('nose', () => new THREE.SphereGeometry(0.036, 16, 12)), mat('#ff7a7a', 0.25), 0, -0.01, HEAD_R + 0.012));
-    // Big googly eyes, one a bit bigger than the other; the pupils roll loose.
-    const white = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2, emissive: 0xffffff, emissiveIntensity: 0.08 });
+    g.add(part(geo('jaw', () => new THREE.SphereGeometry(0.085, 20, 14).scale(1, 0.8, 0.95)), body, 0, -0.07, 0.03));
+    // Short hair hugging the scalp: back from the forehead, down to the nape.
+    const hair = geo('hair', () => new THREE.SphereGeometry(HEAD_R + 0.004, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.56).rotateX(-0.62).scale(0.91, 1.09, 1.01));
+    g.add(part(hair, mat(HAIR, 0.85), 0, 0.004, -0.004));
+    const ear = geo('ear', () => new THREE.SphereGeometry(0.03, 12, 10).scale(0.4, 1, 0.7));
+    g.add(part(ear, body, HEAD_R * 0.9, -0.005, -0.01), part(ear, body, -HEAD_R * 0.9, -0.005, -0.01));
+    const nose = part(geo('nose', () => new THREE.ConeGeometry(0.02, 0.05, 12)), body, 0, -0.005, HEAD_R + 0.008);
+    nose.rotation.x = Math.PI / 2 - 0.2;
+    g.add(nose);
+    const white = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25 });
+    const iris = mat('#5a3a22', 0.3);
     const black = mat('#141414', 0.3);
     for (const s of [-1, 1]) {
-      const r = s < 0 ? 0.058 : 0.068;
-      const dir = new THREE.Vector3(s * 0.33, 0.34, 0.88).normalize();
-      const eye = part(geo(`eye:${r}`, () => new THREE.SphereGeometry(r, 22, 18)), white);
-      eye.position.copy(dir).multiplyScalar(HEAD_R - 0.004);
+      const r = 0.026;
+      const dir = new THREE.Vector3(s * 0.34, 0.2, 0.92).normalize();
+      const eye = part(geo(`eye:${r}`, () => new THREE.SphereGeometry(r, 18, 14)), white);
+      eye.position.copy(dir).multiplyScalar(HEAD_R - 0.012);
       const pivot = new THREE.Group();
       pivot.position.copy(eye.position);
       pivot.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir);
-      const pupil = part(geo(`pupil:${r}`, () => new THREE.SphereGeometry(r * 0.42, 14, 10).scale(1, 1, 0.45)), black, 0, 0, r * 0.9);
-      pivot.add(pupil);
+      const ring = part(geo('iris', () => new THREE.SphereGeometry(r * 0.55, 14, 10).scale(1, 1, 0.4)), iris, 0, 0, r * 0.82);
+      const pupil = part(geo('pupil', () => new THREE.SphereGeometry(r * 0.28, 10, 8).scale(1, 1, 0.4)), black, 0, 0, r * 0.9);
+      pivot.add(ring, pupil);
       g.add(eye, pivot);
       this.eyes.push({ pivot, base: pivot.quaternion.clone(), ax: 0, ay: 0, vx: 0, vy: 0, side: s });
     }

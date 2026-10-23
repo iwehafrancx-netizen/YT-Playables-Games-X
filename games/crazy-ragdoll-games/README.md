@@ -1,11 +1,11 @@
 # Crazy Ragdoll Games
 
-Fourteen ways to fling a ragdoll. Zero ways to be careful.
+Thirteen ways to fling a ragdoll. Zero ways to be careful.
 
 A physics party game set in a busy shipping yard: stacked containers, dock
 cranes, and crates and barrels everywhere to crash into. Every game stars the
-same super-floppy rubber ragdoll: one bright colour head to toe, big googly
-eyes and a goofy grin.
+same ragdoll: a stunt man in a one-colour suit, built like a real person,
+who bends and flops but never folds the wrong way.
 
 | Game | Play | Controls |
 |---|---|---|
@@ -17,15 +17,14 @@ eyes and a goofy grin.
 | **Bounce Up** | A tower of trampolines. Steer him in the air from pad to pad up to the flag before the clock runs out; purple pads slide. | Hold left / right to steer |
 | **Sling Smash** | From behind a giant slingshot, fire him into crate forts and blow up every TNT crate; bullseyes on posts round the fort score bonus points. Blasts set off the TNT next door. | Drag down to pull back · sideways to aim · let go to fire |
 | **Ragdoll Bowling** | He curls up into the ball. Time the swinging aim arrow, power up, and bowl at giant pins and barrels. | Hold to power up · let go to bowl |
-| **Crane Swing** | Dangle from a dock crane's rope, pump the swing higher and let go to land on the pad on top of the containers. | Hold to swing higher · let go to fly |
 | **Cannon Blast** | Aim a cannon and fire him at targets: lob over walls, thread windows, bounce off trampolines, hit moving ones. | Drag to aim · let go to fire |
 | **Crash Course** | Drive a test car at a wall and send him through the windscreen onto the landing target. Speed is everything. | Hold for gas · let go to coast |
 | **Cart Hill** | Push him off in a shopping cart down ramps and jumps, then bail out at the right moment to land on the target. | Hold to wind up · let go to push · tap to bail |
 | **Smash Yard** | A pen full of things that hurt: crates, containers, spikes, saws, a crusher, a wrecking ball, TNT and a gun turret. Grab him, fling him into them and empty his health bar until he breaks apart. | Drag to grab · let go to fling |
 | **Drop Test** | Shove him down stairs, scaffolds and rotor shafts and score every bump, smash and crate on the way down. | Drag to aim the shove · let go to push |
 
-Play drops you into an endless run: it opens with the hammer, the rocket and
-Smash Yard, and after that deals every game in a shuffled order with the difficulty
+Play drops you into an endless run: a new player starts with the cannon, the
+car crash, the cart and Smash Yard, and after that it deals every game in a shuffled order with the difficulty
 climbing. The first time each game comes up, a short card explains the goal
 and the controls before the level starts. The results card shows what's up
 next and how many stars until the next colour unlocks. Each course comes back
@@ -102,7 +101,7 @@ src/
   world/     props, the cargo yard, vehicles (car, cart, cannon), the boss robots and
              level building blocks
   modes/     one class per game (hammerSpin, rocketRider, wipeout, pinball,
-             plinko, bounceUp, slingSmash, bowling, craneSwing, ballistics,
+             plinko, bounceUp, slingSmash, bowling, ballistics,
              crashCourse, cartHill, dropTest, smashYard; bossFight is the first boss, and
              bossCannon, bossBowl, bossSwing and bossStomp share bossLevel; attemptLevel is the
              shared base for games played as best-of-three attempts)

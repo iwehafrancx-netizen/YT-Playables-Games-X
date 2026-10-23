@@ -449,18 +449,18 @@ export function faceSkin(skin, mood = 'smile') {
   const mouth = '#4a0f18';
   const tongue = '#ff6f8a';
 
-  // Blush.
-  ctx.fillStyle = 'rgba(255, 70, 90, 0.35)';
+  // A touch of colour in the cheeks.
+  ctx.fillStyle = 'rgba(255, 90, 100, 0.16)';
   for (const s of [-1, 1]) {
     ctx.beginPath();
-    ctx.ellipse(fx + s * 62, H * 0.58, 20, 12, 0, 0, 7);
+    ctx.ellipse(fx + s * 58, H * 0.6, 18, 11, 0, 0, 7);
     ctx.fill();
   }
 
-  // Thick, lopsided brows: one always a little higher than the other.
+  // Brows, one sitting a little higher than the other.
   ctx.strokeStyle = ink;
   ctx.lineCap = 'round';
-  ctx.lineWidth = 11;
+  ctx.lineWidth = 7;
   const lift = mood === 'yell' ? -16 : mood === 'dizzy' ? 6 : 0;
   for (const s of [-1, 1]) {
     const y = H * 0.24 + lift + (s > 0 ? -6 : 4);
@@ -514,24 +514,21 @@ export function faceSkin(skin, mood = 'smile') {
     ctx.lineTo(fx + 26, my + 32);
     ctx.stroke();
   } else {
-    // Goofy grin: wide open, two big buck teeth, tongue at the bottom.
+    // An easy grin: lips parted over a row of teeth.
     ctx.fillStyle = mouth;
     ctx.beginPath();
-    ctx.moveTo(fx - 54, my - 14);
-    ctx.quadraticCurveTo(fx, my - 4, fx + 54, my - 14);
-    ctx.quadraticCurveTo(fx + 44, my + 44, fx, my + 44);
-    ctx.quadraticCurveTo(fx - 44, my + 44, fx - 54, my - 14);
-    ctx.fill();
-    ctx.fillStyle = tongue;
-    ctx.beginPath();
-    ctx.ellipse(fx + 6, my + 30, 22, 12, 0, 0, 7);
+    ctx.moveTo(fx - 34, my - 6);
+    ctx.quadraticCurveTo(fx, my + 2, fx + 34, my - 6);
+    ctx.quadraticCurveTo(fx + 24, my + 22, fx, my + 22);
+    ctx.quadraticCurveTo(fx - 24, my + 22, fx - 34, my - 6);
     ctx.fill();
     ctx.fillStyle = '#fff';
-    for (const s of [-1, 1]) {
-      ctx.beginPath();
-      ctx.roundRect(fx + (s < 0 ? -15 : 1), my - 10, 14, 20, 3);
-      ctx.fill();
-    }
+    ctx.beginPath();
+    ctx.moveTo(fx - 26, my - 3);
+    ctx.quadraticCurveTo(fx, my + 4, fx + 26, my - 3);
+    ctx.lineTo(fx + 22, my + 5);
+    ctx.quadraticCurveTo(fx, my + 10, fx - 22, my + 5);
+    ctx.fill();
   }
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
