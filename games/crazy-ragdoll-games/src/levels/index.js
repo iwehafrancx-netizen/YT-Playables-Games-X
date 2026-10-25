@@ -127,13 +127,23 @@ for (let i = 0; i < deepest; i++) {
   FIRST_LAP.push(...tier);
 }
 
-/** Later laps reshuffle the whole set, never putting one department twice in a row. */
+/**
+ * Later laps reshuffle which game comes when, never the same one twice in a
+ * row; each game's levels still come round easiest first, so every lap
+ * climbs from easy to hard.
+ */
 function lap(n) {
   if (n === 0) return FIRST_LAP;
   const rand = rng(n + 7);
   for (;;) {
     const order = shuffle(ALL.slice(), rand);
-    if (order.every((e, i) => i === 0 || e.dept !== order[i - 1].dept)) return order;
+    if (!order.every((e, i) => i === 0 || e.dept !== order[i - 1].dept)) continue;
+    const next = new Map(DEPARTMENTS.map((d) => [d, 0]));
+    return order.map(({ dept }) => {
+      const i = next.get(dept);
+      next.set(dept, i + 1);
+      return { dept, level: dept.levels[i] };
+    });
   }
 }
 

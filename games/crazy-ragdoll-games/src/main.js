@@ -48,6 +48,7 @@ async function boot() {
   setTimeout(() => ui.hideLoading(), 250);
   platform.gameReady();
   window.__game = game;
+  game.preroll();
 }
 
 boot().catch((err) => {

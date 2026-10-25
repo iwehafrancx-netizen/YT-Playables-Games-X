@@ -6,8 +6,10 @@ import { BOSS_EVERY, BOSS_DEPT, bossFor } from '../levels/boss.js';
 import { SUIT_UNLOCKS } from '../ui/ui.js';
 import { SUITS } from '../dummy/dummyView.js';
 
-// Interstitials come round on a 3–5–3 rhythm of levels passed, then repeat.
-const BREAKS = [3, 5, 3];
+// Interstitials on a 3–5–3 rhythm: after levels 3, 8 and 11, then the same
+// again every eleven levels (14, 19, 22, 25…).
+const BREAKS = [3, 8, 11];
+const adAfter = (n) => n > 0 && BREAKS.includes(((n - 1) % 11) + 1);
 
 /** Top-level flow: title → an endless run of levels → results, plus the frame loop. */
 export class Game {
@@ -25,11 +27,10 @@ export class Game {
     this.last = performance.now();
     this.baseFov = stage.camera.fov;
     this.timeScale = 1;
-    // Ads: interstitials between levels on the BREAKS rhythm; rewarded ads on
-    // every second revive, on every skip and to unlock a boss fight. Retrying
-    // never shows an ad.
-    this.passedSinceAd = 0;
-    this.breakIndex = 0;
+    // Ads: one when the game opens, interstitials between levels on the
+    // BREAKS rhythm, and rewarded ads on every second revive, on every skip and
+    // to unlock a boss fight. Retrying never shows an ad.
+    this.lastAdAfter = 0;
     this.revives = 0;
 
     ui.onPause = () => this.pause();
@@ -195,12 +196,17 @@ export class Game {
   }
 
   async nextLevel(n) {
-    if (platform.ads && this.passedSinceAd >= BREAKS[this.breakIndex]) {
-      this.passedSinceAd = 0;
-      this.breakIndex = (this.breakIndex + 1) % BREAKS.length;
+    const done = n - 1;
+    if (platform.ads && adAfter(done) && done !== this.lastAdAfter) {
+      this.lastAdAfter = done;
       await this.showAd('interstitial');
     }
     this.startLevel(n);
+  }
+
+  /** The ad that plays once as the game opens, where the platform runs ads. */
+  async preroll() {
+    if (platform.ads) await this.showAd('interstitial');
   }
 
   /** After every sixth level a boss steps in. Fighting it costs a rewarded ad; skipping is free. */
@@ -270,7 +276,6 @@ export class Game {
       this.save.data.score += Math.round(result.score);
       this.save.flush();
       platform.sendScore(this.save.data.score);
-      this.passedSinceAd++;
       this.audio.win();
       this.fx.confetti(this.rig.look.clone(), 120);
       platform.happy();
