@@ -82,7 +82,20 @@ export const DEPARTMENTS = [
   },
 ];
 
+// Courses that play harder than the ones written after them, found by
+// playtesting: each list is that game's levels (1-based, as written)
+// rearranged easiest first.
+const EASIEST_FIRST = {
+  rocket: [1, 2, 3, 5, 6, 4],
+  plinko: [1, 4, 5, 6, 2, 3],
+  crash: [1, 2, 3, 5, 4, 6, 7, 8],
+  cart: [1, 2, 5, 7, 8, 3, 4, 6],
+  drop: [4, 6, 1, 2, 3, 5, 7, 8],
+};
+
 for (const dept of DEPARTMENTS) {
+  const order = EASIEST_FIRST[dept.id];
+  if (order) dept.levels = order.map((i) => dept.levels[i - 1]);
   dept.levels = [...dept.levels, ...remixes(dept.id, dept.levels)];
   dept.levels.forEach((lvl, i) => {
     lvl.id = `${dept.id}-${i + 1}`;
