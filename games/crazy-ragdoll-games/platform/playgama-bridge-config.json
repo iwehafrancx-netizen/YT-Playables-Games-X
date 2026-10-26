@@ -1,6 +1,6 @@
 {
   "advertisement": {
-    "initialInterstitialDelay": 60,
-    "minimumDelayBetweenInterstitial": 60
+    "initialInterstitialDelay": 0,
+    "minimumDelayBetweenInterstitial": 30
   }
 }

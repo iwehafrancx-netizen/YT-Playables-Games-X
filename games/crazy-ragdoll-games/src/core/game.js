@@ -166,13 +166,13 @@ export class Game {
   }
 
   /** Plays a platform ad with the game paused and muted, then picks up where it was. */
-  async showAd(kind) {
+  async showAd(kind, reward) {
     this.adPlaying = true;
     this.ui.modalEl.classList.add('ad-hold');
     this.paused = true;
     this.audio.suspend();
     platform.gameplayStop();
-    const outcome = kind === 'rewarded' ? await platform.rewarded() : (await platform.interstitial(), 'done');
+    const outcome = kind === 'rewarded' ? await platform.rewarded(reward) : (await platform.interstitial(), 'done');
     this.adPlaying = false;
     this.ui.modalEl.classList.remove('ad-hold');
     this.paused = false;
@@ -185,9 +185,9 @@ export class Game {
    * Rewarded ads only ever pay out for a finished ad. If none can be served
    * the reward is given anyway; closing the ad early gives nothing.
    */
-  async earn(reason) {
+  async earn(reason, reward) {
     if (!platform.ads) return true;
-    const outcome = await this.showAd('rewarded');
+    const outcome = await this.showAd('rewarded', reward);
     if (outcome === 'skipped') {
       this.ui.toast(`Watch the whole ad to ${reason}`);
       return false;
@@ -220,7 +220,7 @@ export class Game {
       how: boss.how,
       ads: platform.ads,
       onFight: async () => {
-        if (await this.earn('fight the boss')) this.startBoss(n);
+        if (await this.earn('fight the boss', 'boss-fight')) this.startBoss(n);
       },
       onSkip: () => this.nextLevel(n + 1),
     });
@@ -247,7 +247,7 @@ export class Game {
   }
 
   async skipLevel(n) {
-    if (!(await this.earn('skip this level'))) return;
+    if (!(await this.earn('skip this level', 'skip-level'))) return;
     this.save.data.level = Math.max(this.save.data.level, n + 1);
     this.save.flush();
     this.startLevel(n + 1);
@@ -256,7 +256,7 @@ export class Game {
   /** Every second revive is paid for with a rewarded ad. */
   async revive() {
     const paid = (this.revives + 1) % 2 === 0;
-    if (paid && !(await this.earn('revive'))) return;
+    if (paid && !(await this.earn('revive', 'revive'))) return;
     this.revives++;
     const scene = this.scene;
     this.ui.closeModal();

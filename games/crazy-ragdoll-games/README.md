@@ -69,11 +69,11 @@ npm run zip                    # YouTube Playables → crazy-ragdoll-games.zip
 Each zip has `index.html` at its root and everything bundled inside; the only
 outside request is the platform's own SDK script.
 
-### Ads (Playgama and CrazyGames Full)
+### Ads (YouTube Playables, Playgama and CrazyGames Full)
 
 | When | Ad | Notes |
 |---|---|---|
-| **Next level**, after levels 3, 8 and 11, then again every eleven levels (14, 19, 22…) | Interstitial | Playgama also paces interstitials itself (`platform/playgama-bridge-config.json`). |
+| **Next level**, after levels 3, 8 and 11, then again every eleven levels (14, 19, 22…) | Interstitial | Playgama also paces interstitials itself (`platform/playgama-bridge-config.json`: none held back at start, 30 s apart). |
 | **Fight boss** on the boss card (every sixth level) | Rewarded | **Skip boss** is free and carries on to the next level. |
 | **Revive**, every second use | Rewarded | Picks the failed level up where it stopped; offered for 5 seconds. |
 | **Skip level** on the fail card | Rewarded | Shown on every fail. |
@@ -82,6 +82,10 @@ outside request is the platform's own SDK script.
 
 The reward is only given for a fully watched ad; if no ad can be served the
 player gets it anyway. The game pauses and mutes for every ad.
+
+On YouTube the ads go through `ytgame.ads` (`requestInterstitialAd` and
+`requestRewardedAd` with the ids `boss-fight`, `revive` and `skip-level`),
+which YouTube still marks as experimental.
 
 ## Running locally
 

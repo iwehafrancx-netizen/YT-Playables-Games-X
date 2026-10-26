@@ -1,5 +1,7 @@
 // YouTube Playables. Every call is a no-op outside Playables so the game runs
 // in any browser during development; progress then lives in localStorage.
+// Ads go through ytgame.ads, which YouTube still marks as experimental: a
+// request may not show anything, and the game carries on either way.
 
 const sdk = typeof window !== 'undefined' ? window.ytgame : undefined;
 const inPlayables = Boolean(sdk?.IN_PLAYABLES_ENV);
@@ -15,7 +17,9 @@ function safe(fn, fallback) {
 
 export const youtube = {
   name: 'youtube',
-  ads: false,
+  get ads() {
+    return inPlayables && Boolean(sdk.ads);
+  },
 
   async init() {},
 
@@ -62,10 +66,24 @@ export const youtube = {
     if (inPlayables) safe(() => sdk.engagement.sendScore({ value: Math.max(0, Math.round(value)) }));
   },
 
-  async interstitial() {},
+  async interstitial() {
+    if (!this.ads) return;
+    try {
+      await sdk.ads.requestInterstitialAd();
+    } catch (err) {
+      console.warn('[ytgame] interstitial', err);
+    }
+  },
 
-  async rewarded() {
-    return 'unavailable';
+  /** `id` names the reward; YouTube wants one fixed id per kind of reward. */
+  async rewarded(id) {
+    if (!this.ads) return 'unavailable';
+    try {
+      return (await sdk.ads.requestRewardedAd(id)) ? 'done' : 'skipped';
+    } catch (err) {
+      console.warn('[ytgame] rewarded', err);
+      return 'unavailable';
+    }
   },
 
   logError(err) {
