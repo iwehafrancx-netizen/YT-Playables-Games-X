@@ -23,6 +23,24 @@ const TARGETS = {
 const T = TARGETS[target];
 if (!T) throw new Error(`Unknown target "${target}". Use one of: ${Object.keys(TARGETS).join(', ')}`);
 
+// Upload bundles ship the physics engine and three.js as their own scripts,
+// so no single file is bigger than it has to be (Playables asks for small
+// files). Each sets a global that the game script reads in their place.
+const single = preview || embed;
+const VENDORS = [
+  { file: 'physics.js', name: '__vendorPhysics', module: '@dimforge/rapier3d-compat', source: "import m from '@dimforge/rapier3d-compat';" },
+  { file: 'three.js', name: '__vendorThree', module: 'three', source: "import * as m from 'three';" },
+];
+const fromVendors = {
+  name: 'vendors',
+  setup(b) {
+    for (const v of VENDORS) {
+      b.onResolve({ filter: new RegExp(`^${v.module}$`) }, () => ({ path: v.module, namespace: 'vendor' }));
+    }
+    b.onLoad({ filter: /.*/, namespace: 'vendor' }, ({ path }) => ({ contents: `module.exports = window.${VENDORS.find((v) => v.module === path).name};` }));
+  },
+};
+
 const result = await build({
   entryPoints: ['src/main.js'],
   bundle: true,
@@ -36,7 +54,22 @@ const result = await build({
   write: false,
   outdir: 'out',
   logLevel: 'warning',
+  plugins: single ? [] : [fromVendors],
 });
+
+async function vendor(v) {
+  const r = await build({
+    stdin: { contents: `${v.source} window.${v.name} = m;`, resolveDir: '.' },
+    bundle: true,
+    format: 'iife',
+    target: 'es2020',
+    minify: !dev,
+    legalComments: 'none',
+    write: false,
+    logLevel: 'warning',
+  });
+  return r.outputFiles[0].text;
+}
 
 const js = result.outputFiles.find((f) => f.path.endsWith('.js')).text;
 const css = result.outputFiles.find((f) => f.path.endsWith('.css')).text;
@@ -63,10 +96,16 @@ if (embed) {
 } else {
   await rm(T.out, { recursive: true, force: true });
   await mkdir(T.out, { recursive: true });
-  await writeFile(`${T.out}/index.html`, html.replace('<!--SDK-->', T.sdk));
+  const scripts = VENDORS.map((v) => `<script src="${v.file}"></script>\n    `).join('') + '<script src="game.js"></script>';
+  await writeFile(`${T.out}/index.html`, html.replace('<!--SDK-->', T.sdk).replace('<script src="game.js"></script>', scripts));
+  let total = Buffer.byteLength(js) + Buffer.byteLength(css) + Buffer.byteLength(html);
+  for (const v of VENDORS) {
+    const code = await vendor(v);
+    await writeFile(`${T.out}/${v.file}`, code);
+    total += Buffer.byteLength(code);
+  }
   await writeFile(`${T.out}/game.js`, js);
   await writeFile(`${T.out}/game.css`, css);
   for (const f of T.files ?? []) await copyFile(`platform/${f}`, `${T.out}/${f}`);
-  const total = Buffer.byteLength(js) + Buffer.byteLength(css) + Buffer.byteLength(html);
   console.log(`${T.out}/  ${(total / 1024 / 1024).toFixed(2)} MB`);
 }

@@ -67,7 +67,9 @@ npm run zip                    # YouTube Playables → crazy-ragdoll-games.zip
 ```
 
 Each zip has `index.html` at its root and everything bundled inside; the only
-outside request is the platform's own SDK script.
+outside request is the platform's own SDK script. The code ships as three
+scripts so no single file is large: `physics.js` (Rapier, about 2.2 MB),
+`three.js` (about 0.7 MB) and `game.js` (about 0.3 MB).
 
 ### Ads (YouTube Playables, Playgama and CrazyGames Full)
 
