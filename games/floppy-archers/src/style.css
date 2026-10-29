@@ -1272,6 +1272,13 @@ button:focus-visible {
   }
 }
 
+
+/* A card over the title (colours, settings) hides the title behind it. */
+#app:has(#modal > *) #screens {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* ---------- Floppy Archers ---------- */
 
 .logo .l1 {
@@ -1282,11 +1289,26 @@ button:focus-visible {
   color: var(--crazy-red);
 }
 
-.title-stats {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 18px;
+.boss-tag,
+.stamp.gold {
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.boss-tag {
+  margin-left: 4px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.shop-btn .skull-count {
+  margin-left: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  font-family: var(--display);
+  font-weight: 400;
 }
 
 .chip {
@@ -1303,12 +1325,6 @@ button:focus-visible {
 .chip svg {
   width: 20px;
   height: 20px;
-}
-
-.chip.coin svg,
-.coins-won svg,
-.suit-need svg {
-  color: var(--yellow);
 }
 
 .hud-top .hud-title {
@@ -1337,31 +1353,6 @@ button:focus-visible {
 .stat.wins .dots i.on {
   background: var(--yellow);
   border-color: var(--yellow);
-}
-
-.hud-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-top: auto;
-  pointer-events: none;
-}
-
-.vitals {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  width: min(150px, 36vw);
-  padding: 8px;
-  border-radius: 14px;
-  background: var(--panel);
-  pointer-events: auto;
-}
-
-.vitals-name {
-  font-family: var(--display);
-  font-size: 14px;
-  text-align: center;
 }
 
 .vbar {
@@ -1396,115 +1387,58 @@ button:focus-visible {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
-.jump-btn {
-  flex-direction: column;
-  gap: 0;
-  padding: 6px 8px;
-  min-height: 0;
-  font-size: 18px;
-  line-height: 1;
-  touch-action: none;
-}
-
-.jump-btn small {
-  font-family: var(--body);
-  font-size: 10px;
-  font-weight: 700;
-  color: #58a8ff;
-}
-
-.jump-btn.low {
-  opacity: 0.45;
-}
-
-.foe-bar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 46px;
-  height: 7px;
-  margin: -4px 0 0 -23px;
-  border-radius: 4px;
-  background: rgba(20, 22, 28, 0.75);
-  overflow: hidden;
-  pointer-events: none;
-  transition: opacity 0.4s;
-}
-
-.foe-bar i {
-  display: block;
-  height: 100%;
-  background: #ff4a3d;
-}
-
-.foe-bar.boss {
-  width: 84px;
-  height: 10px;
-  margin-left: -42px;
-  outline: 2px solid var(--yellow);
-}
-
-.perk-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.perk {
+.arrow-chip {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 12px 6px;
-  border: 2px solid var(--line);
-  border-radius: 14px;
-  background: var(--ink-2);
-  color: var(--text);
-  font: 600 12px/1.25 var(--body);
-  cursor: pointer;
-}
-
-.perk b {
+  margin-right: auto;
+  padding: 6px 12px 6px 8px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 2px solid var(--c);
   font-family: var(--display);
-  font-weight: 400;
-  font-size: 16px;
+  font-size: 14px;
 }
 
-.perk:hover,
-.perk:focus-visible {
-  border-color: var(--yellow);
+.arrow-chip svg {
+  width: 34px;
+  height: 17px;
 }
 
-.perk-icon {
+.boss-offer .offer-crown {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 64px;
+  height: 64px;
+  margin: 4px auto 0;
   border-radius: 50%;
   background: var(--yellow);
   color: var(--ink);
+  animation: bob 1.4s ease-in-out infinite;
 }
 
-.perk-icon svg {
-  width: 26px;
-  height: 26px;
+.boss-offer .offer-crown svg {
+  width: 38px;
+  height: 38px;
 }
 
-.perk-level {
-  display: flex;
+.boss-offer .result-sub b {
+  display: inline-flex;
+  align-items: center;
   gap: 3px;
+  color: var(--yellow);
 }
 
-.perk-level i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+@keyframes bob {
+  50% {
+    transform: translateY(-5px) rotate(-4deg);
+  }
 }
 
-.perk-level i.on {
-  background: var(--yellow);
+.skulls-won {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .duel-score {
@@ -1512,19 +1446,276 @@ button:focus-visible {
   font-size: 34px;
 }
 
+/* Shop */
+
+.panel:has(.shop) {
+  display: flex;
+  flex-direction: column;
+  width: min(540px, 100%);
+  overflow: hidden;
+  padding: 16px;
+}
+
+.shop {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  text-align: left;
+}
+
+.shop-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.shop-head h2 {
+  margin: 0;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--ink-2);
+}
+
+.tab {
+  flex: 1;
+  padding: 8px 4px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font: 400 16px var(--display);
+  cursor: pointer;
+}
+
+.tab.on {
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 2px;
+}
+
+.shop-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--ink-2);
+}
+
+.shop-item.sel {
+  border-color: var(--c, var(--yellow));
+}
+
+.shop-icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.shop-icon svg {
+  width: 46px;
+  height: 23px;
+}
+
+.shop-icon.stat svg {
+  width: 26px;
+  height: 26px;
+  color: var(--yellow);
+}
+
+.shop-item.locked .shop-icon {
+  filter: grayscale(0.7) brightness(0.8);
+}
+
+.shop-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.shop-text b {
+  font: 400 16px var(--display);
+  color: var(--text);
+}
+
+.lv {
+  display: flex;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.lv i {
+  width: 14px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.lv i.on {
+  background: var(--yellow);
+}
+
+.shop-acts {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+}
+
+.shop-acts .btn {
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+}
+
+.cost svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cost.short {
+  opacity: 0.6;
+}
+
+.equipped {
+  font: 400 13px var(--display);
+  color: var(--yellow);
+  text-align: center;
+}
+
 @media (max-width: 420px) {
-  .perk-row {
-    grid-template-columns: 1fr;
+  .shop-item {
+    grid-template-columns: auto 1fr;
   }
 
-  .perk {
+  .shop-acts {
+    grid-column: 1 / -1;
     flex-direction: row;
-    text-align: left;
+    justify-content: flex-end;
   }
 }
 
-/* A card over the title (colours, settings) hides the title behind it. */
-#app:has(#modal > *) #screens {
-  opacity: 0;
+/* In-fight HUD: bars top left, jump bottom left. */
+
+.hud-top .hud-stats {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.hud-top .stat {
+  font-size: 18px;
+  padding: 5px 11px;
+  min-width: 0;
+}
+
+.vitals {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: min(170px, 34vw);
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.vitals .vbar {
+  height: 17px;
+}
+
+.vitals .vbar b {
+  font-size: 12px;
+}
+
+.vitals-name {
+  font-family: var(--display);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.hud.duel .stat.wins {
+  gap: 6px;
+}
+
+.hud-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: auto;
   pointer-events: none;
+}
+
+.jump-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 78px;
+  height: 78px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--yellow);
+  color: var(--ink);
+  box-shadow: 0 5px 0 var(--yellow-dark), 0 8px 18px rgba(0, 0, 0, 0.3);
+  font: 400 20px/1 var(--display);
+  pointer-events: auto;
+  touch-action: none;
+  cursor: pointer;
+  opacity: 0.92;
+}
+
+.jump-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--yellow-dark);
+}
+
+.jump-btn small {
+  font: 700 10px var(--body);
+  opacity: 0.7;
+}
+
+.jump-btn.low {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+
+@media (max-width: 560px) {
+  .hud.solo .hud-title {
+    display: none;
+  }
+
+  .hud.solo .hud-stats {
+    margin-left: auto;
+  }
 }

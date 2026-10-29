@@ -16,12 +16,12 @@ export const ICONS = {
   gearItem: svg('<path d="M12 1.8l1.6 2.6 3-.6.6 3 2.6 1.6-1.2 2.8 1.2 2.8-2.6 1.6-.6 3-3-.6L12 22.2l-1.6-2.6-3 .6-.6-3-2.6-1.6 1.2-2.8-1.2-2.8 2.6-1.6.6-3 3 .6z"/><circle cx="12" cy="12" r="3.4" fill="#15171c"/>'),
   coin: svg('<circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#15171c" stroke-opacity="0.25" stroke-width="1.6"/><path d="M12 7.5v9M9.5 9.5h3.8a1.6 1.6 0 0 1 0 3.2h-2.6a1.6 1.6 0 0 0 0 3.2h3.8" fill="none" stroke="#15171c" stroke-opacity="0.45" stroke-width="1.6" stroke-linecap="round"/>'),
   skull: svg('<path d="M12 3a8 8 0 0 0-8 8c0 2.6 1.3 4.5 3 5.6V20h3v-2h1v2h2v-2h1v2h3v-3.4c1.7-1.1 3-3 3-5.6a8 8 0 0 0-8-8z"/><circle cx="9" cy="11.5" r="2" fill="#15171c"/><circle cx="15" cy="11.5" r="2" fill="#15171c"/>'),
+  crown: svg('<path d="M3 8l4.5 4L12 4l4.5 8L21 8l-2 11H5z"/><rect x="5" y="19.5" width="14" height="2" rx="1"/>'),
   heart: svg('<path d="M12 20.5s-7.6-4.6-9.4-9.4C1.2 7.4 3.6 4 7 4c2 0 3.6 1.1 5 2.9C13.4 5.1 15 4 17 4c3.4 0 5.8 3.4 4.4 7.1-1.8 4.8-9.4 9.4-9.4 9.4z"/>'),
   bolt: svg('<path d="M13.5 2 5 13.5h6L9.5 22 19 9.5h-6z"/>'),
   shirt: svg('<path d="M8.5 3 4 5.5 2.5 10l3.5 1.2V21h12v-9.8l3.5-1.2L20 5.5 15.5 3a3.5 3.5 0 0 1-7 0z"/>'),
   sound: svg('<path d="M4 9h4l5-4.5v15L8 15H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>'),
   music: svg('<path d="M9 18V5.5l11-2.5v12.5" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="6.5" cy="18" r="3"/><circle cx="17.5" cy="15.5" r="3"/>'),
-
 };
 
 export function icon(name) {

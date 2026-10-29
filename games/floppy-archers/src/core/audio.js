@@ -152,6 +152,19 @@ export class Audio {
     this.noise(0.45, { freq: 500, q: 2.5, gain: 0.18 * strength, attack: 0.12, sweep: 3 });
   }
 
+  /** Bowstring let go: a plucked low note, higher the harder it was drawn. */
+  twang(pull = 1) {
+    const f = 110 + pull * 70;
+    this.tone(f, f * 0.92, 0.22, { type: 'triangle', gain: 0.22 });
+    this.tone(f * 3, f * 2.6, 0.08, { type: 'sawtooth', gain: 0.05 });
+    this.noise(0.18, { freq: 700, q: 1.5, gain: 0.1 * pull, attack: 0.04, sweep: 2.5 });
+  }
+
+  zap() {
+    for (let i = 0; i < 3; i++) this.tone(1400 - i * 300, 300, 0.07, { type: 'square', gain: 0.07, at: i * 0.05 });
+    this.noise(0.25, { freq: 5000, q: 2, gain: 0.18, sweep: 0.5 });
+  }
+
   pop() {
     this.tone(680, 1500, 0.09, { type: 'square', gain: 0.12 });
     this.tone(1200, 2400, 0.12, { type: 'sine', gain: 0.18, at: 0.03 });
@@ -177,22 +190,6 @@ export class Audio {
 
   click() {
     this.tone(900, 700, 0.05, { type: 'triangle', gain: 0.12 });
-  }
-
-  saw() {
-    this.noise(0.35, { freq: 3200, q: 6, gain: 0.35, sweep: 0.6 });
-    this.tone(180, 70, 0.3, { type: 'sawtooth', gain: 0.2 });
-  }
-
-  spring() {
-    this.tone(180, 700, 0.25, { type: 'triangle', gain: 0.25 });
-    this.tone(360, 1100, 0.2, { type: 'sine', gain: 0.12, at: 0.02 });
-  }
-
-  /** An engine revving up: the boss winding up for a charge. */
-  rev() {
-    this.tone(70, 260, 0.75, { type: 'sawtooth', gain: 0.13, attack: 0.06 });
-    this.noise(0.75, { freq: 300, q: 2, gain: 0.14, attack: 0.15, sweep: 3 });
   }
 
   crack() {

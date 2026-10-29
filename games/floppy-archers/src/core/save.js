@@ -1,14 +1,28 @@
 import { platform } from '../platform/index.js';
 
 const SAVE_KEY = 'floppy-archers-save';
-const VERSION = 1;
+const VERSION = 2;
 
 function blank() {
-  return { v: VERSION, wave: 1, best: 0, kills: 0, coins: 0, perks: {}, suit: 'red', owned: ['red'], seen: [], sfx: true, music: true };
+  return {
+    v: VERSION,
+    level: 1,
+    best: 0,
+    kills: 0,
+    skulls: 0,
+    arrows: { basic: 1 }, // arrow type → upgrade level
+    equip: 'basic',
+    stats: {},
+    suit: 'red',
+    owned: ['red'],
+    seen: [],
+    sfx: true,
+    music: true,
+  };
 }
 
 /**
- * Progress store: wave reached, kills, coins, upgrades and colours. It goes
+ * Progress store: level reached, skulls, arrows, upgrades and colours. It goes
  * through the platform's own save (via the Playgama Bridge), never straight
  * to the browser's storage.
  */

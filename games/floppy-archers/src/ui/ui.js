@@ -1,5 +1,5 @@
 import { icon } from './icons.js';
-import { SUITS } from '../dummy/dummyView.js';
+import { ARROWS, ARROW_ORDER, STATS, SUITS, SHOP_SUITS } from '../game/catalog.js';
 
 const h = (html) => {
   const t = document.createElement('template');
@@ -7,12 +7,15 @@ const h = (html) => {
   return t.content.firstElementChild;
 };
 
+/** A small arrow picture in the arrow's colours. */
+function arrowIcon(id) {
+  const a = ARROWS[id];
+  return `<svg viewBox="0 0 48 24" aria-hidden="true"><path d="M4 12h34" stroke="${a.color}" stroke-width="4" stroke-linecap="round"/><path d="M46 12l-10-6v12z" fill="${a.head}" stroke="#1b1d24" stroke-width="1.5"/><path d="M4 12 1 6h7l3 6-3 6H1z" fill="${id === 'basic' ? '#f4f1e8' : a.color}" stroke="#1b1d24" stroke-width="1.2"/></svg>`;
+}
+
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
-/** What each colour costs in coins. */
-export const SUIT_PRICES = { red: 0, yellow: 60, green: 120, blue: 200, purple: 300, pink: 450 };
-
-/** DOM layer: menus, HUD and modals drawn over the 3D canvas. */
+/** DOM layer: menus, HUD and cards drawn over the game canvas. */
 export class UI {
   constructor(root, audio) {
     this.root = root;
@@ -62,7 +65,7 @@ export class UI {
     return el;
   }
 
-  title({ wave, kills, coins, onPlay, onDuel, onSettings, onWardrobe }) {
+  title({ level, boss, skulls, onPlay, onDuel, onShop, onSettings }) {
     this.clearScreens();
     const el = h(`
       <div class="screen title-screen">
@@ -70,49 +73,57 @@ export class UI {
           <h1><span class="l1">FLOPPY</span><span class="l2">ARCHERS</span></h1>
           <p class="tagline">Pull back. Let go. Watch them flop.</p>
         </div>
-        <div class="title-stats">
-          <span class="chip">${icon('skull')}<b>${kills}</b></span>
-          <span class="chip coin">${icon('coin')}<b>${coins}</b></span>
-        </div>
         <div class="title-actions">
-          <button class="btn primary big" data-act="play">${icon('play')}<span>${wave > 1 ? `Wave ${wave}` : 'Play'}</span></button>
-          <button class="btn" data-act="duel">${icon('dummy')}<span>2 Players</span></button>
+          <button class="btn primary big" data-act="play">${icon('play')}<span>${level > 1 ? `Level ${level}` : 'Play'}</span>${boss ? '<span class="boss-tag">BOSS</span>' : ''}</button>
+          <button class="btn shop-btn" data-act="shop">${icon('skull')}<span>Shop</span><b class="skull-count">${skulls}</b></button>
           <div class="row">
-            <button class="btn ghost" data-act="wardrobe">${icon('shirt')}<span>Colours</span></button>
+            <button class="btn ghost" data-act="duel">${icon('dummy')}<span>2 Players</span></button>
             <button class="btn ghost" data-act="settings">${icon('gear')}<span>Settings</span></button>
           </div>
         </div>
       </div>`);
-    this.screens.appendChild(this.bind(el, { play: onPlay, duel: onDuel, settings: onSettings, wardrobe: onWardrobe }));
+    this.screens.appendChild(this.bind(el, { play: onPlay, duel: onDuel, shop: onShop, settings: onSettings }));
   }
 
-  /** Health and stamina for one archer, with the jump button under them. */
+  /** Health and stamina bars for one archer. */
   vitalsPanel(i, label) {
     return `<div class="vitals v${i}">
       ${label ? `<span class="vitals-name">${esc(label)}</span>` : ''}
       <div class="vbar hp"><i></i><b></b></div>
       <div class="vbar st"><i></i><b></b></div>
-      <button class="btn jump-btn" data-jump="${i}"><span>JUMP</span><small>5 stamina</small></button>
     </div>`;
   }
 
+  jumpButton(i) {
+    return `<button class="jump-btn j${i}" data-jump="${i}"><span>JUMP</span><small>5 stamina</small></button>`;
+  }
+
   /** The in-fight HUD. Returns a small API the fight updates every frame. */
-  archeryHud({ mode, wave, kills = 0, total = 0, beaten = 0, round = 1, wins = [0, 0], onJump }) {
+  archeryHud({ mode, title, skulls = 0, total = 0, beaten = 0, arrow, round = 1, wins = [0, 0], onJump }) {
     this.hudEl.innerHTML = '';
     const duel = mode === 'duel';
     const dots = (n) => [0, 1].map((k) => `<i class="${k < n ? 'on' : ''}"></i>`).join('');
+    const a = arrow && ARROWS[arrow];
     const el = h(`
-      <div class="hud">
+      <div class="hud ${duel ? 'duel' : 'solo'}">
         <div class="hud-top">
           <button class="icon-btn pause-btn" data-act="pause" aria-label="Pause">${icon('pause')}</button>
-          ${duel ? `<div class="stat wins"><span class="dots">${dots(wins[0])}</span></div>` : `<div class="stat" data-stat="kills">${icon('skull')}<b>${kills}</b></div>`}
-          <div class="hud-title">${duel ? `Round ${round}` : `Wave ${wave}`}</div>
-          ${duel ? `<div class="stat wins"><span class="dots">${dots(wins[1])}</span></div>` : `<div class="stat score" data-stat="score"><span>SCORE</span><b>${beaten}/${total}</b></div>`}
+          ${this.vitalsPanel(0, duel ? 'P1' : '')}
+          <div class="hud-title">${duel ? `Round ${round}` : esc(title)}</div>
+          ${
+            duel
+              ? `<div class="hud-stats"><div class="stat wins"><span class="dots">${dots(wins[0])}</span><b>–</b><span class="dots">${dots(wins[1])}</span></div></div>${this.vitalsPanel(1, 'P2')}`
+              : `<div class="hud-stats">
+                  <div class="stat" data-stat="kills">${icon('skull')}<b>${skulls}</b></div>
+                  <div class="stat score" data-stat="score"><span>SCORE</span><b>${beaten}/${total}</b></div>
+                </div>`
+          }
         </div>
         <div class="hud-hint hidden"></div>
         <div class="hud-bottom">
-          ${this.vitalsPanel(0, duel ? 'Player 1' : '')}
-          ${duel ? this.vitalsPanel(1, 'Player 2') : ''}
+          ${this.jumpButton(0)}
+          ${a && arrow !== 'basic' ? `<div class="arrow-chip" style="--c:${a.color}">${arrowIcon(arrow)}<span>${esc(a.name)}</span></div>` : ''}
+          ${duel ? this.jumpButton(1) : ''}
         </div>
       </div>`);
     this.hudEl.appendChild(this.bind(el, { pause: () => this.onPause?.() }));
@@ -125,12 +136,12 @@ export class UI {
       }),
     );
     const hint = el.querySelector('.hud-hint');
-    const panels = [...el.querySelectorAll('.vitals')].map((p) => ({
+    const panels = [...el.querySelectorAll('.vitals')].map((p, i) => ({
       hp: p.querySelector('.hp i'),
       hpText: p.querySelector('.hp b'),
       st: p.querySelector('.st i'),
       stText: p.querySelector('.st b'),
-      jump: p.querySelector('.jump-btn'),
+      jump: el.querySelector(`.jump-btn.j${i}`),
     }));
     this.hintEl = hint;
     this.hudApi = {
@@ -153,7 +164,7 @@ export class UI {
           p.hpText.textContent = Math.ceil(v.hp);
           p.st.style.width = `${(100 * v.stamina) / v.maxStamina}%`;
           p.stText.textContent = Math.floor(v.stamina);
-          p.jump.classList.toggle('low', v.stamina < 5);
+          p.jump?.classList.toggle('low', v.stamina < 5);
         });
       },
     };
@@ -228,66 +239,42 @@ export class UI {
     );
   }
 
-  /** Colours for the archer, bought with coins. */
-  wardrobe({ save, onPick, onClose }) {
-    const d = save.data;
-    const items = Object.entries(SUITS)
-      .map(([id, s]) => {
-        const owned = d.owned.includes(id);
-        const sel = d.suit === id;
-        return `<button class="suit ${owned ? '' : 'locked'} ${sel ? 'sel' : ''}" data-act="pick" data-arg="${id}">
-          <span class="swatch" style="--c:${s.body};--t:${s.trim}"></span>
-          <span class="suit-name">${esc(s.label)}</span>
-          ${owned ? '' : `<span class="suit-need">${icon('coin')} ${SUIT_PRICES[id]}</span>`}
-        </button>`;
-      })
-      .join('');
-    this.modal(
-      `<h2>Colours</h2>
-      <p class="small">Spend coins on a new colour. You have ${icon('coin')} ${d.coins}.</p>
-      <div class="suits">${items}</div>
-      <button class="btn primary" data-act="close">Done</button>`,
-      {
-        pick: (id) => {
-          if (!onPick(id)) this.toast('Not enough coins yet — win more waves!');
-          else this.wardrobe({ save, onPick, onClose });
-        },
-        close: onClose,
-      },
-    );
-  }
-
-  /** End of a wave, won or lost. */
-  waveResult({ passed, wave, kills, heads, coins, beaten, total, ads, canRevive, canDouble, onRevive, onDouble, onRetry, onNext, onHome }) {
+  /** End of a level, won or lost. */
+  levelResult({ passed, level, boss, bonus, kills, heads, skulls, beaten, total, ads, canRevive, canDouble, onRevive, onDouble, onRetry, onNext, onShop, onHome }) {
     const adTag = ads ? '<span class="ad-tag">AD</span>' : '';
+    const name = bonus ? 'Golden Archer' : boss ? `Boss level ${level}` : `Level ${level}`;
     const el = this.modal(
       `<div class="result ${passed ? 'pass' : 'fail'}">
-        <div class="stamp">${passed ? 'Wave clear' : 'Knocked out'}</div>
-        <h2>Wave ${wave}</h2>
-        <p class="result-sub">${passed ? `All ${total} archers down` : `${beaten} of ${total} archers down`}</p>
+        <div class="stamp">${passed ? (bonus ? 'Boss beaten' : 'Level clear') : 'Knocked out'}</div>
+        <h2>${esc(name)}</h2>
+        <p class="result-sub">${passed ? `All ${total} ${total === 1 ? 'archer' : 'archers'} down` : `${beaten} of ${total} archers down`}</p>
         <ul class="stats">
           <li><span>Archers down</span><b>${kills}</b></li>
           <li><span>Headshots</span><b>${heads}</b></li>
-          <li><span>Coins</span><b class="coins-won">${icon('coin')} ${coins}</b></li>
+          <li><span>Skulls</span><b class="skulls-won">${icon('skull')} ${skulls}</b></li>
         </ul>
         <div class="col">
-          ${passed ? `<button class="btn primary big" data-act="next"><span>Next wave</span>${icon('next')}</button>` : ''}
-          ${canDouble ? `<button class="btn double-btn" data-act="double">${icon('coin')}<span>Double coins</span>${adTag}</button>` : ''}
+          ${passed ? `<button class="btn primary big" data-act="next"><span>Next level</span>${icon('next')}</button>` : ''}
+          ${canDouble ? `<button class="btn double-btn" data-act="double">${icon('skull')}<span>Double skulls</span>${adTag}</button>` : ''}
           ${canRevive ? `<button class="btn primary big revive-btn" data-act="revive">${icon('heart')}<span>Revive</span>${adTag}<i class="countdown">5</i></button>` : ''}
           ${passed ? '' : `<button class="btn ${canRevive ? '' : 'primary big'}" data-act="retry">${icon('retry')}<span>Try again</span></button>`}
-          <div class="row"><button class="btn small" data-act="home" aria-label="Main menu">${icon('home')}</button></div>
+          <div class="row">
+            <button class="btn small" data-act="home" aria-label="Main menu">${icon('home')}</button>
+            <button class="btn small shop-btn" data-act="shop">${icon('skull')}<span>Shop</span></button>
+          </div>
         </div>
       </div>`,
       {
         revive: onRevive,
         retry: onRetry,
         next: onNext,
+        shop: onShop,
         home: onHome,
         double: async (_, b) => {
           if (!(await onDouble())) return;
           b.remove();
-          const won = el.querySelector('.coins-won');
-          if (won) won.innerHTML = `${icon('coin')} ${coins * 2}`;
+          const won = el.querySelector('.skulls-won');
+          if (won) won.innerHTML = `${icon('skull')} ${skulls * 2}`;
           this.audio.coin(4);
         },
       },
@@ -298,8 +285,9 @@ export class UI {
       let left = 5;
       const count = revive.querySelector('.countdown');
       const timer = setInterval(() => {
+        if (!revive.isConnected) return clearInterval(timer);
+        if (this.modalEl.classList.contains('ad-hold')) return;
         left--;
-        if (!revive.isConnected || this.modalEl.classList.contains('ad-hold')) return left <= 0 && clearInterval(timer);
         if (left > 0) count.textContent = left;
         else {
           clearInterval(timer);
@@ -308,30 +296,94 @@ export class UI {
         }
       }, 1000);
     }
-    if (passed) this.audio.win?.();
   }
 
-  /** Pick one of three upgrades. */
-  perks({ choices, have, onPick }) {
-    const cards = choices
-      .map(
-        (p) => `<button class="perk" data-act="pick" data-arg="${p.id}">
-          <span class="perk-icon">${icon(p.icon)}</span>
-          <b>${esc(p.name)}</b>
-          <span>${esc(p.text)}</span>
-          <span class="perk-level">${Array.from({ length: p.max }, (_, i) => `<i class="${i < (have[p.id] ?? 0) ? 'on' : ''}"></i>`).join('')}</span>
-        </button>`,
-      )
-      .join('');
+  /** The Golden Archer, offered between levels for a rewarded ad. */
+  bossOffer({ reward, onFight, onSkip }) {
     this.modal(
-      `<div class="result perks-pick">
-        <div class="stamp">Upgrade</div>
-        <h2>Pick one</h2>
-        <div class="perk-row">${cards}</div>
+      `<div class="result boss-offer">
+        <div class="stamp gold">Bonus boss</div>
+        <div class="offer-crown">${icon('crown')}</div>
+        <h2>The Golden Archer</h2>
+        <p class="result-sub">Knock him out for <b>${icon('skull')} ${reward}</b> skulls. Lose and you just carry on.</p>
+        <div class="col">
+          <button class="btn primary big" data-act="fight">${icon('play')}<span>Fight him</span><span class="ad-tag">AD</span></button>
+          <button class="btn" data-act="skip"><span>No thanks</span>${icon('next')}</button>
+        </div>
       </div>`,
-      { pick: (id) => onPick(id) },
+      { fight: onFight, skip: onSkip },
     );
-    this.audio.ding?.(3);
+    this.audio.ding?.(5);
+  }
+
+  /** Skull shop: arrows (buy, upgrade, equip or try for an ad), body upgrades and colours. */
+  shop({ save, ads, tab = 'arrows', handlers, onClose }) {
+    const d = save.data;
+    const dots = (n, max) => Array.from({ length: max }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('');
+    const cost = (p) => `<span class="cost ${d.skulls < p ? 'short' : ''}">${icon('skull')} ${p}</span>`;
+    let body = '';
+    if (tab === 'arrows') {
+      body = ARROW_ORDER.map((id) => {
+        const a = ARROWS[id];
+        const lv = d.arrows[id] ?? 0;
+        const next = a.price[lv];
+        const equipped = d.equip === id && lv > 0;
+        const actions = [];
+        if (lv === 0) {
+          actions.push(`<button class="btn small primary" data-act="arrow" data-arg="${id}">Buy ${cost(next)}</button>`);
+          if (ads) actions.push(`<button class="btn small" data-act="try" data-arg="${id}">Try 1 level<span class="ad-tag">AD</span></button>`);
+        } else {
+          if (next !== undefined) actions.push(`<button class="btn small primary" data-act="arrow" data-arg="${id}">Upgrade ${cost(next)}</button>`);
+          actions.push(equipped ? '<span class="equipped">Equipped</span>' : `<button class="btn small" data-act="equip" data-arg="${id}">Equip</button>`);
+        }
+        return `<div class="shop-item ${lv ? '' : 'locked'} ${equipped ? 'sel' : ''}" style="--c:${a.color}">
+          <span class="shop-icon">${arrowIcon(id)}</span>
+          <div class="shop-text"><b>${esc(a.name)}</b><span>${esc(a.desc)}</span><span class="lv">${dots(lv, a.price.length)}</span></div>
+          <div class="shop-acts">${actions.join('')}</div>
+        </div>`;
+      }).join('');
+    } else if (tab === 'upgrades') {
+      body = Object.entries(STATS).map(([id, st]) => {
+        const lv = d.stats[id] ?? 0;
+        const next = st.price[lv];
+        return `<div class="shop-item">
+          <span class="shop-icon stat">${icon(st.icon)}</span>
+          <div class="shop-text"><b>${esc(st.name)}</b><span>${esc(st.desc)}</span><span class="lv">${dots(lv, st.price.length)}</span></div>
+          <div class="shop-acts">${next !== undefined ? `<button class="btn small primary" data-act="stat" data-arg="${id}">Upgrade ${cost(next)}</button>` : '<span class="equipped">Maxed</span>'}</div>
+        </div>`;
+      }).join('');
+    } else {
+      body = `<div class="suits">${SHOP_SUITS.map((id) => {
+        const s = SUITS[id];
+        const owned = d.owned.includes(id);
+        return `<button class="suit ${owned ? '' : 'locked'} ${d.suit === id ? 'sel' : ''}" data-act="suit" data-arg="${id}">
+          <span class="swatch" style="--c:${s.body};--t:${s.trim}"></span>
+          <span class="suit-name">${esc(s.label)}</span>
+          ${owned ? '' : `<span class="suit-need">${icon('skull')} ${s.price}</span>`}
+        </button>`;
+      }).join('')}</div>`;
+    }
+    const tabs = [
+      ['arrows', 'Arrows'],
+      ['upgrades', 'Upgrades'],
+      ['colours', 'Colours'],
+    ];
+    this.modal(
+      `<div class="shop">
+        <div class="shop-head">
+          <h2>Shop</h2>
+          <span class="chip">${icon('skull')}<b>${d.skulls}</b></span>
+        </div>
+        <div class="tabs">${tabs.map(([id, label]) => `<button class="tab ${tab === id ? 'on' : ''}" data-act="tab" data-arg="${id}">${label}</button>`).join('')}</div>
+        <div class="shop-list">${body}</div>
+        <button class="btn primary" data-act="close">Done</button>
+      </div>`,
+      {
+        ...handlers,
+        tab: (id) => this.shop({ save, ads, tab: id, handlers, onClose }),
+        close: onClose,
+      },
+    );
   }
 
   duelResult({ winner, wins, over, onNext, onHome }) {
